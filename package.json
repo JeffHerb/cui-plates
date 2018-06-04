@@ -1,0 +1,9 @@
+{
+	"name": "plates",
+	"description": "Core UI based template rendering engine",
+	"version": "0.0.1",
+	"dependencies": {
+		"grunt": "^1.0.2",
+		"grunt-rollup": "^9.0.0"
+	}
+}
