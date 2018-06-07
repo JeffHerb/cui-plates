@@ -62,19 +62,28 @@ module.exports = function(grunt) {
 							loadTemplateData(templatePath)
 								.then( (templateData) => {
 
-									var parsedTemplate = ParseTemplate.parse(templateData);
+									ParseTemplate.parse(templateData)
+										.then(() => {
 
-									if (templates.length) {
+											if (templates.length) {
 
-										nextTemplate(templates);
-									}
-									else {
+												nextTemplate(templates);
+											}
+											else {
 
-										console.log("Done");
+												console.log("Done");
 
-										grunt.log.writeln('Plates is finished!');
-										done();
-									}
+												grunt.log.writeln('Plates is finished!');
+												done();
+											}
+
+										})
+										.catch((err) => {
+
+											console.log(err);
+
+											console.log("Error while parsing template!");
+										})
 
 								})
 								.catch( (err) => {

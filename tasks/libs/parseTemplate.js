@@ -1,14 +1,27 @@
 'use strict';
 
-var _priv = {};
+// Load in the different parsers
+const HTMLParser = require('./parsers/html');
+const LOGICParser = require('./parsers/logic');
+const TEXTParser = require('./parsers/text');
 
-const HTML_CHECK_CHAR = '<';
-const HTML_TAGREGEX = /<(?:"[^"]*"['"]*|'[^']*'['"]*|[^'">])+>/;
+let _priv = {};
 
-const TEMPLATE_CHECK_CHAR = '{';
-const TEMPLATE_REGEX = "";
+let parsers = {};
 
-_priv.stripChars = (template) => {
+// Add all the parsers to the parser object
+parsers.html = HTMLParser.parser;
+parsers.logic = LOGICParser.parser;
+parsers.text = TEXTParser.parser;
+
+let templateChecks = {};
+
+// Add all the check function to the check object
+templateChecks.html = HTMLParser.check;
+templateChecks.logic = LOGICParser.check;
+templateChecks.text = TEXTParser.check;
+
+_priv.cleanupTemplate = (template) => {
 
 	// Remove all multi spaces
 	template = template.replace(/ +/g, " ");
@@ -25,60 +38,174 @@ _priv.stripChars = (template) => {
 	return template;
 };
 
-_priv.walkTemplate = (template) => {
+// This function loops through all of the parser tags looking for 
+_priv.parse = (template) => {
 
-	var AST = {};
+	function findNextSteps(stepTemplate) {
 
-	// Start by getting the first character of the string.
-	let firstChar = template.charAt(0);
+		return new Promise((resolve, reject) => {
 
-	if (firstChar === HTML_CHECK_CHAR) {
+			let checkers = Object.keys(templateChecks);
 
-		console.log("Found a html element");
+			let checkPromises = [];
 
-		// Parce what we have using the html regex
-		var breakdown = HTML_TAGREGEX.exec(template);
+			for (let c = 0, cLen = checkers.length; c < cLen; c++) {
 
-		// HTML starts at index
-		let startIdx = breakdown.index;
+				checkPromises.push(templateChecks[checkers[c]](stepTemplate));
+			}
 
+			Promise.all(checkPromises)
+				.then((checkResults) => {
 
-		console.log(breakdown);
+					let steps = [];
 
+					for (let cr = 0, crLen = checkResults.length; cr < crLen; cr++) {
+
+						if (checkResults[cr]) {
+
+							steps.push(checkResults[cr]);
+						}
+
+					}
+
+					if (steps.length) {
+
+						resolve(steps);
+					}
+					else {
+
+						resolve(false);
+					}
+
+				})
+				.catch((err) => {
+
+					console.log(err);
+
+					console.log("Error occured when looping through all template check promises");
+				})
+
+		});
 	}
-	else if (firstChar === TEMPLATE_CHECK_CHAR) {
 
-		console.log("Found a templating set");
-	}
-	else {
+	return new Promise((resolve, reject) => {
 
-		console.log("Found something!!!");
-	}
+		var finishedAST = [];
+		
+		// Go out and find the next tag and let the proper parser do its job
+		(async function keepParsing(temp) {
 
-	return AST;
+			let possibleSteps = await findNextSteps(temp);
 
-}
+			let nextStep = false;
 
-var parseTemplate = function _parseTemplate() {
+			if (possibleSteps) {
 
-	function parse(template) {
+				if (possibleSteps.length === 1) {
 
-		// Make a copy of the template just in case.
-		const ORIG_TEMP = template;
+					nextStep = possibleSteps[0];
+				}
+				else {
 
-		// Clean up the template first.
-		//template = _priv.stripChars(template);
 
-		// Now call the AST walk function.
-		var newAST = _priv.walkTemplate(template);
+				}
 
-		return template;
-	}
+				let processResults = await nextStep.parser(nextStep.results);
+
+				// Add what we have to the finsihed AST array.
+				if (processResults.AST) {
+
+					// Save off this elements AST.
+					finishedAST.push(processResults.AST);
+				}
+
+				// Check for and deal with children first!
+				if (processResults.children) {
+
+					console.log("Children", processResults.children);
+
+					// Call the process for all of the children
+					let childResults = await _priv.parse(processResults.children);
+
+					// Check and verify that the children attribute exists for this AST parent.
+					if (!finishedAST[finishedAST.length -1].children) {
+						finishedAST[finishedAST.length -1].children = false;
+					}
+
+					// Add the children AST
+					finishedAST[finishedAST.length -1].children = childResults;
+
+					console.log(finishedAST);
+
+					// Check to see if we have leftover template code (siblings)
+					if (processResults.remaining) {
+
+						keepParsing(processResults.remaining);
+					}
+					else {
+
+						resolve(finishedAST);
+					}
+				}
+				else {
+
+					if (processResults.remaining) {
+
+						keepParsing(processResults.remaining);
+					}
+					else {
+
+						resolve(finishedAST);
+					}
+
+				}
+
+			}
+			else {
+
+				console.log("I Dont know what to do!!!!");
+			}
+
+
+		})(template);
+	});
+};
+
+var parseTemplate = function _parse_template() {
+
+	function parse(templateStr) {
+
+		let template = _priv.cleanupTemplate(templateStr);
+
+		return new Promise((resolve, reject) => {
+
+			if (template.length) {
+
+				_priv.parse(template)
+					.then((finishedAST) => {
+
+						console.log(JSON.stringify(finishedAST, null, 4));
+
+						console.log("finished");
+					})
+					.catch((err) => {
+
+						console.log("Error when parsing");
+					})
+			}
+			else {
+
+				// Template is empty return nothing.
+				resolve([]);
+			}
+
+		});
+
+	};
 
 	return {
 		parse: parse
 	};
-
 };
 
 module.exports = exports = new parseTemplate();
