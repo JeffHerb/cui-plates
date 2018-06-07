@@ -122,8 +122,6 @@ _priv.parse = (template) => {
 				// Check for and deal with children first!
 				if (processResults.children) {
 
-					console.log("Children", processResults.children);
-
 					// Call the process for all of the children
 					let childResults = await _priv.parse(processResults.children);
 
@@ -134,8 +132,6 @@ _priv.parse = (template) => {
 
 					// Add the children AST
 					finishedAST[finishedAST.length -1].children = childResults;
-
-					console.log(finishedAST);
 
 					// Check to see if we have leftover template code (siblings)
 					if (processResults.remaining) {
