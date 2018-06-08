@@ -2,9 +2,10 @@ module.exports = function(grunt) {
 
   // Project configuration.
   grunt.initConfig({
+    // test config
     plates: {
       options: {
-        output: "amd"
+        format: "amd"
       },
       templates: {
         src: ['tests/src/templates/*.plt'],

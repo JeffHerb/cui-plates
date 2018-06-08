@@ -4,6 +4,7 @@
 	"version": "0.0.1",
 	"dependencies": {
 		"grunt": "^1.0.2",
-		"grunt-rollup": "^9.0.0"
+		"rollup": "^0.60.1",
+		"rollup-plugin-virtual": "^1.0.1"
 	}
 }
