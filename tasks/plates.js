@@ -10,6 +10,7 @@ const ParseTemplate = require('./libs/parseTemplate');
 // Thrid level Modules
 const Rollup = require('rollup');
 const RollupVirtual = require('rollup-plugin-virtual');
+const Glob = require("glob");
 
 function readTemplate(filePath) {
 
@@ -28,6 +29,7 @@ function readTemplate(filePath) {
 
 	});
 };
+
 
 function writeTemplate(filePath, templateStr) {
 
@@ -50,215 +52,246 @@ module.exports = function(grunt) {
 		// Path to the template entry file
 		let templateEntry = Path.resolve(rootPath, 'core', 'templates.js');
 
-		grunt.log.writeln('Plates has started!');
+		if (this.data.dest) {
 
-		var options = this.options({
-			format: "amd"
-	    });
+			let finalDest = this.data.dest;
 
-		let rollupOptions = {
-	      cache: null,
-	      external: [],
-	      format: options.format,
-	      exports: 'auto',
-	      moduleId: null,
-	      moduleName: null,
-	      globals: {},
-	      indent: true,
-	      useStrict: true,
-	      banner: null,
-	      footer: null,
-	      intro: null,
-	      preferConst: false,
-	      outro: null,
-	      onwarn: null,
-	      paths: null,
-	      plugins:[],
-	      //pureExternalModules: false,
-	      sourceMap: false,
-	      sourceMapFile: null,
-	      sourceMapRelativePaths: false,
-	      treeshake: true,
-	      //interop: true
-		}
+			grunt.log.writeln('Plates has started!');
 
-		switch(this.target) {
+			var options = this.options({
+				format: "amd"
+		    });
 
-			case "templates":
+			let rollupOptions = {
+		      cache: null,
+		      external: [],
+		      format: options.format,
+		      exports: 'auto',
+		      moduleId: null,
+		      moduleName: null,
+		      globals: {},
+		      indent: true,
+		      useStrict: true,
+		      banner: null,
+		      footer: null,
+		      intro: null,
+		      preferConst: false,
+		      outro: null,
+		      onwarn: null,
+		      paths: null,
+		      plugins:[],
+		      //pureExternalModules: false,
+		      sourceMap: false,
+		      sourceMapFile: null,
+		      sourceMapRelativePaths: false,
+		      treeshake: true,
+		      //interop: true
+			}
 
-				if (typeof this.data.dest === "string") {
+			// Get all the template files
+			if (options.templates && options.templates.src && options.templates.src.length) {
 
-					// Template destination file
-					let targetDestPath = this.data.dest;
+				let templateFilePaths = [];
+				let helperFilePaths = [];
 
-					// Loop through all fo the source files
-					this.files.forEach( (files) => {
+				// Loop through and get all the template files
+				for (let tempPath of options.templates.src) {
 
-						var srcFiles = files.src;
+					let correctPath = "";
 
-						async function loadTemplateData(tempPath) {
+					if (tempPath.charAt(0) === "/" || tempPath.charAt(0) === "\\") {
+						correctPath = tempPath.slice(1);
+					}
+					else {
 
-							var contents = await readTemplate(tempPath);
+						correctPath = tempPath;
+					}
+				
+					let files = Glob.sync(correctPath);
 
-							return contents;
+					if (files.length) {
+						templateFilePaths = templateFilePaths.concat(files);
+					}
+
+				}
+
+				// If helpers are defined loop through and generate all of those file paths as well
+				if (options.helpers && options.helpers.src && options.helpers.src.length) {
+
+					// Loop through and get all the template files
+					for (let helpPath of options.helpers.src) {
+
+						let correctPath = "";
+
+						if (helpPath.charAt(0) === "/" || helpPath.charAt(0) === "\\") {
+							correctPath = helpPath.slice(1);
+						}
+						else {
+
+							correctPath = helpPath;
+						}
+					
+						let files = Glob.sync(correctPath);
+
+						if (files.length) {
+							helperFilePaths = helperFilePaths.concat(files);
 						}
 
-						(function nextTemplate(templates) {
+					}
+				}
 
-							var templatePath = templates.shift();
+				//Process teh templates
+				async function loadTemplateData(tempPath) {
 
-							loadTemplateData(templatePath)
-								.then( (templateData) => {
+					var contents = await readTemplate(tempPath);
 
-									ParseTemplate.parse(templateData)
-										.then(async (finishedAST) => {
+					return contents;
+				}
 
-											// Verify that the template has length or something to write.
-											if (finishedAST.length) {
+				(function nextTemplate(templates) {
 
-												//let filePath = false;
-												let fileName = templatePath.slice(templatePath.lastIndexOf('/') + 1).replace('.plt', '');
+					console.log("In nextTempalate");
 
-												// Store the finished template in a object.
-												finishedTemplate[fileName] = finishedAST;
+					var templatePath = templates.shift();
 
-												if (templates.length) {
+					loadTemplateData(templatePath)
+						.then( (templateData) => {
 
-													nextTemplate(templates);
-												}
-												else {
+							ParseTemplate.parse(templateData)
+								.then(async (finishedAST) => {
 
-													var plugins = [
-														RollupVirtual({
-															'core\\templates': `export default ${JSON.stringify(finishedTemplate, null, 4)}`
-														})
-													];
+									// Verify that the template has length or something to write.
+									if (finishedAST.length) {
 
-												    //var plugins = rollupOptions.plugins;
+										//let filePath = false;
+										let fileName = templatePath.slice(templatePath.lastIndexOf('/') + 1).replace('.plt', '');
 
-												    if (typeof plugins === 'function') {
-												    	plugins = plugins();
-												    }
+										// Store the finished template in a object.
+										finishedTemplate[fileName] = finishedAST;
 
-												    console.log(plugins);
+										if (templates.length) {
 
-													return Rollup.rollup({
-															cache: rollupOptions.cache,
-															input: templateEntry,
-															external: rollupOptions.external,
-															plugins: plugins,
-															context: rollupOptions.context,
-															moduleContext: rollupOptions.moduleContext,
-															onwarn: rollupOptions.onwarn,
-															preferConst: rollupOptions.preferConst,
-															//pureExternalModules: rollupOptions.pureExternalModules,
-															treeshake: rollupOptions.treeshake,
-															//'output.interop': rollupOptions.interop
-														})
-														.then(function(bundle) {
+											nextTemplate(templates);
+										}
+										else {
 
-															var sourceMapFile = rollupOptions.sourceMapFile;
+											var plugins = [
+												RollupVirtual({
+													'core\\templates': `export default ${JSON.stringify(finishedTemplate, null, 4)}`
+												})
+											];
 
-															if (!sourceMapFile && rollupOptions.sourceMapRelativePaths) {
-																sourceMapFile = path.resolve(f.dest);
-															}
+										    //var plugins = rollupOptions.plugins;
 
-															return bundle.generate({
-																format: rollupOptions.format,
-																exports: rollupOptions.exports,
-																paths: rollupOptions.paths,
-																moduleId: rollupOptions.moduleId,
-																name: rollupOptions.moduleName,
-																globals: rollupOptions.globals,
-																indent: rollupOptions.indent,
-																strict: rollupOptions.useStrict,
-																banner: rollupOptions.banner,
-																footer: rollupOptions.footer,
-																intro: rollupOptions.intro,
-																outro: rollupOptions.outro,
-																sourcemap: rollupOptions.sourceMap,
-																sourcemapFile: sourceMapFile
-															});
+										    if (typeof plugins === 'function') {
+										    	plugins = plugins();
+										    }
 
-														})
-														.then(function(result) {
-															var code = result.code;
+											return Rollup.rollup({
+													cache: rollupOptions.cache,
+													input: templateEntry,
+													external: rollupOptions.external,
+													plugins: plugins,
+													context: rollupOptions.context,
+													moduleContext: rollupOptions.moduleContext,
+													onwarn: rollupOptions.onwarn,
+													preferConst: rollupOptions.preferConst,
+													//pureExternalModules: rollupOptions.pureExternalModules,
+													treeshake: rollupOptions.treeshake,
+													//'output.interop': rollupOptions.interop
+												})
+												.then(function(bundle) {
 
-															if (options.sourceMap === true) {
+													var sourceMapFile = rollupOptions.sourceMapFile;
 
-																var sourceMapOutPath = f.dest + '.map';
-																grunt.file.write(sourceMapOutPath, result.map.toString());
+													if (!sourceMapFile && rollupOptions.sourceMapRelativePaths) {
+														sourceMapFile = path.resolve(f.dest);
+													}
 
-																code += "\n//# sourceMappingURL=" + path.basename(sourceMapOutPath);
-															} 
-															else if (options.sourceMap === "inline") {
+													return bundle.generate({
+														format: rollupOptions.format,
+														exports: rollupOptions.exports,
+														paths: rollupOptions.paths,
+														moduleId: rollupOptions.moduleId,
+														name: rollupOptions.moduleName,
+														globals: rollupOptions.globals,
+														indent: rollupOptions.indent,
+														strict: rollupOptions.useStrict,
+														banner: rollupOptions.banner,
+														footer: rollupOptions.footer,
+														intro: rollupOptions.intro,
+														outro: rollupOptions.outro,
+														sourcemap: rollupOptions.sourceMap,
+														sourcemapFile: sourceMapFile
+													});
 
-																code += "\n//# sourceMappingURL=" + result.map.toUrl();
-															}
+												})
+												.then(function(result) {
+													var code = result.code;
 
-															grunt.file.write(targetDestPath, code);
-														});
+													if (options.sourceMap === true) {
+
+														var sourceMapOutPath = f.dest + '.map';
+														grunt.file.write(sourceMapOutPath, result.map.toString());
+
+														code += "\n//# sourceMappingURL=" + path.basename(sourceMapOutPath);
+													} 
+													else if (options.sourceMap === "inline") {
+
+														code += "\n//# sourceMappingURL=" + result.map.toUrl();
+													}
+
+													grunt.file.write(targetDestPath, code);
+												});
 
 
-														console.log("Done");
+												console.log("Done");
 
-														grunt.log.writeln('Plates is finished!');
-														done();
-												}
+												grunt.log.writeln('Plates is finished!');
+												//done();
+										}
 
-											}
-											else {
+									}
+									else {
 
-												if (templates.length) {
+										if (templates.length) {
 
-													nextTemplate(templates);
-												}
-												else {
+											nextTemplate(templates);
+										}
+										else {
 
-													console.log("Done");
+											console.log("Done");
 
-													grunt.log.writeln('Plates is finished!');
-													done();
-												}
+											grunt.log.writeln('Plates is finished!');
+											//done();
+										}
 
-											}
-
-										})
-										.catch((err) => {
-
-											console.log(err);
-
-											console.log("Error while parsing template!");
-										})
+									}
 
 								})
-								.catch( (err) => {
+								.catch((err) => {
 
 									console.log(err);
-								});
 
-						})(srcFiles);
+									console.log("Error while parsing template!");
+								})
 
-					});
+						})
+						.catch( (err) => {
 
-				}
-				else {
+							console.log(err);
+						});
 
-					console.log("Templates should all output to a single destination file.");
-				}
+				})(templateFilePaths);
 
-				break;
+			}
+			else {
 
-			case "helpers":
-
+				console.log ("You have not specificed a template source folder.");
 				done();
-
-				break;
-
-			default:
-				console.log(this.target, 'is not a supported task type.');
-
+			}
 		}
+
 
 	});
 

@@ -2,26 +2,36 @@ module.exports = function(grunt) {
 
   // Project configuration.
   grunt.initConfig({
+
+    clean: {
+      test: {
+        src: ['tests/dist']
+      }
+    },
+
     // test config
     plates: {
       options: {
-        format: "amd"
+        format: "amd",
+        templates: {
+          src: ['/tests/src/templates/*.plt']
+        }
       },
-      templates: {
-        src: ['tests/src/templates/*.plt'],
-        dest: 'tests/dist/templates.js'
-      },
-      // helpers: {
-      //   src: ['tests/src/helpers/*.plt'],
-      //   dest: 'tests/dist/helper.js'
-      // }
+      ast: {
+        dest: 'test/dist/js/plates.js'
+      }
     }
   });
 
   // Load internal task
   grunt.loadTasks('tasks');
 
+  // Native Grunt tasks
+  grunt.loadNpmTasks('grunt-contrib-clean');
+  grunt.loadNpmTasks('grunt-contrib-copy');
+  grunt.loadNpmTasks('grunt-contrib-requirejs');
+
   // Default task(s).
-  grunt.registerTask('default', ['plates']);
+  grunt.registerTask('default', ['clean', 'plates']);
 
 };
