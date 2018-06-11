@@ -1,15 +1,9 @@
-import Templates from './templates';
+import Templates from 'templates';
 
-const plates = () => {
+const test = "test";
+const version = "0.0.1";
 
+function reportVersion() {
 
-	let render = function _plates_render(templateName, dataContext, settings) = {
-
-		console.log(Templates);
-
-	};
-
-	return {
-		render: render
-	};
+	return version;
 }
