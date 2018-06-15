@@ -3,13 +3,55 @@ module.exports = function(grunt) {
   // Project configuration.
   grunt.initConfig({
 
+    // Clean out the current directory
     clean: {
       test: {
-        src: ['tests/dist']
+        src: [
+          'tests/dist',
+          'tests/src/components'
+        ]
       }
     },
 
-    // test config
+    copy: {
+      main: {
+        files: [
+          // includes files within path and its sub-directories
+          {
+            expand: true,
+            cwd: 'tests/src/tests',
+            src: ['*.*'],
+            dest: 'tests/dist/tests/',
+            flatten: true,
+            filter: 'isFile'
+          },
+        ],
+      },
+    },
+
+    connect: {
+        server: {
+            options: {
+                livereload: true,
+                port: 8888,
+                hostname: 'localhost',
+                middleware: function (connect, options, middlewares) {
+
+                    middlewares.unshift(function (req, res, next) {
+                        res.setHeader('Access-Control-Allow-Credentials', true);
+                        res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+                        res.setHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+                        next();
+                    });
+
+                    return middlewares;
+                }
+            },
+        },
+    },
+
+
+    // Generates the proper plates file
     plates: {
       options: {
         format: "amd",
@@ -18,9 +60,60 @@ module.exports = function(grunt) {
         }
       },
       ast: {
-        dest: 'test/dist/js/plates.js'
+        dest: 'tests/src/components/plates/plates.js'
       }
-    }
+    },
+
+    requirejs: {
+        main: {
+            options: {
+                baseUrl: 'tests/src/js', // Where all our resources will be
+                name: 'project',
+                paths: {
+                    'plates': '../components/plates/plates',
+                    'requirejs': '../libs/require',
+                    'domReady': '../libs/domReady'
+                },
+                include: [
+                  "requirejs",
+                  "domReady"
+                ],
+                optimize: 'none',
+                out: 'tests/dist/js/main.js',
+            },
+        },
+    },
+
+    watch: {
+        options: {
+            livereload: true,
+            interrupt: true,
+            spawn: false
+        },
+
+        // Task is used with development builds to keep the connect server running.
+        noop: {
+            files: [
+                'README.md',
+            ],
+        },
+
+        plates: {
+          files: [
+            'tasks/**/*.*',
+            'tests/src/js/project.js'
+          ],
+          tasks: ['plates', 'requirejs']
+        },
+
+        tests: {
+          files: [
+            'tests/src/tests/**/*.*'
+          ],
+          tasks: ['copy']
+        }
+    },
+
   });
 
   // Load internal task
@@ -29,9 +122,34 @@ module.exports = function(grunt) {
   // Native Grunt tasks
   grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-contrib-copy');
+  grunt.loadNpmTasks('grunt-contrib-connect');
   grunt.loadNpmTasks('grunt-contrib-requirejs');
+  grunt.loadNpmTasks('grunt-contrib-watch');
 
   // Default task(s).
-  grunt.registerTask('default', ['clean', 'plates']);
+  grunt.registerTask('default', 'build');
+
+  grunt.registerTask('dev', 'Development', function (args) {
+
+      // Run the development build process
+      grunt.task.run([
+          'clean',
+          'plates',
+          'requirejs',
+          'copy',
+          'connect',
+          'watch'
+      ]);
+  });
+
+  grunt.registerTask('build', 'Build', function (args) {
+
+      // Run the development build process
+      grunt.task.run([
+          'clean',
+          'plates',
+          'requirejs',
+      ]);
+  });
 
 };

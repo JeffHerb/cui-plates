@@ -8,8 +8,13 @@ const Path = require('path');
 const ParseTemplate = require('./libs/parseTemplate');
 
 // Thrid level Modules
+// Rollup Specific
 const Rollup = require('rollup');
 const RollupVirtual = require('rollup-plugin-virtual');
+const Resolve = require('rollup-plugin-node-resolve');
+const Babel = require('rollup-plugin-babel');
+
+// Other
 const Glob = require("glob");
 
 function readTemplate(filePath) {
@@ -51,8 +56,6 @@ module.exports = function(grunt) {
 
 		// Path to the template entry file
 		let rollupEntry = Path.resolve(rootPath, 'tasks', 'core', 'base.js');
-
-		console.log(rollupEntry);
 
 		if (this.data.dest) {
 
@@ -216,9 +219,21 @@ module.exports = function(grunt) {
 
 								var templateVirtualDef = `export const templates = ${JSON.stringify(templateASTs, null, 4)}`;
 
-								console.log(templateVirtualDef);
-
 								var plugins = [
+								    Babel({
+								     	exclude: 'node_modules/**',
+								     	babelrc: false,
+										presets: [
+											[
+												"env",
+												{
+													"modules": false
+												}
+											]
+										],
+										//externalHelpers: true,
+										plugins: ['external-helpers'],
+								    }),
 									RollupVirtual({
 										'templates': templateVirtualDef
 									})
@@ -285,12 +300,16 @@ module.exports = function(grunt) {
 										}
 
 										grunt.file.write(finalDest, code);
+
+										done();
 									});
 
 
 									console.log("Done");
 
-									grunt.log.writeln('Plates is finished!');							
+									grunt.log.writeln('Plates is finished!');
+
+									done();					
 							})
 							.catch((err) => {
 
