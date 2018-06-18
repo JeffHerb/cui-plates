@@ -26,6 +26,21 @@ export default class plates {
 			.then((compiledContext) => {
 
 				console.log(compiledContext);
+
+				if (target) {
+
+					// Look for append location
+					var dAppendTarget = document.querySelector(target);
+
+					if (dAppendTarget.nodeType === 1) {
+						dAppendTarget.appendChild(compiledContext);
+					}
+				}
+				else {
+
+					return compiledContext;
+				}
+
 			})
 			.catch((err) => {
 
