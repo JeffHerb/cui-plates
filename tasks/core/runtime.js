@@ -76,44 +76,139 @@ const parseElem = (oASTNode, oContext) => {
 		dElem = document.createElement(oASTNode.tag);
 
 		// Check for current tag attributes!
-		if (oASTNode.attributes) {
+		if (oASTNode.attributes && Object.keys(oASTNode.attributes).length) {
 
-			if (oASTNode.attributes) {
-				let oCompiledAttributes = parseAttributes(oASTNode.attributes, oContext);
+			let oCompiledAttributes = parseAttributes(oASTNode.attributes, oContext);
 
-				for (let sAttr in oCompiledAttributes) {
+			for (let sAttr in oCompiledAttributes) {
 
-					dElem.setAttribute(sAttr, oCompiledAttributes[sAttr]);
-				}
+				dElem.setAttribute(sAttr, oCompiledAttributes[sAttr]);
 			}
 
 		}
 
-	}
-	else {
+		// Check for children of the current element.
+		if (oASTNode.children && oASTNode.children.length) {
 
+			// Loop through all the children
+			for (let c = 0, cLen = oASTNode.children.length; c < cLen; c++) {
+
+				let oASTNodeChild = oASTNode.children[c];
+
+				let compiledChild = ASTsToDOM(oContext, oASTNodeChild);
+
+				if (compiledChild) {
+
+					// Wrap results in an array for stanadrd handleing
+					if (!Array.isArray(compiledChild)) {
+						compiledChild = [ compiledChild ];
+					}
+
+					for (let child of compiledChild) {
+
+						if (child && child.nodeType) {
+
+							dElem.appendChild(child);
+						}
+					}
+
+				}
+
+			}
+
+			return dElem;
+		}
+		else {
+
+			return dElem;
+		}
+		
 	}
 
-	return dElem;
+	return false;
 
 };
 
+const parseText = (oASTNode, oContext) => {
+
+	let finalTextContents = [];
+
+	// String can contain many different things so we need to loop through all of them
+	if (oASTNode.contents) {
+
+		for (let c = 0, cLen = oASTNode.contents.length; c < cLen; c++) {
+
+			let content = false;
+
+			if (typeof oASTNode.contents[c] === "string") {
+
+				content = document.createTextNode(oASTNode.contents[c]);
+			}
+			else if (typeof oASTNode.contents[c] === "object") {
+
+				if (Array.isArray(oASTNode.contents[c])) {
+					content = ASTsToDOM(oContext, ASTsToDOM.contents[c]);
+				}
+				else {
+					content = ASTsToDOM(oContext, [ ASTsToDOM.contents[c] ]);	
+				}
+			}
+
+			if (content) {
+				finalTextContents.push(content);
+			}
+		}
+
+		return finalTextContents;
+	}
+
+	return false;
+
+};
+
+const parseComment = (oASTNode, oContext) => {
+
+	let comNode = document.createComment(oASTNode.children[0].contents);
+
+	return comNode;
+};
+
 // Helper function that determins the proper AST template and calls the corresponding parser functions
-const ASTsToDOM = (oContext) => {
+const ASTsToDOM = (oContext, aPassedAST) => {
 
-	// check the context for a template definition, if so we need to loop it.
-	if (oContext.template && ASTs[oContext.template]) {
+	let aAST = false;
+	let dCompiledASTFragment = document.createDocumentFragment();
 
-		let aAST = ASTs[oContext.template].concat();
+	// Check to see if a AST object was provided.
+	if (aPassedAST) {
+
+		if (!Array.isArray(aPassedAST)) {
+			aPassedAST = [aPassedAST];
+		}
+
+		aAST = aPassedAST.concat();
+	}
+	else if (oContext.template && ASTs[oContext.template]) {
+
+		aAST = ASTs[oContext.template].concat();
+	}
+
+	if (aAST) {
 
 		// We now need to loop and parse the template
 		for (let aASTNode of aAST) {
 
-			console.log(aASTNode);
-
 			let parser = false;
 
+			console.log(aASTNode);
+
 			switch (aASTNode.node) {
+
+				case "comment":
+
+					parser = parseComment;
+
+					break;
 
 				case "elem":
 
@@ -121,7 +216,15 @@ const ASTsToDOM = (oContext) => {
 
 					break;
 
+				case "text":
+
+					parser = parseText;
+
+					break;
+
 				default:
+
+					console.log("Unknown parser node type!");
 
 					break;
 
@@ -132,10 +235,27 @@ const ASTsToDOM = (oContext) => {
 
 			if (compiledAST) {
 
-				return compiledAST;
+				if (Array.isArray(compiledAST)) {
+
+					for (let compiledNode of compiledAST) {
+
+						if (compiledNode) {
+							
+							dCompiledASTFragment.appendChild(compiledNode);							
+						}
+
+					}
+
+				}
+				else {
+
+					dCompiledASTFragment.appendChild(compiledAST);
+				}
+
 			}
 		}
 
+		return dCompiledASTFragment;
 	}
 
 	return false;

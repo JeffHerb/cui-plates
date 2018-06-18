@@ -12,7 +12,7 @@ export default class plates {
 		if (typeof method === "object") {
 			target = context;
 			context = method;
-			method = "generate";
+			method = "generate"; 
 		}
 
 		// Ensure our context is wrapped in an array for consistant handling

@@ -101,9 +101,10 @@ module.exports = function(grunt) {
         plates: {
           files: [
             'tasks/**/*.*',
-            'tests/src/js/project.js'
+            'tests/src/js/project.js',
+            'tests/src/templates/**.*'
           ],
-          tasks: ['plates', 'requirejs']
+          tasks: ['plates', 'requirejs', 'copy']
         },
 
         tests: {

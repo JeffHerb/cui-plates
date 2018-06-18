@@ -9,11 +9,13 @@ var Parser = function _html_parser() {
 
 	function parse(currentTemplate) {
 
+		console.log("ct", currentTemplate);
+
 		return new Promise((resolve, reject) => {
 
 			let AST = {
 				node: 'text',
-				contents: currentTemplate
+				contents: [ currentTemplate.input ] // Take the input value as grunt watch rebuilds kill the context sometimes
 			};
 
 			resolve({
@@ -28,6 +30,8 @@ var Parser = function _html_parser() {
 	};
 
 	function check(template) {
+
+		console.log(template);
 
 		return new Promise((resolve, reject) => {
 
