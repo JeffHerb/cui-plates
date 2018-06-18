@@ -2199,180 +2199,157 @@ define('plates',[],function () { 'use strict';
         ]
     };
 
-    var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
-      return typeof obj;
-    } : function (obj) {
-      return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-    };
+    // import { helpers } from 'helpers';
 
-    var classCallCheck = function (instance, Constructor) {
-      if (!(instance instanceof Constructor)) {
-        throw new TypeError("Cannot call a class as a function");
-      }
-    };
+    const ASTs = templates;
+    // const Helpers = helpers
 
-    var createClass = function () {
-      function defineProperties(target, props) {
-        for (var i = 0; i < props.length; i++) {
-          var descriptor = props[i];
-          descriptor.enumerable = descriptor.enumerable || false;
-          descriptor.configurable = true;
-          if ("value" in descriptor) descriptor.writable = true;
-          Object.defineProperty(target, descriptor.key, descriptor);
-        }
-      }
+    const parseElem = (oASTNode, oContext) => {
 
-      return function (Constructor, protoProps, staticProps) {
-        if (protoProps) defineProperties(Constructor.prototype, protoProps);
-        if (staticProps) defineProperties(Constructor, staticProps);
-        return Constructor;
-      };
-    }();
+    	let dElem = false;
 
-    var ASTs = templates;
+    	if (typeof oASTNode.tag === "string") {
 
-    // Function parses an attributes object and adds it to the provided element.
-    var parseAttributes = function parseAttributes(elem, attributes, context) {
+    		dElem = document.createElement(oASTNode.tag);
 
-    	if ((typeof attributes === "undefined" ? "undefined" : _typeof(attributes)) === "object") {
+    		// Check for current tag attributes!
+    		if (oASTNode.attributes) {
+    			console.log("This tag has attributes");
 
-    		for (var attr in attributes) {
+    			let oCurrentAttrs = {};
 
-    			elem.setAttribute(attr, attributes[attr]);
+    			// Loop throught the attributes handleing all logic helpers first
+    			for (let attr in oASTNode.attributes) {
+
+    				// Check and create a 
+    				if (!oCurrentAttrs[attr]) {
+    					oCurrentAttrs[attr] = [];
+    				}
+
+    				// Check to see if the attribute is a string, it so its an include
+    				if (typeof oASTNode.attributes[attr] === "string") {
+    					oCurrentAttrs[attr].push({
+    						"include": true,
+    						"value": oASTNode.attributes[attr]
+    					});
+    				}
+    			}
+
+    			console.log(oCurrentAttrs);
     		}
     	}
 
-    	return elem;
+    	return dElem;
     };
 
-    var ASTtoDOM = function ASTtoDOM(context, AST, cb) {
+    // Helper function that determins the proper AST template and calls the corresponding parser functions
+    const ASTsToDOM = oContext => {
 
-    	var compiledAST = document.createDocumentFragment();
+    	console.log(oContext);
 
-    	// Loop through the AST one step at a time
-    	(function astWalker(fullAST) {
+    	// check the context for a template definition, if so we need to loop it.
+    	if (oContext.template && ASTs[oContext.template]) {
 
-    		var ASTNode = fullAST.shift();
-    		var createdOutput = false;
+    		let aAST = ASTs[oContext.template].concat();
 
-    		switch (ASTNode.node) {
+    		// We now need to loop and parse the template
+    		for (let aASTNode of aAST) {
 
-    			case "elem":
+    			console.log(aASTNode);
 
-    				var root = document.createElement(ASTNode.tag);
+    			let parser = false;
 
-    				if (ASTNode.attributes) {
+    			switch (aASTNode.node) {
 
-    					parseAttributes(root, ASTNode.attributes, context);
-    				}
+    				case "elem":
 
-    				createdOutput = true;
+    					parser = parseElem;
 
-    				// Add compiled element to total collection
-    				compiledAST.appendChild(root);
+    					break;
 
-    				break;
+    				default:
 
-    		}
+    					break;
 
-    		if (fullAST.length) {
-
-    			astWalker(fullAST);
-    		} else {
-
-    			console.log("finished AST");
-
-    			console.log(compiledAST);
-
-    			if (createdOutput) {
-
-    				cb(compiledAST);
     			}
 
-    			return false;
-    		}
-    	})(AST.concat());
-    };
+    			// Build out this AST based on the provided context
+    			let compiledAST = parser(aASTNode, oContext);
 
-    var generate = function generate(context, cb) {
+    			if (compiledAST) {
 
-    	var renderedDOM = document.createDocumentFragment();
-
-    	(function walker(DOMContext) {
-
-    		var nextSibling = DOMContext.shift();
-
-    		if (nextSibling.template && ASTs[nextSibling.template]) {
-
-    			ASTtoDOM(nextSibling, ASTs[nextSibling.template], function (compiledAST) {
-
-    				renderedDOM.appendChild(compiledAST);
-
-    				if (DOMContext.length) {
-
-    					walker(DOMContext);
-    				} else {
-
-    					console.log("finished generate");
-
-    					cb(renderedDOM);
-    				}
-    			});
-    		} else {
-    			console.log("We dont have a valid template template.");
-
-    			if (DOMContext.length) {
-
-    				walker(DOMContext);
-    			} else {
-
-    				console.log("finished generate");
-
-    				cb(renderedDOM);
+    				return compiledAST;
     			}
     		}
-    	})(context.concat());
-    };
-
-    var plates = function () {
-    	function plates() {
-    		classCallCheck(this, plates);
     	}
 
-    	createClass(plates, [{
-    		key: "render",
-    		value: function render(method, context, target) {
+    	return false;
+    };
 
-    			if ((typeof method === "undefined" ? "undefined" : _typeof(method)) === "object") {
-    				target = context;
-    				context = method;
-    				method = "generate";
-    			}
+    // Generator will loop through a context array and parse them one at a time.
+    const Generator = aContext => {
 
-    			if (!Array.isArray(context)) {
-    				context = [context];
-    			}
+    	let dDOMFragment = document.createDocumentFragment();
 
-    			if (method === "generate") {
+    	// Loop over the context
+    	for (let nextContext of aContext) {
 
-    				console.log("Generate a template, but dont append");
+    		let compiledContext = ASTsToDOM(nextContext);
 
-    				generate(context, function (finalCompiledAST) {
-
-    					console.log(finalCompiledAST);
-    				});
-
-    				//console.log(finsihedCompiledAST);
-    			} else if (method === "append") {
-
-    				console.log("Generate and then append a template");
-
-    				append(content, target);
-    			}
+    		// If something returns add it to the running fragment
+    		if (compiledContext) {
+    			dDOMFragment.appendChild(compiledContext);
     		}
-    	}]);
-    	return plates;
-    }();
+
+    		console.log("Compiled context:", compiledContext);
+    	}
+
+    	console.log("Finished with generator");
+    };
+
+    class Runtime {
+
+    	constructor() {}
+
+    	generate(aContext) {
+
+    		return new Promise((resolve, reject) => {
+
+    			resolve(Generator(aContext));
+    		});
+    	}
+    }
+
+    var Runtime$1 = new Runtime();
+
+    class plates {
+
+    	constructor() {}
+
+    	render(method, context, target) {
+
+    		if (typeof method === "object") {
+    			target = context;
+    			context = method;
+    			method = "generate";
+    		}
+
+    		// Ensure our context is wrapped in an array for consistant handling
+    		if (!Array.isArray(context)) {
+    			context = [context];
+    		}
+
+    		console.log("Context to be processed:", context);
+
+    		Runtime$1.generate(context, target).then(compiledContext => {
+
+    			console.log(compiledContext);
+    		}).catch(err => {
+
+    			console.log("Plates Runtime Error:", err);
+    		});
+    	}
+    }
 
     return plates;
 

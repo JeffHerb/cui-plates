@@ -10,7 +10,9 @@ const ParseTemplate = require('./libs/parseTemplate');
 // Thrid level Modules
 // Rollup Specific
 const Rollup = require('rollup');
+const RollupResolve = require('rollup-plugin-node-resolve');
 const RollupVirtual = require('rollup-plugin-virtual');
+const RollupCommon = require('rollup-plugin-commonjs');
 const Resolve = require('rollup-plugin-node-resolve');
 const Babel = require('rollup-plugin-babel');
 
@@ -220,19 +222,13 @@ module.exports = function(grunt) {
 								var templateVirtualDef = `export const templates = ${JSON.stringify(templateASTs, null, 4)}`;
 
 								var plugins = [
+									RollupResolve(),
+									RollupCommon({
+										include: 'node_modules/**'
+									}),
 								    Babel({
 								     	exclude: 'node_modules/**',
 								     	babelrc: false,
-										presets: [
-											[
-												"env",
-												{
-													"modules": false
-												}
-											]
-										],
-										//externalHelpers: true,
-										plugins: ['external-helpers'],
 								    }),
 									RollupVirtual({
 										'templates': templateVirtualDef
