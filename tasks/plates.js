@@ -114,7 +114,6 @@ function writePlates(entry, rollupOptions, templateASTs, customHelpers) {
 		});
 
 	});
-
 };
 
 module.exports = function(grunt) {
@@ -221,8 +220,6 @@ module.exports = function(grunt) {
 
 				// Loop through all the template files in a series
 				(function nextTemplate(templateFilePaths) {
-
-					//console.log()
 
 					let templatePath = templateFilePaths.shift();
 

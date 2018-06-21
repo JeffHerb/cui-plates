@@ -133,8 +133,6 @@ const parseText = (oASTNode, oContext) => {
 
 	let finalTextContents = [];
 
-	console.log(oASTNode);
-
 	// String can contain many different things so we need to loop through all of them
 	if (oASTNode.contents) {
 
@@ -201,32 +199,31 @@ const ASTsToDOM = (oContext, aPassedAST) => {
 
 			let parser = false;
 
-			console.log(aASTNode);
-
 			switch (aASTNode.node) {
 
 				case "comment":
 
 					parser = parseComment;
-
 					break;
 
 				case "elem":
 
 					parser = parseElem;
-
 					break;
 
 				case "text":
 
 					parser = parseText;
+					break;
 
+				case "logic":
+
+					parser = parseLogic;
 					break;
 
 				default:
 
 					console.log("Unknown parser node type!");
-
 					break;
 
 			}

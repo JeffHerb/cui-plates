@@ -57,8 +57,6 @@ _priv.parse = (template) => {
 			Promise.all(checkPromises)
 				.then((checkResults) => {
 
-					//console.log(checkResults);
-
 					let steps = [];
 
 					for (let cr = 0, crLen = checkResults.length; cr < crLen; cr++) {
@@ -109,8 +107,13 @@ _priv.parse = (template) => {
 			}
 			else {
 
-				console.log("More than 2 detected steps");
+				nextStep = possibleSteps.reduce((prev, curr) => {
 
+					return prev.results.index < curr.results.index ? prev : curr; 
+				});
+
+				// Console.log (next step)
+				console.log(nextStep);
 			}
 
 			// check to see if the index starts at 0

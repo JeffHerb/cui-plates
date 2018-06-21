@@ -13,9 +13,7 @@ const TEXT_REG = /.+?/g;
 var Parser = function _html_parser() {
 
 	function parse(currentTemplate) {
-
-		console.log(currentTemplate);
-
+		
 		return new Promise((resolve, reject) => {
 
 			//let textContent = (currentTemplate.input) ? currentTemplate.input : "" ;
@@ -27,15 +25,17 @@ var Parser = function _html_parser() {
 
 			let remaining = false;
 
+			// Check to see if this is an inlien template
 			if (currentTemplate.inline) {
 
-				// We need to do a substring
-				AST.contents = currentTemplate.text;
+				// Pull out the full text
+				let fullText = currentTemplate.text;
 
-				temp = currentTemplate.slice(currentTemplate.index.start, currentTemplate.index.end);
+				remaining = fullText.slice(currentTemplate.index.end);
+				let temp = fullText.slice(currentTemplate.index.start, currentTemplate.index.end);
 
-				console.log(temp);
-
+				// Append the contents to the AST
+				AST.contents = temp;
 			}
 			else {
 
@@ -60,8 +60,6 @@ var Parser = function _html_parser() {
 			let htmlOpeningCheck = HTML_OPENING_TAGREGEX.exec(template);
 			let logicOpeningCheck = false; // Temp: need to write logic parser
 
-			console.log(htmlOpeningCheck);
-
 			let results = false;
 
 			if (htmlOpeningCheck && !logicOpeningCheck) {
@@ -75,7 +73,7 @@ var Parser = function _html_parser() {
 							start: 0,
 							end: htmlOpeningCheck[1].length
 						},
-						text: htmlOpeningCheck[1]
+						text: htmlOpeningCheck.input
 					}
 				}
 
