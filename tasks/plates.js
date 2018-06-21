@@ -37,15 +37,85 @@ function readTemplate(filePath) {
 	});
 };
 
+function writePlates(entry, rollupOptions, templateASTs, customHelpers) {
 
-function writeTemplate(filePath, templateStr) {
+	return new Promise((resolve, reject) => {
 
-	return new Promise( (res, rej) => {
+		let templateVirtualDef = `export const templates = ${JSON.stringify(templateASTs, null, 4)}`;
+
+		let plugins = [
+			RollupResolve(),
+			RollupCommon({
+				include: 'node_modules/**'
+			}),
+		    Babel({
+		     	exclude: 'node_modules/**',
+		     	babelrc: false,
+		    }),
+			RollupVirtual({
+				'templates': templateVirtualDef
+			})
+		];
+
+		Rollup.rollup({
+			cache: rollupOptions.cache,
+			input: entry,
+			external: rollupOptions.external,
+			plugins: plugins,
+			context: rollupOptions.context,
+			moduleContext: rollupOptions.moduleContext,
+			onwarn: rollupOptions.onwarn,
+			preferConst: rollupOptions.preferConst,
+			treeshake: rollupOptions.treeshake,
+		})
+		.then(function(bundle) {
+
+			var sourceMapFile = rollupOptions.sourceMapFile;
+
+			if (!sourceMapFile && rollupOptions.sourceMapRelativePaths) {
+				sourceMapFile = path.resolve(f.dest);
+			}
+
+			return bundle.generate({
+				format: rollupOptions.format,
+				exports: rollupOptions.exports,
+				paths: rollupOptions.paths,
+				moduleId: rollupOptions.moduleId,
+				name: rollupOptions.moduleName,
+				globals: rollupOptions.globals,
+				indent: rollupOptions.indent,
+				strict: rollupOptions.useStrict,
+				banner: rollupOptions.banner,
+				footer: rollupOptions.footer,
+				intro: rollupOptions.intro,
+				outro: rollupOptions.outro,
+				sourcemap: rollupOptions.sourceMap,
+				sourcemapFile: sourceMapFile
+			});
+
+		})
+		.then(function(result) {
+
+			//var code = result.code;
+
+			//if (rollupOptions.sourceMap === true) {
+
+			//	var sourceMapOutPath = f.dest + '.map';
+				//grunt.file.write(sourceMapOutPath, result.map.toString());
+
+			//	code += "\n//# sourceMappingURL=" + path.basename(sourceMapOutPath);
+			//} 
+			//else if (rollupOptions.sourceMap === "inline") {
+
+				//code += "\n//# sourceMappingURL=" + result.map.toUrl();
+			//}
+
+			resolve(result.code);
+		});
 
 	});
-};
 
-let finishedTemplate = {};
+};
 
 module.exports = function(grunt) {
 
@@ -95,6 +165,7 @@ module.exports = function(grunt) {
 		      //interop: true
 			}
 
+			// Place to store all of the ASTs after conversion (in menory)
 			let templateASTs = {};
 
 			// Get all the template files
@@ -148,176 +219,116 @@ module.exports = function(grunt) {
 					}
 				}
 
-				// Now we need to read in and generate all of the AST files from the templates
-				let readTemplatePromises = [];
+				// Loop through all the template files in a series
+				(function nextTemplate(templateFilePaths) {
 
-				for (let t = 0, tLen = templateFilePaths.length; t < tLen; t++) {
+					//console.log()
 
-					let templateFilePath = templateFilePaths[t];
+					let templatePath = templateFilePaths.shift();
 
-					readTemplatePromises.push(
+					if (templatePath.length) {
 
-						readTemplate(templateFilePath)
-							.then((rawTemplate) => {
+						let templateObj = {
+							path: templatePath,
+							name: templatePath.slice(templatePath.lastIndexOf('/') + 1).replace('.plt', ''),
+							raw: false,
+							ast: false
+						};
 
-								let templateFile = {
-									path: templateFilePath,
-									contents: rawTemplate
-								};
+						// Preform the read (file) template promise
+						readTemplate(templatePath)
+							.then((rawTemplateFile) => {
 
-								return templateFile;
-							})
-							.catch((err) => {
+								if (rawTemplateFile.trim().length) {
 
-								console.log("Failed to read template: " + templateFilePath);
-							})
-					);
-				}
+									templateObj.raw = rawTemplateFile;
 
-				// Once all of the template files have been read we need to 
-				Promise.all(readTemplatePromises)
-					.then((rawTemplates) => {
-
-						let rawsToReadPromise = [];
-
-						for (let rt = 0, rtLen = rawTemplates.length; rt < rtLen; rt++) {
-
-							// Filter out empty files
-							if (rawTemplates[rt].contents.trim().length) {
-
-								let rawTemplate = rawTemplates[rt];
-
-								let filename = rawTemplate.path.slice(rawTemplate.path.lastIndexOf('/') + 1).replace('.plt', '');
-
-								rawTemplates[rt].filename = filename;
-
-								rawsToReadPromise.push(
-
-									ParseTemplate.parse(rawTemplate.contents)
+									// Now we need to process the file
+									ParseTemplate.parse(templateObj.raw)
 										.then((templateAST) => {
 
-											rawTemplates[rt].ast = templateAST;
+											templateObj.ast = templateAST;
 
-											return rawTemplates[rt];
+											// WE have finished the AST for this template, add it to the list
+											if (!templateASTs[templateObj.name]) {
+												templateASTs[templateObj.name] = templateObj.ast
+											}
+											else {
+
+												console.log("WE HAVE A TEMPLATE NAMING CONFLICT!!!!");
+											}
+
+											if (templateFilePaths.length) {
+
+												nextTemplate(templateFilePaths);
+											}
+											else {
+
+												writePlates(rollupEntry, rollupOptions, templateASTs, {})
+													.then((code) => {
+
+														grunt.file.write(finalDest, code);
+
+														done();
+													})
+													.catch((error) => {
+
+														console.log(error);
+													})
+											}
 
 										})
-										.catch((err) => {
+										.catch((error) => {
 
-											console.log("Error when generating AST!");
-										})
-
-								);
-							}
-						}
-
-						Promise.all(rawsToReadPromise)
-							.then((finishedAST) => {
-
-								// Loop through and save all results into a common area.
-								for (let f = 0, fLen = finishedAST.length; f < fLen; f++) {
-
-									templateASTs[finishedAST[f].filename] = finishedAST[f].ast;
-								}
-
-								var templateVirtualDef = `export const templates = ${JSON.stringify(templateASTs, null, 4)}`;
-
-								var plugins = [
-									RollupResolve(),
-									RollupCommon({
-										include: 'node_modules/**'
-									}),
-								    Babel({
-								     	exclude: 'node_modules/**',
-								     	babelrc: false,
-								    }),
-									RollupVirtual({
-										'templates': templateVirtualDef
-									})
-								];
-
-								//var plugins = rollupOptions.plugins;
-
-								if (typeof plugins === 'function') {
-									plugins = plugins();
-								}
-
-								return Rollup.rollup({
-										cache: rollupOptions.cache,
-										input: rollupEntry,
-										external: rollupOptions.external,
-										plugins: plugins,
-										context: rollupOptions.context,
-										moduleContext: rollupOptions.moduleContext,
-										onwarn: rollupOptions.onwarn,
-										preferConst: rollupOptions.preferConst,
-										//pureExternalModules: rollupOptions.pureExternalModules,
-										treeshake: rollupOptions.treeshake,
-										//'output.interop': rollupOptions.interop
-									})
-									.then(function(bundle) {
-
-										var sourceMapFile = rollupOptions.sourceMapFile;
-
-										if (!sourceMapFile && rollupOptions.sourceMapRelativePaths) {
-											sourceMapFile = path.resolve(f.dest);
-										}
-
-										return bundle.generate({
-											format: rollupOptions.format,
-											exports: rollupOptions.exports,
-											paths: rollupOptions.paths,
-											moduleId: rollupOptions.moduleId,
-											name: rollupOptions.moduleName,
-											globals: rollupOptions.globals,
-											indent: rollupOptions.indent,
-											strict: rollupOptions.useStrict,
-											banner: rollupOptions.banner,
-											footer: rollupOptions.footer,
-											intro: rollupOptions.intro,
-											outro: rollupOptions.outro,
-											sourcemap: rollupOptions.sourceMap,
-											sourcemapFile: sourceMapFile
 										});
 
-									})
-									.then(function(result) {
-										var code = result.code;
+								}
+								else {
 
-										if (options.sourceMap === true) {
+									if (templateFilePaths.length) {
 
-											var sourceMapOutPath = f.dest + '.map';
-											grunt.file.write(sourceMapOutPath, result.map.toString());
+										nextTemplate(templateFilePaths);
+									}
+									else {
 
-											code += "\n//# sourceMappingURL=" + path.basename(sourceMapOutPath);
-										} 
-										else if (options.sourceMap === "inline") {
+										writePlates(rollupEntry, rollupOptions, templateASTs, {})
+											.then((code) => {
 
-											code += "\n//# sourceMappingURL=" + result.map.toUrl();
-										}
+												grunt.file.write(finalDest, code);
 
-										grunt.file.write(finalDest, code);
+												done();
+											})
+											.catch((error) => {
 
-										done();
-									});
+												console.log(error);
+											})
+									}
+								}
 
-
-									console.log("Done");
-
-									grunt.log.writeln('Plates is finished!');
-
-									done();					
 							})
-							.catch((err) => {
+							.catch((error) => {
 
-								console.log(err);
-							})
+								console.error(error);
+							});
 
-					})
-					.catch((err) => {
+					}
+					else {
 
-						console.log("Error when reading all templates");
-						console.log(err);
-					});
+						if (templateFilePaths.length) {
+
+							nextTemplate(templateFilePaths);
+						}
+						else {
+
+							done();
+
+							console.log("Done nothing to do!");
+						}
+					}
+
+				})(templateFilePaths.concat());
+
+				
 
 			}
 			else {

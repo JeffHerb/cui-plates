@@ -133,6 +133,8 @@ const parseText = (oASTNode, oContext) => {
 
 	let finalTextContents = [];
 
+	console.log(oASTNode);
+
 	// String can contain many different things so we need to loop through all of them
 	if (oASTNode.contents) {
 
@@ -152,7 +154,7 @@ const parseText = (oASTNode, oContext) => {
 				else {
 					content = ASTsToDOM(oContext, [ ASTsToDOM.contents[c] ]);	
 				}
-			}
+			} 
 
 			if (content) {
 				finalTextContents.push(content);
@@ -163,7 +165,6 @@ const parseText = (oASTNode, oContext) => {
 	}
 
 	return false;
-
 };
 
 const parseComment = (oASTNode, oContext) => {
@@ -259,7 +260,6 @@ const ASTsToDOM = (oContext, aPassedAST) => {
 	}
 
 	return false;
-
 };
 
 // Generator will loop through a context array and parse them one at a time.

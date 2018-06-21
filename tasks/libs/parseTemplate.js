@@ -57,6 +57,8 @@ _priv.parse = (template) => {
 			Promise.all(checkPromises)
 				.then((checkResults) => {
 
+					//console.log(checkResults);
+
 					let steps = [];
 
 					for (let cr = 0, crLen = checkResults.length; cr < crLen; cr++) {
@@ -99,67 +101,72 @@ _priv.parse = (template) => {
 
 			let nextStep = false;
 
-			if (possibleSteps) {
+			//console.log(possibleSteps);
 
-				if (possibleSteps.length === 1) {
+			if (possibleSteps.length === 1) {
 
-					nextStep = possibleSteps[0];
-				}
-				else {
-
-
-				}
-
-				let processResults = await nextStep.parser(nextStep.results);
-
-				// Add what we have to the finsihed AST array.
-				if (processResults.AST) {
-
-					// Save off this elements AST.
-					finishedAST.push(processResults.AST);
-				}
-
-				// Check for and deal with children first!
-				if (processResults.children) {
-
-					// Call the process for all of the children
-					let childResults = await _priv.parse(processResults.children);
-
-					// Check and verify that the children attribute exists for this AST parent.
-					if (!finishedAST[finishedAST.length -1].children) {
-						finishedAST[finishedAST.length -1].children = false;
-					}
-
-					// Add the children AST
-					finishedAST[finishedAST.length -1].children = childResults;
-
-					// Check to see if we have leftover template code (siblings)
-					if (processResults.remaining) {
-
-						keepParsing(processResults.remaining);
-					}
-					else {
-
-						resolve(finishedAST);
-					}
-				}
-				else {
-
-					if (processResults.remaining) {
-
-						keepParsing(processResults.remaining);
-					}
-					else {
-
-						resolve(finishedAST);
-					}
-
-				}
-
+				nextStep = possibleSteps[0];
 			}
 			else {
 
-				console.log("I Dont know what to do!!!!");
+				console.log("More than 2 detected steps");
+
+			}
+
+			// check to see if the index starts at 0
+			if (nextStep.source !== "text" && nextStep.results && nextStep.results.index > 0) {
+
+				let inlineCheck = await TEXTParser.inlineCheck(temp);
+
+				if (inlineCheck) {
+					nextStep = inlineCheck;
+				}
+			}
+
+			let processResults = await nextStep.parser(nextStep.results);
+
+			// Add what we have to the finsihed AST array.
+			if (processResults.AST) {
+
+				// Save off this elements AST.
+				finishedAST.push(processResults.AST);
+			}
+
+			// Check for and deal with children first!
+			if (processResults.children) {
+
+				// Call the process for all of the children
+				let childResults = await _priv.parse(processResults.children);
+
+				// Check and verify that the children attribute exists for this AST parent.
+				if (!finishedAST[finishedAST.length -1].children) {
+					finishedAST[finishedAST.length -1].children = false;
+				}
+
+				// Add the children AST
+				finishedAST[finishedAST.length -1].children = childResults;
+
+				// Check to see if we have leftover template code (siblings)
+				if (processResults.remaining) {
+
+					keepParsing(processResults.remaining);
+				}
+				else {
+
+					resolve(finishedAST);
+				}
+			}
+			else {
+
+				if (processResults.remaining) {
+
+					keepParsing(processResults.remaining);
+				}
+				else {
+
+					resolve(finishedAST);
+				}
+
 			}
 
 
