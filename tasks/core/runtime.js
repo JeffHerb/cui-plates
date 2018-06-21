@@ -23,7 +23,7 @@ const parseAttributes = (oAttributes, oContext) => {
 
 		return oCompiledAttributes;
 
-	}
+	};
 
 	// Placeholders for the different include remove attribute actions
 	let aIncludedAttr = [];
@@ -133,31 +133,41 @@ const parseText = (oASTNode, oContext) => {
 
 	let finalTextContents = [];
 
+	let content = false;
+
 	// String can contain many different things so we need to loop through all of them
 	if (oASTNode.contents) {
 
-		for (let c = 0, cLen = oASTNode.contents.length; c < cLen; c++) {
+		if (typeof oASTNode.contents === "string") {
 
-			let content = false;
+			console.log("String send to text parser");
 
-			if (typeof oASTNode.contents[c] === "string") {
+			content = document.createTextNode(oASTNode.contents);
+		}
+		else if (Array.isArray(oASTNode.contents)) {
 
-				content = document.createTextNode(oASTNode.contents[c]);
-			}
-			else if (typeof oASTNode.contents[c] === "object") {
+			for (let c = 0, cLen = oASTNode.contents.length; c < cLen; c++) {
 
-				if (Array.isArray(oASTNode.contents[c])) {
-					content = ASTsToDOM(oContext, ASTsToDOM.contents[c]);
+				if (typeof oASTNode.contents[c] === "string") {
+
+					content = document.createTextNode(oASTNode.contents[c]);
 				}
-				else {
-					content = ASTsToDOM(oContext, [ ASTsToDOM.contents[c] ]);	
-				}
-			} 
+				else if (typeof oASTNode.contents[c] === "object") {
 
-			if (content) {
-				finalTextContents.push(content);
+					if (Array.isArray(oASTNode.contents[c])) {
+						content = ASTsToDOM(oContext, ASTsToDOM.contents[c]);
+					}
+					else {
+						content = ASTsToDOM(oContext, [ ASTsToDOM.contents[c] ]);	
+					}
+				} 
+
+				if (content) {
+					finalTextContents.push(content);
+				}
 			}
 		}
+
 
 		return finalTextContents;
 	}
@@ -170,6 +180,51 @@ const parseComment = (oASTNode, oContext) => {
 	let comNode = document.createComment(oASTNode.children[0].contents);
 
 	return comNode;
+};
+
+const parseLogic = (oASTNode, oContext) => {
+
+	let content = false;
+
+	switch (oASTNode.type) {
+
+		case "context":
+
+			let aASTNodeContext = oASTNode.context.split('.');
+
+			let currentOContextPointer = oContext;
+
+			for (let nameSpace of aASTNodeContext) {
+
+				if (nameSpace !== "this") {
+
+					if (currentOContextPointer.hasOwnProperty(nameSpace)) {
+						currentOContextPointer = currentOContextPointer[nameSpace];
+					}
+					else {
+
+						console.log("Could not find requested context");
+						break;
+					}
+				}
+			}
+
+			// If we have a string return it 
+			if (typeof currentOContextPointer === "string") {
+
+				content = document.createTextNode(currentOContextPointer);	
+			}
+
+			break;
+
+		default:
+
+			break;
+
+	}
+
+	return content;
+
 };
 
 // Helper function that determins the proper AST template and calls the corresponding parser functions
@@ -230,6 +285,13 @@ const ASTsToDOM = (oContext, aPassedAST) => {
 
 			// Build out this AST based on the provided context
 			let compiledAST = parser(aASTNode, oContext);
+
+			if (aASTNode.node === "logic") {
+				console.log("compiledAST", compiledAST);
+			}
+			else if (aASTNode.node === "text") {
+				console.log("compiledAST", compiledAST);
+			}
 
 			if (compiledAST) {
 
