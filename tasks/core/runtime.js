@@ -1,3 +1,4 @@
+import "babel-polyfill";
 import { templates } from 'templates';
 // import { helpers } from 'helpers';
 
@@ -6,65 +7,25 @@ const ASTs = templates;
 
 const parseAttributes = (oAttributes, oContext) => {
 
-	const compileAttr = (aAttributes) => {
+	let oReturnedAttrbutes = {};
 
-		let oCompiledAttributes = {};
+	// Check static only lengths
+	if (oAttributes.static.length && !oAttributes.dynamic.length) {
 
-		for (let oAttr of aAttributes) {
+		for (let oAttr of oAttributes.static) {
 
-			if (!oCompiledAttributes[oAttr.label]) {
-				oCompiledAttributes[oAttr.label] = oAttr.value;
+			if (!oReturnedAttrbutes[oAttr.title]) {
+				oReturnedAttrbutes[oAttr.title] = oAttr.value;
 			}
 			else {
-				oCompiledAttributes[oAttr.label] += " " + oAttr.value;
+				oReturnedAttrbutes[oAttr.title] += " " + oAttr.value;
 			}
 
 		}
 
-		return oCompiledAttributes;
-
-	};
-
-	// Placeholders for the different include remove attribute actions
-	let aIncludedAttr = [];
-	let aRemoveAttr = [];
-
-	// Loop through each attribute in the object
-	for (let sAttrLabel in oAttributes) {
-
-		let currentAttr = oAttributes[sAttrLabel];
-
-		// Check for string first, if it exists its an include
-		if (typeof currentAttr === "string") {
-
-			aIncludedAttr.push({
-				"label": sAttrLabel,
-				"value": currentAttr
-			});
-		}
-
 	}
 
-	// Check if there is nothing to do
-	if ((aRemoveAttr.length === 0 && aIncludedAttr.length === 0) || (aRemoveAttr.length && aIncludedAttr.length === 0)) {
-
-		return false;
-	}
-	else {
-
-		// We only have adds
-		if (aRemoveAttr.length === 0 && aIncludedAttr.length) {
-
-			return compileAttr(aIncludedAttr);
-
-		}
-		// We have both!
-		else {
-
-		}
-
-	}
-
+	return oReturnedAttrbutes;
 };
 
 const parseElem = (oASTNode, oContext) => {
@@ -80,9 +41,12 @@ const parseElem = (oASTNode, oContext) => {
 
 			let oCompiledAttributes = parseAttributes(oASTNode.attributes, oContext);
 
-			for (let sAttr in oCompiledAttributes) {
+			if (oCompiledAttributes) {
 
-				dElem.setAttribute(sAttr, oCompiledAttributes[sAttr]);
+				for (let sAttr in oCompiledAttributes) {
+
+					dElem.setAttribute(sAttr, oCompiledAttributes[sAttr]);
+				}
 			}
 
 		}
@@ -350,12 +314,18 @@ class Runtime {
 
 	constructor() {};
 
-	generate(aContext) {
+	generate(aContext, cb) {
 
-		return new Promise((resolve, reject) => {
+		//return new Promise((resolve, reject) => {
 
-			resolve(Generator(aContext));
-		});
+			//resolve(Generator(aContext));
+		//});
+
+		let compiledContext = Generator(aContext);
+
+		if (typeof cb === "function") {
+			cb(compiledContext);
+		}
 
 	}
 }

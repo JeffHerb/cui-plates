@@ -1,5 +1,8 @@
 'use strict';
 
+// Get the logic parser
+//const LOGICParser = require('./logic');
+
 const HTML_CHECK_CHAR = '<';
 
 // Look for html tag structure "<" followed by name and attributes and ends with ">"
@@ -9,12 +12,12 @@ const HTML_TAGREGEX = /<(?:"[^"]*"['"]*|'[^']*'['"]*|[^'">])+>/;
 const HTML_TAG_NAME_REGEX = /(?:<[a-zA-Z\-\{\}]*)/;
 
 // Pulls all static attributes as well as inline helpers.
-const HTML_ATTRIBUTES_REGEX = /(?:[a-zA-Z\-]+\s*=["'][a-zA-Z\#\{\}\-\(\)\= 0-9]*["'])|(?:[{]{2}[a-zA-Z\#\{\}\-\(\)\= 0-9]*[}]{2})/g
+const HTML_ATTRIBUTES_REGEX = /(?:[a-zA-Z\-]*)=(?:"|')(?:[a-zA-Z0-9\.\{\}\(\)\[\]\s\,\'\:\-])*(?:"|')|(?:checked)|(?:selected)|(?:required)|(?:disabled)|(?:multiple)|(?:autofocus)/g
 
 const HTML_SELF_CLOSING = ['input', 'br', 'hr', 'img'];
 
 const LOGIC_CHECK_CHAR = "{{";
-const LOGIC_TAGREG = /{{([^\}}]+)}}/;
+const LOGIC_TAGREG = /^{{(?:[>.@#]+)|^{{/;
 
 var Parser = function _html_parser(settings) {
 
@@ -24,17 +27,25 @@ var Parser = function _html_parser(settings) {
 
 			let AST = {};
 
+			// Current template send to parser
 			let template = currentTag.input;
 
+			// tag structur variables
 			let openingTag = currentTag[0];
-			let closingTag = false;
+			let selfClosed = false;
+			let closingTagRegEx = false;
+
+			// Actual tag being requested
+			let tagName = false;
+			let attributes = [];
+
+			// Storage for additional children and remaining templates siblings
 			let childContents = false;
+			let remaining = false;
 
 			let dynamicTag = false;
 
-			let staticAttr = {};
-			let dynamicAttr = [];
-			let inlineHelder = [];
+			let inlineHelpera = [];
 
 			let endResult = false;
 
@@ -43,118 +54,148 @@ var Parser = function _html_parser(settings) {
 
 				AST.node = "elem";
 
-				while (true) {
+				// Start by yanking out the tagname
+				tagName = HTML_TAG_NAME_REGEX.exec(openingTag)[0].replace('<', '');
 
-					let attrCheck = HTML_ATTRIBUTES_REGEX.exec(openingTag);
+				let tagNameLogicCheck = LOGIC_TAGREG.exec(tagName);
 
-					if (attrCheck === null) {
-						break;
-					}
+				if (tagNameLogicCheck) {
 
-					let attr = attrCheck[0];
-					let attrIdx = attrCheck.index;
-
-					// Do a quick check to see if they have any inline helpers
-					if (attr.indexOf('{{') === -1) {
-
-						// Split the attribute
-						let keyValue = attr.split('=');
-
-						if (!staticAttr[keyValue[0]]) {
-							staticAttr[keyValue[0]] = keyValue[1].replace(/["]/g, "");
-						}
-						else {
-							staticAttr[keyValue[0]] += " " + keyValue[1];
-						}
-						
-					}
-					else {
-
-						// This requires additional 
-					}
+					dynamicTag = true;
 				}
-
-				// Add all the known static attributes
-				AST.attributes = staticAttr;
-
-				let tagName = HTML_TAG_NAME_REGEX.exec(openingTag)[0].replace("<", "");
-
-				if (tagName.indexOf(LOGIC_CHECK_CHAR) === -1) {
+				else {
 
 					AST.tag = tagName;
 				}
+
+				// Identify if this is a self closing element or if its an node containing one.
+				if (HTML_SELF_CLOSING.indexOf(tagName) !== -1) {
+					selfClosed = true;
+				}
 				else {
 
-					// Dynameic tag name found!!!
-					dynamicTag = true;
+					// The element is not in the self defined self closing list so we need to manualy check
+					let sEndingChars = openingTag.slice(openingTag.length - 2);
+
+					// Check to see if this element is self closed
+					if (sEndingChars === '/>') {
+						selfClosed = true;
+					}
 				}
 
-				// Remove the opening tag
-				template = template.slice(openingTag.length);
+				// Place to store the index to the closing part of the template
+				let endingIndex = false;
 
-				// Lets do some clean up and remove unneeded closing tags is required.
-				if (!dynamicTag && (openingTag.indexOf('/>') === -1 || HTML_SELF_CLOSING.indexOf(tagName) === -1)) {
+				// Now if this is not a self closing tag it could have children so lets find the ending tag
+				if (!selfClosed) {
+					closingTagRegEx = new RegExp(`(?:<[\/]?${tagName}\s*[>]?)`, 'gm');
 
-					// Dynamically create a regex to find the opening and closing version of the tag in question
-					let openClosingExpression = new RegExp(`(?:<[\/]?${tagName}\s*[>]?)`, 'gm');
+					// Now scan the remaining template looking for the next proper closing tag
+					template = template.slice(openingTag.length);
 
-					// counter variables for loop
 					let foundMatchingOpening = 0;
 
-					// Loop through till we find a proper closing tag
-					while(true) {
+					// console.log(nextClosingTag);
+					while (true) {
 
-						let nextSameTag = openClosingExpression.exec(template);
+						let nextElemTag = closingTagRegEx.exec(template);
 
-						if (!nextSameTag) {
-
+						if (!nextElemTag) {
 							break;
 						}
 
-						if (nextSameTag[0].indexOf('\/') === -1) {
+						// check if this is a closing tag
+						if (nextElemTag[0].indexOf(`</${tagName}`) !== -1) {
 
-							foundMatchingOpening += 1;
-						}
-						else {
-
-							if (foundMatchingOpening >= 1) {
+							if (foundMatchingOpening > 0) {
 
 								foundMatchingOpening -= 1;
 							}
-							else if (foundMatchingOpening === 0) {
-								
-								closingTag = nextSameTag;
-								break;
+							else {
+
+								endingIndex = nextElemTag.index;
 							}
 
 						}
+						else {
+
+							// We got a opening tag, just found it.
+							foundMatchingOpening += 1;
+						}
+
 					}
 
-					if (closingTag) {
+					// Check to see if we have the ending index. If we do then we know we dont have an error
+					if (endingIndex !== false) {
 
-						// Get any potential children up to the closing tag
-						childContents = template.slice(0, closingTag.index);
+						let iActualEndingIndex = endingIndex + (`</${tagName}>`).length
 
-						// Remove closing tag and possible children from template
-						template = template.slice(childContents.length + closingTag[0].length);
+						remaining = (template.slice(iActualEndingIndex).length > 0) ? template.slice(iActualEndingIndex) : false;
 
+						// Get the template section that we need to process
+						childContents = (endingIndex > 0) ? template.slice(0, endingIndex) : false;
 					}
 					else {
 
-						// ERROR!
-						throw new Error("Invalid template, all elments must close properly inside the same template");
+						let error = new Error("While processing template, no closing tag was found!")
+
+						reject(error);
+					}
+				}
+
+				// Now we need to pull apart the the actual tag and get to the attributes
+				let attributesList = openingTag.match(HTML_ATTRIBUTES_REGEX);
+
+				if (attributesList) {
+
+					let aStaticAttr = [];
+					let aDynamicAttr = [];
+
+					for (let attr of attributesList) {
+
+						// Check to see if we have a key value pair attribute
+						if (attr.indexOf("=")) {
+
+							let keyValuePair = attr.split('=');
+
+							let attrTitle = keyValuePair[0];
+							let attrValue = keyValuePair[1];
+
+							if (LOGIC_TAGREG.test(attrValue)) {
+
+							}
+							else {
+
+								if (attrValue.charAt(0) === '"' || attrValue.charAt(0) === "'") {
+
+									attrValue = attrValue.slice(1, attrValue.length - 1);
+								}
+
+								// This must be a static attribute
+								aStaticAttr.push({
+									title: attrTitle,
+									value: attrValue
+								});
+							}
+						}
+
+					}
+
+					if (aStaticAttr.length || aDynamicAttr.length) {
+
+						AST.attributes = {
+							static: aStaticAttr,
+							dynamic: aDynamicAttr
+						};
 					}
 
 				}
-				else {
 
-					console.log("Dynamic tag closing????");
-				}
-
+				// Rerturn my results
 				endResult = {
 					AST: AST,
-					children: (childContents)?  childContents : false,
-					remaining: (template) ? template : false
+					children: childContents,
+					remaining: remaining
 				};
 
 			}

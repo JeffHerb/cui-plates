@@ -99,8 +99,6 @@ _priv.parse = (template) => {
 
 			let nextStep = false;
 
-			//console.log(possibleSteps);
-
 			if (possibleSteps.length === 1) {
 
 				nextStep = possibleSteps[0];
@@ -112,8 +110,6 @@ _priv.parse = (template) => {
 					return prev.results.index < curr.results.index ? prev : curr; 
 				});
 
-				// Console.log (next step)
-				console.log(nextStep);
 			}
 
 			// check to see if the index starts at 0

@@ -4,10 +4,7 @@ const HTML_TAGREGEX = /<(?:"[^"]*"['"]*|'[^']*'['"]*|[^'">])+>/;
 const LOGIC_TAGREG = /{{([^\}}]+)}}/;
 
 const HTML_OPENING_TAGREGEX = /^(.*?)(?:<.[a-zA-Z0-9\-]>)/;
-//const LOGIC_OPENING_TAGREGEX = //g;
 
-//const TEXT_REG = /(?:.*)/g;
-//const TEXT_REG = /(.*?)/gm;
 const TEXT_REG = /.+?/g;
 
 var Parser = function _html_parser() {
@@ -95,8 +92,6 @@ var Parser = function _html_parser() {
 
 			if (!htmlCheck && !logicCheck) {
 
-				//let check = template.trim();
-
 				let results = {
 					source: "text",
 					parser: parse,
@@ -106,7 +101,7 @@ var Parser = function _html_parser() {
 							start: 0,
 							end: false
 						},
-						text: template.trim()
+						text: template
 					}
 				}
 

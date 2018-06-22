@@ -22,30 +22,25 @@ export default class plates {
 
 		console.log("Context to be processed:", context);
 
-		Runtime.generate(context, target)
-			.then((compiledContext) => {
+		Runtime.generate(context, function(compiledContext) {
 
-				console.log(compiledContext);
+			if (target) {
 
-				if (target) {
+				// Look for append location
+				var dAppendTarget = document.querySelector(target);
 
-					// Look for append location
-					var dAppendTarget = document.querySelector(target);
-
-					if (dAppendTarget.nodeType === 1) {
-						dAppendTarget.appendChild(compiledContext);
-					}
+				if (dAppendTarget.nodeType === 1) {
+					dAppendTarget.appendChild(compiledContext);
 				}
-				else {
+			}
+			else {
 
-					return compiledContext;
-				}
+				return compiledContext;
+			}
 
-			})
-			.catch((err) => {
+			console.log("Done!");
 
-				console.log("Plates Runtime Error:", err);
-			})
+		})
 
 	};
 

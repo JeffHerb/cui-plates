@@ -6,7 +6,7 @@ const LOGIC_OPENING_TAGREG = /^{{(?:[>.@#]+)|^{{/g;
 
 var Parser = function _html_parser() {
 
-	function parse(template) {
+	function parse(template, attribute) {
 
 		return new Promise((resolve, reject) => {
 
@@ -19,7 +19,7 @@ var Parser = function _html_parser() {
 			let matchLogic = template[0];
 
 			// Slice off the current logic layer
-			let remaining = (fullText.slice(matchLogic.length).trim().length) ? fullText.slice(matchLogic.length).trim() : false;
+			let remaining = (fullText.slice(matchLogic.length).length) ? fullText.slice(matchLogic.length) : false;
 
 			// Identify the type of logic template we are working with
 			let currentLogicTag = LOGIC_OPENING_TAGREG.exec(matchLogic);
@@ -31,8 +31,6 @@ var Parser = function _html_parser() {
 				remaining: false
 			};
 
-			console.log(matchLogic);
-
 			if (currentLogicTag) {
 
 				currentLogicTag = currentLogicTag[0];
@@ -41,7 +39,6 @@ var Parser = function _html_parser() {
 
 					// Context Logic
 					case "{{":
-						console.log("Context Control called");
 
 						const CONTEXT_REGEXP_EXTRACTOR = /{{((?:\\.|[^"\\])*)}}/;
 
@@ -51,11 +48,9 @@ var Parser = function _html_parser() {
 						// Grab everything between {{ ... }}
 						let context = CONTEXT_REGEXP_EXTRACTOR.exec(matchLogic)[1];
 
-						console.log("Context:", context);
-
 						let thisIndex = context.indexOf("this.");
 
-						// Take on this to all context
+						// Tack on this to all context
 						if (thisIndex === -1) {
 							context = "this." + context;
 						}
@@ -105,10 +100,15 @@ var Parser = function _html_parser() {
 			// Start by getting the next logic group
 			//let nextLogicGroup = 
 
-
 		});
 
 	};
+
+	function parseAttr(template) {
+
+
+
+	}
 
 	function check(template) {
 
