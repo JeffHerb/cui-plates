@@ -143,6 +143,8 @@ const parseText = (oASTNode, oContext) => {
 			console.log("String send to text parser");
 
 			content = document.createTextNode(oASTNode.contents);
+
+			finalTextContents.push(content);
 		}
 		else if (Array.isArray(oASTNode.contents)) {
 

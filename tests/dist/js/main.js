@@ -2376,7 +2376,11 @@ define('plates',[],function () { 'use strict';
 
     		if (typeof oASTNode.contents === "string") {
 
+    			console.log("String send to text parser");
+
     			content = document.createTextNode(oASTNode.contents);
+
+    			finalTextContents.push(content);
     		} else if (Array.isArray(oASTNode.contents)) {
 
     			for (let c = 0, cLen = oASTNode.contents.length; c < cLen; c++) {
