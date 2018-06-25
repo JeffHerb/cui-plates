@@ -186,8 +186,6 @@ var parseTemplate = function _parse_template() {
 				_priv.parse(template)
 					.then((finishedAST) => {
 
-						//console.log(JSON.stringify(finishedAST, null, 4));
-
 						resolve(finishedAST)
 					})
 					.catch((err) => {

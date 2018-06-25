@@ -50,18 +50,16 @@ function writePlates(entry, rollupOptions, templateASTs, customHelpers) {
 			}),
 		    Babel({
 		     	exclude: 'node_modules/**',
-				presets: [
-					[
-						"es2015",
-						{
-							"modules": false,
-							"useBuiltIns": true
-						}
-					]
-				],
-				plugins: ["external-helpers"],
-				// runtimeHelpers: true,
-				// externalHelpers: true,
+				// presets: [
+				// 	[
+				// 		"es2015",
+				// 		{
+				// 			"modules": false,
+				// 			"useBuiltIns": true
+				// 		}
+				// 	]
+				// ],
+				// plugins: ["external-helpers"],
 		     	babelrc: false,
 		    }),
 			RollupVirtual({

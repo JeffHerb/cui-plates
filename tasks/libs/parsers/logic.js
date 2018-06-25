@@ -4,9 +4,11 @@ const LOGIC_TAGREG = /{{([^\}}]+)}}/;
 
 const LOGIC_OPENING_TAGREG = /^{{(?:[>.@#]+)|^{{/g;
 
+const CONTEXT_REGEXP_EXTRACTOR = /{{((?:\\.|[^"\\])*)}}/;
+
 var Parser = function _html_parser() {
 
-	function parse(template, attribute) {
+	function parse(template) {
 
 		return new Promise((resolve, reject) => {
 
@@ -39,8 +41,6 @@ var Parser = function _html_parser() {
 
 					// Context Logic
 					case "{{":
-
-						const CONTEXT_REGEXP_EXTRACTOR = /{{((?:\\.|[^"\\])*)}}/;
 
 						AST.node = "logic";
 						AST.type = "context";
@@ -97,18 +97,20 @@ var Parser = function _html_parser() {
 			}
 
 
-			// Start by getting the next logic group
-			//let nextLogicGroup = 
+		});
+	};
+
+	function attributeParse(template) {
+
+		return new Promise((resolve, reject) => {
+
+			console.log("in attribute logic parser");
+
+			console.log(template);
 
 		});
 
 	};
-
-	function parseAttr(template) {
-
-
-
-	}
 
 	function check(template) {
 
@@ -134,6 +136,7 @@ var Parser = function _html_parser() {
 	};
 
 	return {
+		attributeParse: attributeParse,
 		check: check,
 		parse: parse
 	};

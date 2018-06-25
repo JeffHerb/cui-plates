@@ -1,7 +1,7 @@
 'use strict';
 
 // Get the logic parser
-//const LOGICParser = require('./logic');
+const LOGICParser = require('./logic');
 
 const HTML_CHECK_CHAR = '<';
 
@@ -16,16 +16,20 @@ const HTML_ATTRIBUTES_REGEX = /(?:[a-zA-Z\-]*)=(?:"|')(?:[a-zA-Z0-9\.\{\}\(\)\[\
 
 const HTML_SELF_CLOSING = ['input', 'br', 'hr', 'img'];
 
-const LOGIC_CHECK_CHAR = "{{";
-const LOGIC_TAGREG = /^{{(?:[>.@#]+)|^{{/;
+//const LOGIC_CHECK_CHAR = "{{";
+const LOGIC_TAGREG = /{{([^\}}]+)}}/;
 
 var Parser = function _html_parser(settings) {
 
 	function parse(currentTag) {
 
-		return new Promise((resolve, reject) => {
+		return new Promise(async (resolve, reject) => {
 
-			let AST = {};
+			let AST = {
+				node: false,
+				attributes: false,
+				tag: false
+			};
 
 			// Current template send to parser
 			let template = currentTag.input;
@@ -34,6 +38,8 @@ var Parser = function _html_parser(settings) {
 			let openingTag = currentTag[0];
 			let selfClosed = false;
 			let closingTagRegEx = false;
+
+			let elemAttrProperties = false;
 
 			// Actual tag being requested
 			let tagName = false;
@@ -48,6 +54,28 @@ var Parser = function _html_parser(settings) {
 			let inlineHelpera = [];
 
 			let endResult = false;
+
+			const getElemAttrProperties = (openingTag, tagName) => {
+
+				if (openingTag.slice(-2) === "/>") {
+					openingTag = openingTag.slice(0, openingTag.length - 2);
+				}
+				else {
+					openingTag = openingTag.slice(0, openingTag.length - 1);
+				}
+
+				// Remove front and return
+				return openingTag.slice(tagName.length + 1);
+			};
+
+			const removeAttrQuotes = (attribute) => {
+
+				if (attribute.charAt(0) === "'" || attribute.charAt(0) === '"') {
+
+					return attribute.slice(1, attribute.length - 1);
+				}
+
+			};
 
 			// Test if this is a comment first!
 			if (openingTag.indexOf('<!--') === -1) {
@@ -70,6 +98,7 @@ var Parser = function _html_parser(settings) {
 
 				// Identify if this is a self closing element or if its an node containing one.
 				if (HTML_SELF_CLOSING.indexOf(tagName) !== -1) {
+
 					selfClosed = true;
 				}
 				else {
@@ -115,14 +144,12 @@ var Parser = function _html_parser(settings) {
 
 								endingIndex = nextElemTag.index;
 							}
-
 						}
 						else {
 
 							// We got a opening tag, just found it.
 							foundMatchingOpening += 1;
 						}
-
 					}
 
 					// Check to see if we have the ending index. If we do then we know we dont have an error
@@ -134,6 +161,10 @@ var Parser = function _html_parser(settings) {
 
 						// Get the template section that we need to process
 						childContents = (endingIndex > 0) ? template.slice(0, endingIndex) : false;
+
+						// Setup element attrs and properties for the next proces
+						elemAttrProperties = getElemAttrProperties(openingTag, tagName);
+
 					}
 					else {
 
@@ -142,53 +173,47 @@ var Parser = function _html_parser(settings) {
 						reject(error);
 					}
 				}
+				else {
 
-				// Now we need to pull apart the the actual tag and get to the attributes
-				let attributesList = openingTag.match(HTML_ATTRIBUTES_REGEX);
+					elemAttrProperties = getElemAttrProperties(openingTag, tagName);
+				}
 
-				if (attributesList) {
+				// Filter out propertyless elements
+				if (elemAttrProperties.trim().length > 0) {
 
-					let aStaticAttr = [];
-					let aDynamicAttr = [];
+					// Check to see if anything logic base exists here.
+					let logicTest = LOGIC_TAGREG.test(elemAttrProperties);
 
-					for (let attr of attributesList) {
+					if (logicTest) {
 
-						// Check to see if we have a key value pair attribute
-						if (attr.indexOf("=")) {
 
-							let keyValuePair = attr.split('=');
+						
+					}
+					else {
 
-							let attrTitle = keyValuePair[0];
-							let attrValue = keyValuePair[1];
+						// Do a simple spit on attributes
+						let attributesList = elemAttrProperties.match(HTML_ATTRIBUTES_REGEX);
 
-							if (LOGIC_TAGREG.test(attrValue)) {
+						AST.attributes = [];
 
-							}
-							else {
+						// Loop throught each attribute
+						for (let attr of attributesList) {
 
-								if (attrValue.charAt(0) === '"' || attrValue.charAt(0) === "'") {
+							let keyValue = attr.split('=');
 
-									attrValue = attrValue.slice(1, attrValue.length - 1);
-								}
+							let attrTitle = keyValue[0];
+							let attrValue = removeAttrQuotes(keyValue[1]);
 
-								// This must be a static attribute
-								aStaticAttr.push({
-									title: attrTitle,
-									value: attrValue
-								});
-							}
+							// Push the attribute onto the end!
+							AST.attributes.push({
+								static: true,
+								property: attrTitle,
+								value: attrValue
+							});
+
 						}
 
 					}
-
-					if (aStaticAttr.length || aDynamicAttr.length) {
-
-						AST.attributes = {
-							static: aStaticAttr,
-							dynamic: aDynamicAttr
-						};
-					}
-
 				}
 
 				// Rerturn my results

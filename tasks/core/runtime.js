@@ -1,24 +1,29 @@
 import "babel-polyfill";
 import { templates } from 'templates';
-// import { helpers } from 'helpers';
 
 const ASTs = templates;
 // const Helpers = helpers
 
-const parseAttributes = (oAttributes, oContext) => {
+const parseAttributes = (aAttributes, oContext) => {
 
 	let oReturnedAttrbutes = {};
 
+	console.log(aAttributes);
+
 	// Check static only lengths
-	if (oAttributes.static.length && !oAttributes.dynamic.length) {
+	if (aAttributes.length) {
 
-		for (let oAttr of oAttributes.static) {
+		for (let oAttr of aAttributes) {
 
-			if (!oReturnedAttrbutes[oAttr.title]) {
-				oReturnedAttrbutes[oAttr.title] = oAttr.value;
-			}
-			else {
-				oReturnedAttrbutes[oAttr.title] += " " + oAttr.value;
+			console.log("parse Attributes", oAttr);
+
+			if (oAttr.static) {
+
+				if (!oReturnedAttrbutes[oAttr.property]) {
+					oReturnedAttrbutes[oAttr.property] = ""
+				}
+
+				oReturnedAttrbutes[oAttr.property] += " " + oAttr.value;
 			}
 
 		}
@@ -45,7 +50,7 @@ const parseElem = (oASTNode, oContext) => {
 
 				for (let sAttr in oCompiledAttributes) {
 
-					dElem.setAttribute(sAttr, oCompiledAttributes[sAttr]);
+					dElem.setAttribute(sAttr, oCompiledAttributes[sAttr].trim());
 				}
 			}
 
@@ -85,12 +90,10 @@ const parseElem = (oASTNode, oContext) => {
 		else {
 
 			return dElem;
-		}
-		
+		}		
 	}
 
 	return false;
-
 };
 
 const parseText = (oASTNode, oContext) => {
@@ -103,8 +106,6 @@ const parseText = (oASTNode, oContext) => {
 	if (oASTNode.contents) {
 
 		if (typeof oASTNode.contents === "string") {
-
-			console.log("String send to text parser");
 
 			content = document.createTextNode(oASTNode.contents);
 

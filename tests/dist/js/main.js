@@ -8813,70 +8813,60 @@ define('plates',[],function () { 'use strict';
 	    "complexHTMLNest": [
 	        {
 	            "node": "elem",
+	            "attributes": [
+	                {
+	                    "static": true,
+	                    "property": "class",
+	                    "value": "first"
+	                }
+	            ],
 	            "tag": "div",
-	            "attributes": {
-	                "static": [
-	                    {
-	                        "title": "class",
-	                        "value": "first"
-	                    }
-	                ],
-	                "dynamic": []
-	            },
 	            "children": [
 	                {
 	                    "node": "elem",
+	                    "attributes": [
+	                        {
+	                            "static": true,
+	                            "property": "class",
+	                            "value": "first-first"
+	                        }
+	                    ],
 	                    "tag": "div",
-	                    "attributes": {
-	                        "static": [
-	                            {
-	                                "title": "class",
-	                                "value": "first-first"
-	                            }
-	                        ],
-	                        "dynamic": []
-	                    },
 	                    "children": [
 	                        {
 	                            "node": "elem",
-	                            "tag": "div",
-	                            "attributes": {
-	                                "static": [
-	                                    {
-	                                        "title": "class",
-	                                        "value": "first-first-first"
-	                                    }
-	                                ],
-	                                "dynamic": []
-	                            }
+	                            "attributes": [
+	                                {
+	                                    "static": true,
+	                                    "property": "class",
+	                                    "value": "first-first-first"
+	                                }
+	                            ],
+	                            "tag": "div"
 	                        }
 	                    ]
 	                },
 	                {
 	                    "node": "elem",
+	                    "attributes": [
+	                        {
+	                            "static": true,
+	                            "property": "class",
+	                            "value": "first-second"
+	                        }
+	                    ],
 	                    "tag": "div",
-	                    "attributes": {
-	                        "static": [
-	                            {
-	                                "title": "class",
-	                                "value": "first-second"
-	                            }
-	                        ],
-	                        "dynamic": []
-	                    },
 	                    "children": [
 	                        {
 	                            "node": "elem",
-	                            "tag": "div",
-	                            "attributes": {
-	                                "static": [
-	                                    {
-	                                        "title": "class",
-	                                        "value": "first-second-first"
-	                                    }
-	                                ],
-	                                "dynamic": []
-	                            }
+	                            "attributes": [
+	                                {
+	                                    "static": true,
+	                                    "property": "class",
+	                                    "value": "first-second-first"
+	                                }
+	                            ],
+	                            "tag": "div"
 	                        }
 	                    ]
 	                }
@@ -8884,48 +8874,32 @@ define('plates',[],function () { 'use strict';
 	        },
 	        {
 	            "node": "elem",
-	            "tag": "div",
-	            "attributes": {
-	                "static": [
-	                    {
-	                        "title": "class",
-	                        "value": "second"
-	                    }
-	                ],
-	                "dynamic": []
-	            }
+	            "attributes": [
+	                {
+	                    "static": true,
+	                    "property": "class",
+	                    "value": "second"
+	                }
+	            ],
+	            "tag": "div"
 	        }
 	    ],
 	    "contextAttribute": [
 	        {
 	            "node": "elem",
+	            "attributes": [
+	                {
+	                    "static": true,
+	                    "property": "class",
+	                    "value": "container"
+	                }
+	            ],
 	            "tag": "div",
-	            "attributes": {
-	                "static": [
-	                    {
-	                        "title": "class",
-	                        "value": "container"
-	                    }
-	                ],
-	                "dynamic": []
-	            },
 	            "children": [
 	                {
 	                    "node": "elem",
+	                    "attributes": false,
 	                    "tag": "p",
-	                    "attributes": {
-	                        "static": [
-	                            {
-	                                "title": "id",
-	                                "value": "{{this.paragraph1}}"
-	                            },
-	                            {
-	                                "title": "class",
-	                                "value": "header"
-	                            }
-	                        ],
-	                        "dynamic": []
-	                    },
 	                    "children": [
 	                        {
 	                            "node": "text",
@@ -8935,16 +8909,8 @@ define('plates',[],function () { 'use strict';
 	                },
 	                {
 	                    "node": "elem",
+	                    "attributes": false,
 	                    "tag": "p",
-	                    "attributes": {
-	                        "static": [
-	                            {
-	                                "title": "id",
-	                                "value": "{{this.paragraph2}}"
-	                            }
-	                        ],
-	                        "dynamic": []
-	                    },
 	                    "children": [
 	                        {
 	                            "node": "text",
@@ -8954,16 +8920,8 @@ define('plates',[],function () { 'use strict';
 	                },
 	                {
 	                    "node": "elem",
+	                    "attributes": false,
 	                    "tag": "p",
-	                    "attributes": {
-	                        "static": [
-	                            {
-	                                "title": "id",
-	                                "value": "{{this.paragraph3}}"
-	                            }
-	                        ],
-	                        "dynamic": []
-	                    },
 	                    "children": [
 	                        {
 	                            "node": "text",
@@ -8977,6 +8935,7 @@ define('plates',[],function () { 'use strict';
 	    "contextValue": [
 	        {
 	            "node": "elem",
+	            "attributes": false,
 	            "tag": "p",
 	            "children": [
 	                {
@@ -8994,19 +8953,18 @@ define('plates',[],function () { 'use strict';
 	    "simpleChild": [
 	        {
 	            "node": "elem",
+	            "attributes": [
+	                {
+	                    "static": true,
+	                    "property": "class",
+	                    "value": "test"
+	                }
+	            ],
 	            "tag": "div",
-	            "attributes": {
-	                "static": [
-	                    {
-	                        "title": "class",
-	                        "value": "test"
-	                    }
-	                ],
-	                "dynamic": []
-	            },
 	            "children": [
 	                {
 	                    "node": "elem",
+	                    "attributes": false,
 	                    "tag": "p",
 	                    "children": [
 	                        {
@@ -9021,23 +8979,23 @@ define('plates',[],function () { 'use strict';
 	    "simpleInlineCheck": [
 	        {
 	            "node": "elem",
+	            "attributes": [
+	                {
+	                    "static": true,
+	                    "property": "class",
+	                    "value": "inline-example"
+	                }
+	            ],
 	            "tag": "div",
-	            "attributes": {
-	                "static": [
-	                    {
-	                        "title": "class",
-	                        "value": "inline-example"
-	                    }
-	                ],
-	                "dynamic": []
-	            },
 	            "children": [
 	                {
 	                    "node": "elem",
+	                    "attributes": false,
 	                    "tag": "ul",
 	                    "children": [
 	                        {
 	                            "node": "elem",
+	                            "attributes": false,
 	                            "tag": "li",
 	                            "children": [
 	                                {
@@ -9048,6 +9006,7 @@ define('plates',[],function () { 'use strict';
 	                        },
 	                        {
 	                            "node": "elem",
+	                            "attributes": false,
 	                            "tag": "li",
 	                            "children": [
 	                                {
@@ -9058,6 +9017,7 @@ define('plates',[],function () { 'use strict';
 	                        },
 	                        {
 	                            "node": "elem",
+	                            "attributes": false,
 	                            "tag": "li",
 	                            "children": [
 	                                {
@@ -9066,6 +9026,7 @@ define('plates',[],function () { 'use strict';
 	                                },
 	                                {
 	                                    "node": "elem",
+	                                    "attributes": false,
 	                                    "tag": "em",
 	                                    "children": [
 	                                        {
@@ -9083,75 +9044,29 @@ define('plates',[],function () { 'use strict';
 	    ]
 	};
 
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
-	  return typeof obj;
-	} : function (obj) {
-	  return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-	};
-
-	var classCallCheck = function (instance, Constructor) {
-	  if (!(instance instanceof Constructor)) {
-	    throw new TypeError("Cannot call a class as a function");
-	  }
-	};
-
-	var createClass = function () {
-	  function defineProperties(target, props) {
-	    for (var i = 0; i < props.length; i++) {
-	      var descriptor = props[i];
-	      descriptor.enumerable = descriptor.enumerable || false;
-	      descriptor.configurable = true;
-	      if ("value" in descriptor) descriptor.writable = true;
-	      Object.defineProperty(target, descriptor.key, descriptor);
-	    }
-	  }
-
-	  return function (Constructor, protoProps, staticProps) {
-	    if (protoProps) defineProperties(Constructor.prototype, protoProps);
-	    if (staticProps) defineProperties(Constructor, staticProps);
-	    return Constructor;
-	  };
-	}();
-
-	// import { helpers } from 'helpers';
-
-	var ASTs = templates;
+	const ASTs = templates;
 	// const Helpers = helpers
 
-	var parseAttributes = function parseAttributes(oAttributes, oContext) {
+	const parseAttributes = (aAttributes, oContext) => {
 
-		var oReturnedAttrbutes = {};
+		let oReturnedAttrbutes = {};
+
+		console.log(aAttributes);
 
 		// Check static only lengths
-		if (oAttributes.static.length && !oAttributes.dynamic.length) {
-			var _iteratorNormalCompletion = true;
-			var _didIteratorError = false;
-			var _iteratorError = undefined;
+		if (aAttributes.length) {
 
-			try {
+			for (let oAttr of aAttributes) {
 
-				for (var _iterator = oAttributes.static[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-					var oAttr = _step.value;
+				console.log("parse Attributes", oAttr);
 
+				if (oAttr.static) {
 
-					if (!oReturnedAttrbutes[oAttr.title]) {
-						oReturnedAttrbutes[oAttr.title] = oAttr.value;
-					} else {
-						oReturnedAttrbutes[oAttr.title] += " " + oAttr.value;
+					if (!oReturnedAttrbutes[oAttr.property]) {
+						oReturnedAttrbutes[oAttr.property] = "";
 					}
-				}
-			} catch (err) {
-				_didIteratorError = true;
-				_iteratorError = err;
-			} finally {
-				try {
-					if (!_iteratorNormalCompletion && _iterator.return) {
-						_iterator.return();
-					}
-				} finally {
-					if (_didIteratorError) {
-						throw _iteratorError;
-					}
+
+					oReturnedAttrbutes[oAttr.property] += " " + oAttr.value;
 				}
 			}
 		}
@@ -9159,9 +9074,9 @@ define('plates',[],function () { 'use strict';
 		return oReturnedAttrbutes;
 	};
 
-	var parseElem = function parseElem(oASTNode, oContext) {
+	const parseElem = (oASTNode, oContext) => {
 
-		var dElem = false;
+		let dElem = false;
 
 		if (typeof oASTNode.tag === "string") {
 
@@ -9170,13 +9085,13 @@ define('plates',[],function () { 'use strict';
 			// Check for current tag attributes!
 			if (oASTNode.attributes && Object.keys(oASTNode.attributes).length) {
 
-				var oCompiledAttributes = parseAttributes(oASTNode.attributes, oContext);
+				let oCompiledAttributes = parseAttributes(oASTNode.attributes, oContext);
 
 				if (oCompiledAttributes) {
 
-					for (var sAttr in oCompiledAttributes) {
+					for (let sAttr in oCompiledAttributes) {
 
-						dElem.setAttribute(sAttr, oCompiledAttributes[sAttr]);
+						dElem.setAttribute(sAttr, oCompiledAttributes[sAttr].trim());
 					}
 				}
 			}
@@ -9185,11 +9100,11 @@ define('plates',[],function () { 'use strict';
 			if (oASTNode.children && oASTNode.children.length) {
 
 				// Loop through all the children
-				for (var c = 0, cLen = oASTNode.children.length; c < cLen; c++) {
+				for (let c = 0, cLen = oASTNode.children.length; c < cLen; c++) {
 
-					var oASTNodeChild = oASTNode.children[c];
+					let oASTNodeChild = oASTNode.children[c];
 
-					var compiledChild = ASTsToDOM(oContext, oASTNodeChild);
+					let compiledChild = ASTsToDOM(oContext, oASTNodeChild);
 
 					if (compiledChild) {
 
@@ -9198,32 +9113,11 @@ define('plates',[],function () { 'use strict';
 							compiledChild = [compiledChild];
 						}
 
-						var _iteratorNormalCompletion2 = true;
-						var _didIteratorError2 = false;
-						var _iteratorError2 = undefined;
+						for (let child of compiledChild) {
 
-						try {
-							for (var _iterator2 = compiledChild[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-								var child = _step2.value;
+							if (child && child.nodeType) {
 
-
-								if (child && child.nodeType) {
-
-									dElem.appendChild(child);
-								}
-							}
-						} catch (err) {
-							_didIteratorError2 = true;
-							_iteratorError2 = err;
-						} finally {
-							try {
-								if (!_iteratorNormalCompletion2 && _iterator2.return) {
-									_iterator2.return();
-								}
-							} finally {
-								if (_didIteratorError2) {
-									throw _iteratorError2;
-								}
+								dElem.appendChild(child);
 							}
 						}
 					}
@@ -9239,30 +9133,28 @@ define('plates',[],function () { 'use strict';
 		return false;
 	};
 
-	var parseText = function parseText(oASTNode, oContext) {
+	const parseText = (oASTNode, oContext) => {
 
-		var finalTextContents = [];
+		let finalTextContents = [];
 
-		var content = false;
+		let content = false;
 
 		// String can contain many different things so we need to loop through all of them
 		if (oASTNode.contents) {
 
 			if (typeof oASTNode.contents === "string") {
 
-				console.log("String send to text parser");
-
 				content = document.createTextNode(oASTNode.contents);
 
 				finalTextContents.push(content);
 			} else if (Array.isArray(oASTNode.contents)) {
 
-				for (var c = 0, cLen = oASTNode.contents.length; c < cLen; c++) {
+				for (let c = 0, cLen = oASTNode.contents.length; c < cLen; c++) {
 
 					if (typeof oASTNode.contents[c] === "string") {
 
 						content = document.createTextNode(oASTNode.contents[c]);
-					} else if (_typeof(oASTNode.contents[c]) === "object") {
+					} else if (typeof oASTNode.contents[c] === "object") {
 
 						if (Array.isArray(oASTNode.contents[c])) {
 							content = ASTsToDOM(oContext, ASTsToDOM.contents[c]);
@@ -9283,62 +9175,40 @@ define('plates',[],function () { 'use strict';
 		return false;
 	};
 
-	var parseComment = function parseComment(oASTNode, oContext) {
+	const parseComment = (oASTNode, oContext) => {
 
-		var comNode = document.createComment(oASTNode.children[0].contents);
+		let comNode = document.createComment(oASTNode.children[0].contents);
 
 		return comNode;
 	};
 
-	var parseLogic = function parseLogic(oASTNode, oContext) {
+	const parseLogic = (oASTNode, oContext) => {
 
-		var content = false;
+		let content = false;
 
 		switch (oASTNode.type) {
 
 			case "context":
 
-				var aASTNodeContext = oASTNode.context.split('.');
+				let aASTNodeContext = oASTNode.context.split('.');
 
-				var currentOContextPointer = oContext;
+				let currentOContextPointer = oContext;
 
-				var _iteratorNormalCompletion3 = true;
-				var _didIteratorError3 = false;
-				var _iteratorError3 = undefined;
+				for (let nameSpace of aASTNodeContext) {
 
-				try {
-					for (var _iterator3 = aASTNodeContext[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-						var nameSpace = _step3.value;
+					if (nameSpace !== "this") {
 
+						if (currentOContextPointer.hasOwnProperty(nameSpace)) {
+							currentOContextPointer = currentOContextPointer[nameSpace];
+						} else {
 
-						if (nameSpace !== "this") {
-
-							if (currentOContextPointer.hasOwnProperty(nameSpace)) {
-								currentOContextPointer = currentOContextPointer[nameSpace];
-							} else {
-
-								console.log("Could not find requested context");
-								break;
-							}
-						}
-					}
-
-					// If we have a string return it 
-				} catch (err) {
-					_didIteratorError3 = true;
-					_iteratorError3 = err;
-				} finally {
-					try {
-						if (!_iteratorNormalCompletion3 && _iterator3.return) {
-							_iterator3.return();
-						}
-					} finally {
-						if (_didIteratorError3) {
-							throw _iteratorError3;
+							console.log("Could not find requested context");
+							break;
 						}
 					}
 				}
 
+				// If we have a string return it 
 				if (typeof currentOContextPointer === "string") {
 
 					content = document.createTextNode(currentOContextPointer);
@@ -9356,10 +9226,10 @@ define('plates',[],function () { 'use strict';
 	};
 
 	// Helper function that determins the proper AST template and calls the corresponding parser functions
-	var ASTsToDOM = function ASTsToDOM(oContext, aPassedAST) {
+	const ASTsToDOM = (oContext, aPassedAST) => {
 
-		var aAST = false;
-		var dCompiledASTFragment = document.createDocumentFragment();
+		let aAST = false;
+		let dCompiledASTFragment = document.createDocumentFragment();
 
 		// Check to see if a AST object was provided.
 		if (aPassedAST) {
@@ -9377,104 +9247,62 @@ define('plates',[],function () { 'use strict';
 		if (aAST) {
 
 			// We now need to loop and parse the template
-			var _iteratorNormalCompletion4 = true;
-			var _didIteratorError4 = false;
-			var _iteratorError4 = undefined;
+			for (let aASTNode of aAST) {
 
-			try {
-				for (var _iterator4 = aAST[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-					var aASTNode = _step4.value;
+				let parser = false;
 
+				switch (aASTNode.node) {
 
-					var parser = false;
+					case "comment":
 
-					switch (aASTNode.node) {
+						parser = parseComment;
+						break;
 
-						case "comment":
+					case "elem":
 
-							parser = parseComment;
-							break;
+						parser = parseElem;
+						break;
 
-						case "elem":
+					case "text":
 
-							parser = parseElem;
-							break;
+						parser = parseText;
+						break;
 
-						case "text":
+					case "logic":
 
-							parser = parseText;
-							break;
+						parser = parseLogic;
+						break;
 
-						case "logic":
+					default:
 
-							parser = parseLogic;
-							break;
+						console.log("Unknown parser node type!");
+						break;
 
-						default:
-
-							console.log("Unknown parser node type!");
-							break;
-
-					}
-
-					// Build out this AST based on the provided context
-					var compiledAST = parser(aASTNode, oContext);
-
-					if (aASTNode.node === "logic") {
-						console.log("compiledAST", compiledAST);
-					} else if (aASTNode.node === "text") {
-						console.log("compiledAST", compiledAST);
-					}
-
-					if (compiledAST) {
-
-						if (Array.isArray(compiledAST)) {
-							var _iteratorNormalCompletion5 = true;
-							var _didIteratorError5 = false;
-							var _iteratorError5 = undefined;
-
-							try {
-
-								for (var _iterator5 = compiledAST[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-									var compiledNode = _step5.value;
-
-
-									if (compiledNode) {
-
-										dCompiledASTFragment.appendChild(compiledNode);
-									}
-								}
-							} catch (err) {
-								_didIteratorError5 = true;
-								_iteratorError5 = err;
-							} finally {
-								try {
-									if (!_iteratorNormalCompletion5 && _iterator5.return) {
-										_iterator5.return();
-									}
-								} finally {
-									if (_didIteratorError5) {
-										throw _iteratorError5;
-									}
-								}
-							}
-						} else {
-
-							dCompiledASTFragment.appendChild(compiledAST);
-						}
-					}
 				}
-			} catch (err) {
-				_didIteratorError4 = true;
-				_iteratorError4 = err;
-			} finally {
-				try {
-					if (!_iteratorNormalCompletion4 && _iterator4.return) {
-						_iterator4.return();
-					}
-				} finally {
-					if (_didIteratorError4) {
-						throw _iteratorError4;
+
+				// Build out this AST based on the provided context
+				let compiledAST = parser(aASTNode, oContext);
+
+				if (aASTNode.node === "logic") {
+					console.log("compiledAST", compiledAST);
+				} else if (aASTNode.node === "text") {
+					console.log("compiledAST", compiledAST);
+				}
+
+				if (compiledAST) {
+
+					if (Array.isArray(compiledAST)) {
+
+						for (let compiledNode of compiledAST) {
+
+							if (compiledNode) {
+
+								dCompiledASTFragment.appendChild(compiledNode);
+							}
+						}
+					} else {
+
+						dCompiledASTFragment.appendChild(compiledAST);
 					}
 				}
 			}
@@ -9486,42 +9314,21 @@ define('plates',[],function () { 'use strict';
 	};
 
 	// Generator will loop through a context array and parse them one at a time.
-	var Generator = function Generator(aContext) {
+	const Generator = aContext => {
 
-		var dDOMFragment = document.createDocumentFragment();
+		let dDOMFragment = document.createDocumentFragment();
 
 		// Loop over the context
-		var _iteratorNormalCompletion6 = true;
-		var _didIteratorError6 = false;
-		var _iteratorError6 = undefined;
+		for (let nextContext of aContext) {
 
-		try {
-			for (var _iterator6 = aContext[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
-				var nextContext = _step6.value;
+			let compiledContext = ASTsToDOM(nextContext);
 
-
-				var compiledContext = ASTsToDOM(nextContext);
-
-				// If something returns add it to the running fragment
-				if (compiledContext) {
-					dDOMFragment.appendChild(compiledContext);
-				}
-
-				console.log("Compiled context:", compiledContext);
+			// If something returns add it to the running fragment
+			if (compiledContext) {
+				dDOMFragment.appendChild(compiledContext);
 			}
-		} catch (err) {
-			_didIteratorError6 = true;
-			_iteratorError6 = err;
-		} finally {
-			try {
-				if (!_iteratorNormalCompletion6 && _iterator6.return) {
-					_iterator6.return();
-				}
-			} finally {
-				if (_didIteratorError6) {
-					throw _iteratorError6;
-				}
-			}
+
+			console.log("Compiled context:", compiledContext);
 		}
 
 		console.log("Finished with generator");
@@ -9529,75 +9336,65 @@ define('plates',[],function () { 'use strict';
 		return dDOMFragment;
 	};
 
-	var Runtime = function () {
-		function Runtime() {
-			classCallCheck(this, Runtime);
-		}
+	class Runtime {
 
-		createClass(Runtime, [{
-			key: "generate",
-			value: function generate(aContext, cb) {
+		constructor() {}
 
-				//return new Promise((resolve, reject) => {
+		generate(aContext, cb) {
 
-				//resolve(Generator(aContext));
-				//});
+			//return new Promise((resolve, reject) => {
 
-				var compiledContext = Generator(aContext);
+			//resolve(Generator(aContext));
+			//});
 
-				if (typeof cb === "function") {
-					cb(compiledContext);
-				}
+			let compiledContext = Generator(aContext);
+
+			if (typeof cb === "function") {
+				cb(compiledContext);
 			}
-		}]);
-		return Runtime;
-	}();
+		}
+	}
 
 	var Runtime$1 = new Runtime();
 
-	var plates = function () {
-		function plates() {
-			classCallCheck(this, plates);
-		}
+	class plates {
 
-		createClass(plates, [{
-			key: "render",
-			value: function render(method, context, target) {
+		constructor() {}
 
-				if ((typeof method === "undefined" ? "undefined" : _typeof(method)) === "object") {
-					target = context;
-					context = method;
-					method = "generate";
-				}
+		render(method, context, target) {
 
-				// Ensure our context is wrapped in an array for consistant handling
-				if (!Array.isArray(context)) {
-					context = [context];
-				}
-
-				console.log("Context to be processed:", context);
-
-				Runtime$1.generate(context, function (compiledContext) {
-
-					if (target) {
-
-						// Look for append location
-						var dAppendTarget = document.querySelector(target);
-
-						if (dAppendTarget.nodeType === 1) {
-							dAppendTarget.appendChild(compiledContext);
-						}
-					} else {
-
-						return compiledContext;
-					}
-
-					console.log("Done!");
-				});
+			if (typeof method === "object") {
+				target = context;
+				context = method;
+				method = "generate";
 			}
-		}]);
-		return plates;
-	}();
+
+			// Ensure our context is wrapped in an array for consistant handling
+			if (!Array.isArray(context)) {
+				context = [context];
+			}
+
+			console.log("Context to be processed:", context);
+
+			Runtime$1.generate(context, function (compiledContext) {
+
+				if (target) {
+
+					// Look for append location
+					var dAppendTarget = document.querySelector(target);
+
+					if (dAppendTarget.nodeType === 1) {
+						dAppendTarget.appendChild(compiledContext);
+					}
+				} else {
+
+					return compiledContext;
+				}
+
+				console.log("Done!");
+			});
+		}
+	}
 
 	return plates;
 
