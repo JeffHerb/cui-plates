@@ -2,26 +2,84 @@
 
 const LOGIC_TAGREG = /{{([^\}}]+)}}/;
 
-const LOGIC_OPENING_TAGREG = /^{{(?:[>.@#]+)|^{{/g;
+const LOGIC_OPENING_TAGREG = /^{{(?:[\#\>\.\@]?)/g;
+const LOGIC_CLOSING_TAGREG = /}}/g;
+
+const LOGIC_INLINE_HELPER_REG = /(?:[a-zA-Z]+)={{(?:.*)}}/g;
+const LOGIC_SIMPLE_PARAMETERS_REG = /((?:[a-zA-Z]*)="(?:.*)")|[^\s]+/g;
 
 const CONTEXT_REGEXP_EXTRACTOR = /{{((?:\\.|[^"\\])*)}}/;
 
+const BLOCKParser = (fullTemplate, match) => {
+
+	console.log("fullTemplate:", fullTemplate);
+	console.log("match:",match);
+
+	let openingTag = match[0];
+	let openingIndex = match.index;
+	let closingTag = false;
+
+	// Find first closing after blockTag
+	let closingTags = LOGIC_CLOSING_TAGREG.exec(fullTemplate);
+
+	if (closingTags) {
+
+		closingTag = closingTags[0];
+	}
+
+	let fullOpeningTag = fullTemplate.slice(openingIndex, closingTags.index + 2);
+	let trimedOpeningTag = fullOpeningTag.slice(2, -2);
+
+	// Current remains
+	let remainingTemplates = fullTemplate.slice(closingTags.index + 2);
+
+	console.log(fullOpeningTag);
+	console.log(trimedOpeningTag);
+	console.log(remainingTemplates);
+
+	// Now we need to find the block level tag being used.
+	let inlineHelpersCheck = LOGIC_INLINE_HELPER_REG.exec(trimedOpeningTag);
+
+	// Check for inlineHelpers, if they exist strip them out
+	if (inlineHelpersCheck) {
+
+		console.log("Write the inline helper parser!!!");
+	}
+
+	let simpleParams = trimedOpeningTag.match(LOGIC_SIMPLE_PARAMETERS_REG);
+
+	let blockTag = simpleParams.shift().replace('#', '');
+
+	let ASTExt = {
+		blockTag: blockTag,
+		parameters: (!simpleParams) ? simpleParams.concat() : false,
+		inline: (!inlineHelpersCheck) ? inlineHelpersCheck.concat() : false,
+		blocks: []
+	};
+
+
+	return ASTExt;
+
+};
+
+let Helpers = false;
+
 var Parser = function _html_parser() {
 
-	function parse(template) {
+	function parse(template, templateObj, mainParser) {
 
 		return new Promise((resolve, reject) => {
 
 			let AST = {};
 
 			// Get all the current template text to work from
-			let fullText = template.input;
+			let fullTemplate = template.input;
 
 			// Get the first logic match
 			let matchLogic = template[0];
 
 			// Slice off the current logic layer
-			let remaining = (fullText.slice(matchLogic.length).length) ? fullText.slice(matchLogic.length) : false;
+			let remaining = (fullTemplate.slice(matchLogic.length).length) ? fullTemplate.slice(matchLogic.length) : false;
 
 			// Identify the type of logic template we are working with
 			let currentLogicTag = LOGIC_OPENING_TAGREG.exec(matchLogic);
@@ -52,6 +110,7 @@ var Parser = function _html_parser() {
 
 						// Tack on this to all context
 						if (thisIndex === -1) {
+
 							context = "this." + context;
 						}
 						else if (thisIndex > 0) {
@@ -65,6 +124,19 @@ var Parser = function _html_parser() {
 						endResult.AST = AST;
 
 						endResult.remaining = remaining;
+
+						break;
+
+					// Block Logic
+					case "{{#":
+
+						AST.node = "logic";
+						AST.type = "block";
+
+						console.log("Block Logic");
+
+						let context = BLOCKParser(fullTemplate, matchLogic);
+
 
 						break;
 
@@ -93,23 +165,11 @@ var Parser = function _html_parser() {
 			}
 			else {
 
-				//reject(new Error("Unable to find logic control in: " +));
+				reject(new Error(`Unable to find logic control in: ${templateObj.name}`));
 			}
 
 
 		});
-	};
-
-	function attributeParse(template) {
-
-		return new Promise((resolve, reject) => {
-
-			console.log("in attribute logic parser");
-
-			console.log(template);
-
-		});
-
 	};
 
 	function check(template) {
@@ -135,10 +195,14 @@ var Parser = function _html_parser() {
 
 	};
 
+	function registerHelpers(oHelpers) {
+		Helpers = oHelpers;
+	}
+
 	return {
-		attributeParse: attributeParse,
 		check: check,
-		parse: parse
+		parse: parse,
+		registerHelpers: registerHelpers
 	};
 
 }

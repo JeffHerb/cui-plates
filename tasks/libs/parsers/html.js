@@ -21,7 +21,7 @@ const LOGIC_TAGREG = /{{([^\}}]+)}}/;
 
 var Parser = function _html_parser(settings) {
 
-	function parse(currentTag) {
+	function parse(currentTag, templateObj) {
 
 		return new Promise(async (resolve, reject) => {
 

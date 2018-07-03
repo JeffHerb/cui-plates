@@ -9,7 +9,7 @@ const TEXT_REG = /.+?/g;
 
 var Parser = function _html_parser() {
 
-	function parse(currentTemplate) {
+	function parse(currentTemplate, templateObj) {
 		
 		return new Promise((resolve, reject) => {
 

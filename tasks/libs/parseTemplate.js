@@ -39,7 +39,7 @@ _priv.cleanupTemplate = (template) => {
 };
 
 // This function loops through all of the parser tags looking for 
-_priv.parse = (template) => {
+_priv.parse = (template, templateObj) => {
 
 	function findNextSteps(stepTemplate) {
 
@@ -93,7 +93,10 @@ _priv.parse = (template) => {
 		var finishedAST = [];
 		
 		// Go out and find the next tag and let the proper parser do its job
-		(async function keepParsing(temp) {
+		(async function keepParsing(temp, templateObj) {
+
+			console.log("=====================");
+			console.log(temp);
 
 			let possibleSteps = await findNextSteps(temp);
 
@@ -122,7 +125,9 @@ _priv.parse = (template) => {
 				}
 			}
 
-			let processResults = await nextStep.parser(nextStep.results);
+			let processResults = await nextStep.parser(nextStep.results, templateObj, keepParsing);
+
+			//console.log("processResults", processResults);
 
 			// Add what we have to the finsihed AST array.
 			if (processResults.AST) {
@@ -135,7 +140,7 @@ _priv.parse = (template) => {
 			if (processResults.children) {
 
 				// Call the process for all of the children
-				let childResults = await _priv.parse(processResults.children);
+				let childResults = await _priv.parse(processResults.children, templateObj);
 
 				// Check and verify that the children attribute exists for this AST parent.
 				if (!finishedAST[finishedAST.length -1].children) {
@@ -148,7 +153,7 @@ _priv.parse = (template) => {
 				// Check to see if we have leftover template code (siblings)
 				if (processResults.remaining) {
 
-					keepParsing(processResults.remaining);
+					keepParsing(processResults.remaining, templateObj);
 				}
 				else {
 
@@ -159,7 +164,7 @@ _priv.parse = (template) => {
 
 				if (processResults.remaining) {
 
-					keepParsing(processResults.remaining);
+					keepParsing(processResults.remaining, templateObj);
 				}
 				else {
 
@@ -168,25 +173,24 @@ _priv.parse = (template) => {
 
 			}
 
-
-		})(template);
+		})(template, templateObj);
 	});
 };
 
 var parseTemplate = function _parse_template() {
 
-	function parse(templateStr) {
+	function parse(templateStr, templateObj) {	
 
 		let template = _priv.cleanupTemplate(templateStr);
 
-		return new Promise((resolve, reject) => {
+		return new Promise((resolve, reject) => {	
 
 			if (template.length) {
 
-				_priv.parse(template)
+				_priv.parse(template, templateObj)
 					.then((finishedAST) => {
 
-						resolve(finishedAST)
+						resolve(finishedAST);
 					})
 					.catch((err) => {
 

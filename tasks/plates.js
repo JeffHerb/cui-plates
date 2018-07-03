@@ -251,7 +251,7 @@ module.exports = function(grunt) {
 									templateObj.raw = rawTemplateFile;
 
 									// Now we need to process the file
-									ParseTemplate.parse(templateObj.raw)
+									ParseTemplate.parse(templateObj.raw, templateObj)
 										.then((templateAST) => {
 
 											templateObj.ast = templateAST;
@@ -314,6 +314,8 @@ module.exports = function(grunt) {
 
 							})
 							.catch((error) => {
+
+								console.error(`Error when working on: ${templateObj.name}`)
 
 								console.error(error);
 							});
