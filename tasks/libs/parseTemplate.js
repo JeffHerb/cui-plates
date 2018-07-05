@@ -125,7 +125,7 @@ _priv.parse = (template, templateObj) => {
 				}
 			}
 
-			let processResults = await nextStep.parser(nextStep.results, templateObj, keepParsing);
+			let processResults = await nextStep.parser(nextStep.results, templateObj, new parseTemplate);
 
 			//console.log("processResults", processResults);
 
@@ -139,8 +139,10 @@ _priv.parse = (template, templateObj) => {
 			// Check for and deal with children first!
 			if (processResults.children) {
 
+				console.log(parseTemplate);
+
 				// Call the process for all of the children
-				let childResults = await _priv.parse(processResults.children, templateObj);
+				let childResults = await _priv.parse(processResults.children, templateObj, new parseTemplate);
 
 				// Check and verify that the children attribute exists for this AST parent.
 				if (!finishedAST[finishedAST.length -1].children) {

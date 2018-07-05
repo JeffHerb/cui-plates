@@ -8,12 +8,18 @@ const LOGIC_CLOSING_TAGREG = /}}/g;
 const LOGIC_INLINE_HELPER_REG = /(?:[a-zA-Z]+)={{(?:.*)}}/g;
 const LOGIC_SIMPLE_PARAMETERS_REG = /((?:[a-zA-Z]*)="(?:.*)")|[^\s]+/g;
 
+// Regular expression for {{else}}, {{case}}, {{elseif}}, {{default}}
+const LOGIC_CONDITIONAL_BLOCK_SEPERATORS = /(?:{{\s*)(else|elseif|case)[^{]*(?=}})(?:}})/g;
+
 const CONTEXT_REGEXP_EXTRACTOR = /{{((?:\\.|[^"\\])*)}}/;
 
 const BLOCKParser = (fullTemplate, match) => {
 
-	console.log("fullTemplate:", fullTemplate);
-	console.log("match:",match);
+	let endContext = {
+		method: false,
+		conditionalBlocks: false,
+		failBlock: false
+	};
 
 	let openingTag = match[0];
 	let openingIndex = match.index;
@@ -33,10 +39,6 @@ const BLOCKParser = (fullTemplate, match) => {
 	// Current remains
 	let remainingTemplates = fullTemplate.slice(closingTags.index + 2);
 
-	console.log(fullOpeningTag);
-	console.log(trimedOpeningTag);
-	console.log(remainingTemplates);
-
 	// Now we need to find the block level tag being used.
 	let inlineHelpersCheck = LOGIC_INLINE_HELPER_REG.exec(trimedOpeningTag);
 
@@ -48,17 +50,200 @@ const BLOCKParser = (fullTemplate, match) => {
 
 	let simpleParams = trimedOpeningTag.match(LOGIC_SIMPLE_PARAMETERS_REG);
 
-	let blockTag = simpleParams.shift().replace('#', '');
+	let blockTag = simpleParams.shift().replace('#', '').trim();
 
-	let ASTExt = {
-		blockTag: blockTag,
-		parameters: (!simpleParams) ? simpleParams.concat() : false,
-		inline: (!inlineHelpersCheck) ? inlineHelpersCheck.concat() : false,
-		blocks: []
-	};
+	endContext.method = blockTag;
+
+	// Now we need to find the end of this current logic block;
+	let sameLogicTagRegEx = new RegExp(`{{(?:[#\/]+)${blockTag}`, 'gm');
+
+	let foundMatchingOpening = 0;
+	let endingIndexResults = false;
+	let endingIndex = false;
+
+	// Loop through till we find the logical closing tag
+	while (true) {
+
+		let nextLogicTag = sameLogicTagRegEx.exec(remainingTemplates);
+
+		if (!nextLogicTag) {
+			break;
+		}
+
+		// check if this is a closing tag
+		if (nextLogicTag[0].indexOf(`{{/`) !== -1) {
+
+			if (foundMatchingOpening > 0) {
+
+				foundMatchingOpening -= 1;
+			}
+			else {
+
+				endingIndex = nextLogicTag.index + nextLogicTag[0].length;
+				endingIndexResults = nextLogicTag;
+			}
+		}
+		else {
+
+			// We got a opening tag, just found it.
+			foundMatchingOpening += 1;
+		}
+	}
+
+	if (endingIndex) {
+
+		// Find this logic section.
+		let logicSection = remainingTemplates.slice(0, endingIndex - endingIndexResults[0].length);
+
+		// Holds all the case and elseif's
+		let conditionalBlocks = [];
+
+		// Holds all the else and default's
+		let failBlock = false;
+
+		let savedFirst = false;
+		let foundFailureTag = false;
+
+		let lastConditionalTagEnding = 0;
+		let lastConditionalTag = false;
+
+		// Loop through and break out all the blocks
+		while (true) {
+
+			let conditionalObj = {
+				params: false
+			};
+
+			// Check to see if any conditional block tags exists (else, elseif, case, default)
+			let currentBlockSeporator = LOGIC_CONDITIONAL_BLOCK_SEPERATORS.exec(logicSection);
+
+			if (!currentBlockSeporator) {
+
+				console.log("At the end");
+
+				conditionalObj.contents = logicSection.slice(lastConditionalTagEnding);
+
+				// Check for sub logic block;
+				let subLogicBlock = LOGIC_OPENING_TAGREG.test(conditionalObj.contents);
+
+				console.log("SubLogicBlock", subLogicBlock);
+
+				if (subLogicBlock) {
+					console.log(conditionalObj.contents);
+					continue;
+				}
+				else {
+					console.log(conditionalObj.contents);
+				}
+
+				if (lastConditionalTag) {
+
+					// Remove the uneeded logic tag characters
+					let trimmedConditionalTag = lastConditionalTag.replace('{{', '').replace('}}', '');
+
+					trimmedConditionalTag = trimmedConditionalTag.match(LOGIC_SIMPLE_PARAMETERS_REG);
+
+					// Pop off the leading item as its the static conditional tag
+					trimmedConditionalTag.shift();
+
+					if (trimmedConditionalTag.length) {
+						conditionalObj.params = trimmedConditionalTag;
+					}
+				}
+
+				if (!savedFirst && logicSection.length) {
+
+					conditionalBlocks.push(conditionalObj);
+				}
+				else if (savedFirst && !foundFailureTag) {
+
+					conditionalBlocks.push(conditionalObj);
+				}
+				else if (foundFailureTag) {
+
+					failBlock = conditionalObj;
+				}
+
+				break;
+			}
+			else {
+
+				// Save off the contents
+				conditionalObj.contents = logicSection.slice(lastConditionalTagEnding, currentBlockSeporator.index);
+
+				// Check for sub logic block;
+				let subLogicBlock = LOGIC_OPENING_TAGREG.test(conditionalObj.contents);
+
+				console.log("SubLogicBlock", subLogicBlock);
+
+				if (subLogicBlock) {
+					console.log(conditionalObj.contents);
+					continue;
+				}
+				else {
+					console.log(conditionalObj.contents);
+				}
+
+				// Check to see if this is the first time around
+				if (!savedFirst) {
+					savedFirst = true;
+
+					if (simpleParams.length) {
+						conditionalObj.params = simpleParams;
+					}
+				}
+				else {
+
+					if (lastConditionalTag) {
+
+						// Remove the uneeded logic tag characters
+						let trimmedConditionalTag = lastConditionalTag.replace('{{', '').replace('}}', '');
+
+						trimmedConditionalTag = trimmedConditionalTag.match(LOGIC_SIMPLE_PARAMETERS_REG);
+
+						// Pop off the leading item as its the static conditional tag
+						trimmedConditionalTag.shift();
+
+						if (trimmedConditionalTag.length) {
+							conditionalObj.params = trimmedConditionalTag;
+						}
+					}
+				}
+
+				// Save off this conditional block!
+				conditionalBlocks.push(conditionalObj);
+
+				// Save off the index of the last conditional tag for the next round.
+				lastConditionalTagEnding = currentBlockSeporator.index + currentBlockSeporator[0].length;
+
+				// Save off this conditional tag
+				lastConditionalTag = currentBlockSeporator[0];
+
+				// Check to see if this is the fallback/fail block
+				// For switch
+				if (currentBlockSeporator[0].indexOf('default') > 0) {
+					foundFailureTag = true;
+				}
+				// For if
+				else if (currentBlockSeporator[0].indexOf('else') > 0 && currentBlockSeporator[0].indexOf('elseif') === -1) {
+					foundFailureTag = true;
+				}
+
+			}
 
 
-	return ASTExt;
+		}
+
+		endContext.conditionalBlocks = conditionalBlocks.concat();
+		endContext.failBlock = failBlock;
+
+	}
+	else {
+
+		return false;
+	}
+
+	return endContext;
 
 };
 
@@ -68,7 +253,7 @@ var Parser = function _html_parser() {
 
 	function parse(template, templateObj, mainParser) {
 
-		return new Promise((resolve, reject) => {
+		return new Promise(async (resolve, reject) => {
 
 			let AST = {};
 
@@ -95,6 +280,8 @@ var Parser = function _html_parser() {
 
 				currentLogicTag = currentLogicTag[0];
 
+				let context = false;
+
 				switch (currentLogicTag) {
 
 					// Context Logic
@@ -104,7 +291,7 @@ var Parser = function _html_parser() {
 						AST.type = "context";
 
 						// Grab everything between {{ ... }}
-						let context = CONTEXT_REGEXP_EXTRACTOR.exec(matchLogic)[1];
+						context = CONTEXT_REGEXP_EXTRACTOR.exec(matchLogic)[1];
 
 						let thisIndex = context.indexOf("this.");
 
@@ -125,6 +312,8 @@ var Parser = function _html_parser() {
 
 						endResult.remaining = remaining;
 
+						resolve(endResult);
+
 						break;
 
 					// Block Logic
@@ -133,10 +322,30 @@ var Parser = function _html_parser() {
 						AST.node = "logic";
 						AST.type = "block";
 
-						console.log("Block Logic");
+						AST.context = BLOCKParser(fullTemplate, matchLogic);
 
-						let context = BLOCKParser(fullTemplate, matchLogic);
+						console.log(AST.context);
 
+						// Generate the fail block
+						AST.context.failBlock.contents = await mainParser.parse(AST.context.failBlock.contents);
+
+						let parsedConditionals = [];
+
+						for (let cb = 0, cbLen = AST.context.conditionalBlocks.length; cb < cbLen; cb++) {
+
+							let conditionalObj = AST.context.conditionalBlocks[cb];
+
+							conditionalObj.contents = await mainParser.parse(AST.context.conditionalBlocks[cb].contents);
+
+							parsedConditionals.push(conditionalObj);
+
+						}
+
+						AST.context.conditionalBlocks = parsedConditionals;
+
+						endResult.AST = AST;
+
+						resolve(endResult);
 
 						break;
 
@@ -160,8 +369,6 @@ var Parser = function _html_parser() {
 						let err = new Error("Undefined logical control: ", currentLogicTag);
 						break;
 				}
-
-				resolve(endResult);
 			}
 			else {
 
