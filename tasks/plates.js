@@ -287,6 +287,7 @@ module.exports = function(grunt) {
 										})
 										.catch((error) => {
 
+											console.log(error);
 										});
 
 								}

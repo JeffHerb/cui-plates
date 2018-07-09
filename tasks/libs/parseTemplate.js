@@ -23,6 +23,8 @@ templateChecks.text = TEXTParser.check;
 
 _priv.cleanupTemplate = (template) => {
 
+	console.log("cleanupTemplate");
+
 	// Remove all multi spaces
 	template = template.replace(/ +/g, " ");
 

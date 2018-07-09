@@ -5,11 +5,13 @@ const LOGIC_TAGREG = /{{([^\}}]+)}}/;
 const LOGIC_OPENING_TAGREG = /^{{(?:[\#\>\.\@]?)/g;
 const LOGIC_CLOSING_TAGREG = /}}/g;
 
+const LOGIC_OPENING_LOGIC_TAGS = /{{#(?:[a-zA-Z0-9]+)(?:[\s\ a-zA-Z-9\.\=\"\'\!\&\|\*\@\#]*)}}/g;
+
 const LOGIC_INLINE_HELPER_REG = /(?:[a-zA-Z]+)={{(?:.*)}}/g;
 const LOGIC_PARAMETERS_REG = /(?:[a-zA-Z0-9]*)=\((?:[^)]+)\)|(?:[a-zA-Z0-9]*)=\"(?:[^)]+)\"|(?:[a-zA-Z0-9]*)=(?:[^\s]+)|(?:[\S]+)/g;
 
 // Regular expression for {{else}}, {{case}}, {{elseif}}, {{default}}
-const LOGIC_CONDITIONAL_BLOCK_SEPERATORS = /(?:{{\s*)(else|elseif|case)[^{]*(?=}})(?:}})/g;
+const LOGIC_CONDITIONAL_BLOCK_SEPERATORS = /(?:{{\s*)(default|else|elseif|case)[^{]*(?=}})(?:}})/g;
 
 const CONTEXT_REGEXP_EXTRACTOR = /{{((?:\\.|[^"\\])*)}}/;
 
@@ -28,11 +30,11 @@ const BLOCKParser = (logicRegExResult) => {
 			}
 		};
 
-		console.log("\n\n\nStart ===== Finding Logic Block Def ==========");
-
 		// Save off opening tag info.
 		oLogicBlockResults.oOpenTag.iBegin = regExBlockMatch.index;
 		oLogicBlockResults.oOpenTag.iEnd = regExBlockMatch.index + regExBlockMatch[0].length;
+
+		let fullTemplate = regExBlockMatch.input;
 
 		let sOpeningBlockTag = regExBlockMatch[0];
 
@@ -45,18 +47,14 @@ const BLOCKParser = (logicRegExResult) => {
 			sBlockTagMethod = sBlockTagMethod.replace('#', '');
 		}
 
-		console.log(sBlockTagMethod);
-
-		let regExSameLogicTag = new RegExp(`{{(?:[#\/]+)${sBlockTagMethod}`, 'gm');
+		let regExSameLogicTag = new RegExp(`{{[\#\/]${sBlockTagMethod}(?:[\s\ a-zA-Z-9\.\=\"\'\!\&\|\*\@\#]*)}}`, 'g');
 
 		let sameBlockTag = 0;
 		let endingBlockTag = false;
 
 		while(true) {
 
-			let nextBlockTag = regExSameLogicTag.exec(regExBlockMatch.input);
-
-			console.log(nextBlockTag);
+			let nextBlockTag = regExSameLogicTag.exec(fullTemplate);
 
 			if (!nextBlockTag) {
 				break;
@@ -68,7 +66,7 @@ const BLOCKParser = (logicRegExResult) => {
 			}
 			else {
 
-				if (nextBlockTag[0].indexOf('#') !== -1) {
+				if (nextBlockTag[0].indexOf('{{#') !== -1) {
 
 					sameBlockTag += 1;
 				}
@@ -81,7 +79,7 @@ const BLOCKParser = (logicRegExResult) => {
 					else {
 
 						endingBlockTag = nextBlockTag;
-						break;
+						//break;
 					}
 
 				}
@@ -89,11 +87,19 @@ const BLOCKParser = (logicRegExResult) => {
 
 		}
 
-		console.log("Ending block tag:");
+		if (endingBlockTag) {
 
-		console.log(endingBlockTag);
+			oLogicBlockResults.oCloseTag.iBegin = endingBlockTag.index;
+			oLogicBlockResults.oCloseTag.iEnd = endingBlockTag.index + endingBlockTag[0].length;
 
-		console.log("==============================================\n\n");
+			return oLogicBlockResults;
+		}
+		else {
+
+			let error = new Error(`Unable to find closing tag for {{#${sBlockTagMethod}`);
+
+			return error;
+		}
 
 	};
 
@@ -104,14 +110,172 @@ const BLOCKParser = (logicRegExResult) => {
 		remaining: false
 	};
 
-	console.log("\n\n\n");
-	console.log(logicRegExResult);
-
 	// Pull out the full template
 	let sFullTemplate = logicRegExResult.input;
 
 	let oLogicBlockDef = findLogicBlockDef(logicRegExResult);
 
+	// Break out the logic block section and any potential remaining.
+	let sLogicSection = sFullTemplate.slice(oLogicBlockDef.oOpenTag.iBegin, oLogicBlockDef.oCloseTag.iEnd);
+	let sRemaining = sFullTemplate.slice(oLogicBlockDef.oCloseTag.iEnd);
+
+	// Pull off the closing and opening tags for reference
+	let sClosingTag = sLogicSection.slice( (oLogicBlockDef.oCloseTag.iEnd - oLogicBlockDef.oCloseTag.iBegin) * -1 );
+	let sOpeningTag = sLogicSection.slice(oLogicBlockDef.oOpenTag.iBegin, oLogicBlockDef.oOpenTag.iEnd);
+
+	// Get a copy of the template string without this logic blocks opening and closing tag.
+	let sLogicSectionsContents = sLogicSection.slice(oLogicBlockDef.oOpenTag.iEnd, oLogicBlockDef.oCloseTag.iBegin);
+
+	// Save off the remaining sections of the template if any exist
+	if (sRemaining.length) {
+		endContents.remaining = sRemaining;
+	}
+
+	let aOpeningTagParams = sOpeningTag.slice(2, -2).match();
+	let sOpeningTagMethod = aOpeningTagParams.shift(LOGIC_PARAMETERS_REG);
+
+	// Prebake the last conditionals with the opening tag
+	let lastConditionalTag = sOpeningTag;
+	let lastConditionalParams = aOpeningTagParams;
+	let lastConditionalMethod = sOpeningTagMethod;
+	let lastConditionalStartingIndex = 0;
+
+	let aConditionalBlocks = [];
+	let oFallback = false;
+
+	// Loop through and find all of the conditional possibility
+	while(true) {
+
+		let sConditionalSectionContent = false;
+
+		let oConditionalBlock = {
+			sLogicTag: false,
+			aParams: false,
+			sContents: false,
+		};
+
+		let nextConditionalBlock = LOGIC_CONDITIONAL_BLOCK_SEPERATORS.exec(sLogicSectionsContents);
+
+		// See if we detected a conditional block
+		if (nextConditionalBlock) {
+
+			// Start by pulling out the conditional section content;
+			sConditionalSectionContent = sLogicSectionsContents.slice(lastConditionalStartingIndex, nextConditionalBlock.index);
+
+			// Now we need to test to see if the conditonal block has internal logic.
+			let subLogicCheck = LOGIC_OPENING_LOGIC_TAGS.exec(sConditionalSectionContent);
+
+			if (subLogicCheck) {
+
+				//console.log("\n ========== sub =============");
+
+				// Find the end of this discovered conditional
+				let remainingTemplate = sLogicSectionsContents.slice(lastConditionalStartingIndex);
+
+				// Update input to reflect remaining template
+				subLogicCheck.input = remainingTemplate;
+
+				// Get the sub logic block definition info
+				let oSubLogicBlockDef = findLogicBlockDef(subLogicCheck);
+
+				// We have a sub condtional. Lets see were we are at.
+				// console.log("End of last conditional:", lastConditionalStartingIndex);
+				// console.log("Start of current sub conditional:", nextConditionalBlock.index);
+				// console.log("End of current sub conditional block:", oSubLogicBlockDef.oCloseTag.iEnd + lastConditionalStartingIndex);
+
+				let iEndOfSubConditionalBlockTag = oSubLogicBlockDef.oCloseTag.iEnd + lastConditionalStartingIndex;
+
+				if (nextConditionalBlock.index >= iEndOfSubConditionalBlockTag) {
+
+					// Update the section contents with the next index values
+					sConditionalSectionContent = sLogicSectionsContents.slice(lastConditionalStartingIndex, iEndOfSubConditionalBlockTag);
+
+					// console.log("\n Update Sub Section:");
+					// console.log(sConditionalSectionContent);
+
+					oConditionalBlock.sLogicTag = lastConditionalMethod;
+					oConditionalBlock.aParams = lastConditionalParams;
+					oConditionalBlock.sContents = sConditionalSectionContent;
+
+					// Cleanup 
+					let sConditionalTag = nextConditionalBlock[0].slice(2, -2);
+					let aConditionalTagParams = sConditionalTag.match(LOGIC_PARAMETERS_REG);
+					let sCondtionalMethod = aConditionalTagParams.shift();
+
+					// Update the last conditional info
+					lastConditionalTag = sConditionalTag;
+					lastConditionalMethod = sCondtionalMethod;
+					lastConditionalParams = aConditionalTagParams;
+					lastConditionalStartingIndex = nextConditionalBlock.index + nextConditionalBlock[0].length;
+
+					//console.log(" ========== sub ============= \n");
+				}
+				else {
+
+					//console.log(" ========== sub ============= \n");
+					// We need to keep looking as sub logic conditional was found
+					continue;
+				}
+
+				//console.log(sLogicSectionsContents.slice(lastConditionalStartingIndex, ))
+
+			}
+			else {
+
+				// Save of block information!
+				oConditionalBlock.sLogicTag = lastConditionalMethod;
+				oConditionalBlock.aParams = lastConditionalParams;
+				oConditionalBlock.sContents = sConditionalSectionContent;
+
+				// Cleanup 
+				let sConditionalTag = nextConditionalBlock[0].slice(2, -2);
+				let aConditionalTagParams = sConditionalTag.match(LOGIC_PARAMETERS_REG);
+				let sCondtionalMethod = aConditionalTagParams.shift();
+
+				// Update the last conditional info
+				lastConditionalTag = sConditionalTag;
+				lastConditionalMethod = sCondtionalMethod;
+				lastConditionalParams = aConditionalTagParams;
+				lastConditionalStartingIndex = nextConditionalBlock.index + nextConditionalBlock[0].length;
+			}
+
+			// Update the last conditional information
+			aConditionalBlocks.push(oConditionalBlock);
+
+		}
+		else {
+
+			// Pull the last of or all of the template because we have nothing else to look at.
+			sConditionalSectionContent = sLogicSectionsContents.slice(lastConditionalStartingIndex, sLogicSectionsContents.length);
+
+			oConditionalBlock.sLogicTag = lastConditionalMethod;
+			oConditionalBlock.aParams = lastConditionalParams;
+			oConditionalBlock.sContents = sConditionalSectionContent;
+
+			if (lastConditionalTag === "else" || lastConditionalTag === "default") {
+				oFallback = oConditionalBlock;
+			}
+			else {
+				aConditionalBlocks.push(oConditionalBlock);
+			}
+
+		}
+
+		// Check to see if we found anything
+		if (!nextConditionalBlock) {
+			break;
+		}
+
+
+	}
+
+	endContents.conditionals = aConditionalBlocks.concat();
+
+	if (oFallback) {
+		endContents.fallback = oFallback;
+	}
+
+	return endContents;
 };
 
 let Helpers = false;
@@ -187,32 +351,42 @@ var Parser = function _html_parser() {
 					case "{{#":
 
 						AST.node = "logic";
-						AST.type = "block";
-
-						console.log(AST);
+						AST.type = "block"
 
 						AST.context = BLOCKParser(template);
 
+						console.log("\n");
+						console.log(AST.context);
+						console.log("\n");
+
+						console.log("Fail over!");
+
 						// Generate the fail block
-						// AST.context.failBlock.contents = await mainParser.parse(AST.context.failBlock.contents);
+						if (AST.context.fallback.sContents){
+							AST.context.fallback = await mainParser.parse(AST.context.fallback.sContents);
+						}
 
-						// let parsedConditionals = [];
+						let parsedConditionals = [];
 
-						// for (let cb = 0, cbLen = AST.context.conditionalBlocks.length; cb < cbLen; cb++) {
+						for (let cb = 0, cbLen = AST.context.conditionals.length; cb < cbLen; cb++) {
 
-						// 	let conditionalObj = AST.context.conditionalBlocks[cb];
+							console.log("conditional!");
 
-						// 	conditionalObj.contents = await mainParser.parse(AST.context.conditionalBlocks[cb].contents);
+							let conditionalContents = AST.context.conditionals[cb].sContents;
 
-						// 	parsedConditionals.push(conditionalObj);
+							//conditionalObj.sContents = await mainParser.parse(AST.context.conditionals[cb].sContents);
 
-						// }
+							//parsedConditionals.push(conditionalObj);
+
+						}
 
 						// AST.context.conditionalBlocks = parsedConditionals;
 
+						// console.log(AST.context);
+
 						// endResult.AST = AST;
 
-						resolve(endResult);
+						// resolve(endResult);
 
 						break;
 
