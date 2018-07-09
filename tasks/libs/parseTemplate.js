@@ -95,8 +95,8 @@ _priv.parse = (template, templateObj) => {
 		// Go out and find the next tag and let the proper parser do its job
 		(async function keepParsing(temp, templateObj) {
 
-			console.log("=====================");
-			console.log(temp);
+			// console.log("=====================");
+			// console.log(temp);
 
 			let possibleSteps = await findNextSteps(temp);
 
@@ -139,7 +139,7 @@ _priv.parse = (template, templateObj) => {
 			// Check for and deal with children first!
 			if (processResults.children) {
 
-				console.log(parseTemplate);
+				//console.log(parseTemplate);
 
 				// Call the process for all of the children
 				let childResults = await _priv.parse(processResults.children, templateObj, new parseTemplate);

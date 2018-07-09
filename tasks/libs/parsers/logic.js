@@ -6,244 +6,111 @@ const LOGIC_OPENING_TAGREG = /^{{(?:[\#\>\.\@]?)/g;
 const LOGIC_CLOSING_TAGREG = /}}/g;
 
 const LOGIC_INLINE_HELPER_REG = /(?:[a-zA-Z]+)={{(?:.*)}}/g;
-const LOGIC_SIMPLE_PARAMETERS_REG = /((?:[a-zA-Z]*)="(?:.*)")|[^\s]+/g;
+const LOGIC_PARAMETERS_REG = /(?:[a-zA-Z0-9]*)=\((?:[^)]+)\)|(?:[a-zA-Z0-9]*)=\"(?:[^)]+)\"|(?:[a-zA-Z0-9]*)=(?:[^\s]+)|(?:[\S]+)/g;
 
 // Regular expression for {{else}}, {{case}}, {{elseif}}, {{default}}
 const LOGIC_CONDITIONAL_BLOCK_SEPERATORS = /(?:{{\s*)(else|elseif|case)[^{]*(?=}})(?:}})/g;
 
 const CONTEXT_REGEXP_EXTRACTOR = /{{((?:\\.|[^"\\])*)}}/;
 
-const BLOCKParser = (fullTemplate, match) => {
+const BLOCKParser = (logicRegExResult) => {
 
-	let endContext = {
-		method: false,
-		conditionalBlocks: false,
-		failBlock: false
-	};
+	function findLogicBlockDef(regExBlockMatch) {
 
-	let openingTag = match[0];
-	let openingIndex = match.index;
-	let closingTag = false;
-
-	// Find first closing after blockTag
-	let closingTags = LOGIC_CLOSING_TAGREG.exec(fullTemplate);
-
-	if (closingTags) {
-
-		closingTag = closingTags[0];
-	}
-
-	let fullOpeningTag = fullTemplate.slice(openingIndex, closingTags.index + 2);
-	let trimedOpeningTag = fullOpeningTag.slice(2, -2);
-
-	// Current remains
-	let remainingTemplates = fullTemplate.slice(closingTags.index + 2);
-
-	// Now we need to find the block level tag being used.
-	let inlineHelpersCheck = LOGIC_INLINE_HELPER_REG.exec(trimedOpeningTag);
-
-	// Check for inlineHelpers, if they exist strip them out
-	if (inlineHelpersCheck) {
-
-		console.log("Write the inline helper parser!!!");
-	}
-
-	let simpleParams = trimedOpeningTag.match(LOGIC_SIMPLE_PARAMETERS_REG);
-
-	let blockTag = simpleParams.shift().replace('#', '').trim();
-
-	endContext.method = blockTag;
-
-	// Now we need to find the end of this current logic block;
-	let sameLogicTagRegEx = new RegExp(`{{(?:[#\/]+)${blockTag}`, 'gm');
-
-	let foundMatchingOpening = 0;
-	let endingIndexResults = false;
-	let endingIndex = false;
-
-	// Loop through till we find the logical closing tag
-	while (true) {
-
-		let nextLogicTag = sameLogicTagRegEx.exec(remainingTemplates);
-
-		if (!nextLogicTag) {
-			break;
-		}
-
-		// check if this is a closing tag
-		if (nextLogicTag[0].indexOf(`{{/`) !== -1) {
-
-			if (foundMatchingOpening > 0) {
-
-				foundMatchingOpening -= 1;
+		let oLogicBlockResults = {
+			oOpenTag: {
+				iBegin: false,
+				iEnd: false,
+			},
+			oCloseTag: {
+				iBegin: false,
+				iEnd: false
 			}
-			else {
+		};
 
-				endingIndex = nextLogicTag.index + nextLogicTag[0].length;
-				endingIndexResults = nextLogicTag;
-			}
+		console.log("\n\n\nStart ===== Finding Logic Block Def ==========");
+
+		// Save off opening tag info.
+		oLogicBlockResults.oOpenTag.iBegin = regExBlockMatch.index;
+		oLogicBlockResults.oOpenTag.iEnd = regExBlockMatch.index + regExBlockMatch[0].length;
+
+		let sOpeningBlockTag = regExBlockMatch[0];
+
+		let aTagNParameters = sOpeningBlockTag.slice(2, -2).match(LOGIC_PARAMETERS_REG);
+
+		// Pop the logic method tag off the front
+		let sBlockTagMethod = aTagNParameters.shift();
+
+		if (sBlockTagMethod.indexOf('#') > -1) {
+			sBlockTagMethod = sBlockTagMethod.replace('#', '');
 		}
-		else {
 
-			// We got a opening tag, just found it.
-			foundMatchingOpening += 1;
-		}
-	}
+		console.log(sBlockTagMethod);
 
-	if (endingIndex) {
+		let regExSameLogicTag = new RegExp(`{{(?:[#\/]+)${sBlockTagMethod}`, 'gm');
 
-		// Find this logic section.
-		let logicSection = remainingTemplates.slice(0, endingIndex - endingIndexResults[0].length);
+		let sameBlockTag = 0;
+		let endingBlockTag = false;
 
-		// Holds all the case and elseif's
-		let conditionalBlocks = [];
+		while(true) {
 
-		// Holds all the else and default's
-		let failBlock = false;
+			let nextBlockTag = regExSameLogicTag.exec(regExBlockMatch.input);
 
-		let savedFirst = false;
-		let foundFailureTag = false;
+			console.log(nextBlockTag);
 
-		let lastConditionalTagEnding = 0;
-		let lastConditionalTag = false;
-
-		// Loop through and break out all the blocks
-		while (true) {
-
-			let conditionalObj = {
-				params: false
-			};
-
-			// Check to see if any conditional block tags exists (else, elseif, case, default)
-			let currentBlockSeporator = LOGIC_CONDITIONAL_BLOCK_SEPERATORS.exec(logicSection);
-
-			if (!currentBlockSeporator) {
-
-				console.log("At the end");
-
-				conditionalObj.contents = logicSection.slice(lastConditionalTagEnding);
-
-				// Check for sub logic block;
-				let subLogicBlock = LOGIC_OPENING_TAGREG.test(conditionalObj.contents);
-
-				console.log("SubLogicBlock", subLogicBlock);
-
-				if (subLogicBlock) {
-					console.log(conditionalObj.contents);
-					continue;
-				}
-				else {
-					console.log(conditionalObj.contents);
-				}
-
-				if (lastConditionalTag) {
-
-					// Remove the uneeded logic tag characters
-					let trimmedConditionalTag = lastConditionalTag.replace('{{', '').replace('}}', '');
-
-					trimmedConditionalTag = trimmedConditionalTag.match(LOGIC_SIMPLE_PARAMETERS_REG);
-
-					// Pop off the leading item as its the static conditional tag
-					trimmedConditionalTag.shift();
-
-					if (trimmedConditionalTag.length) {
-						conditionalObj.params = trimmedConditionalTag;
-					}
-				}
-
-				if (!savedFirst && logicSection.length) {
-
-					conditionalBlocks.push(conditionalObj);
-				}
-				else if (savedFirst && !foundFailureTag) {
-
-					conditionalBlocks.push(conditionalObj);
-				}
-				else if (foundFailureTag) {
-
-					failBlock = conditionalObj;
-				}
-
+			if (!nextBlockTag) {
 				break;
 			}
+
+			// Check to make sure this tag does not match the original
+			if (nextBlockTag.index === regExBlockMatch.index) {
+				continue;
+			}
 			else {
 
-				// Save off the contents
-				conditionalObj.contents = logicSection.slice(lastConditionalTagEnding, currentBlockSeporator.index);
+				if (nextBlockTag[0].indexOf('#') !== -1) {
 
-				// Check for sub logic block;
-				let subLogicBlock = LOGIC_OPENING_TAGREG.test(conditionalObj.contents);
-
-				console.log("SubLogicBlock", subLogicBlock);
-
-				if (subLogicBlock) {
-					console.log(conditionalObj.contents);
-					continue;
-				}
-				else {
-					console.log(conditionalObj.contents);
-				}
-
-				// Check to see if this is the first time around
-				if (!savedFirst) {
-					savedFirst = true;
-
-					if (simpleParams.length) {
-						conditionalObj.params = simpleParams;
-					}
+					sameBlockTag += 1;
 				}
 				else {
 
-					if (lastConditionalTag) {
+					if (sameBlockTag >= 1) {
 
-						// Remove the uneeded logic tag characters
-						let trimmedConditionalTag = lastConditionalTag.replace('{{', '').replace('}}', '');
-
-						trimmedConditionalTag = trimmedConditionalTag.match(LOGIC_SIMPLE_PARAMETERS_REG);
-
-						// Pop off the leading item as its the static conditional tag
-						trimmedConditionalTag.shift();
-
-						if (trimmedConditionalTag.length) {
-							conditionalObj.params = trimmedConditionalTag;
-						}
+						sameBlockTag -= 1;
 					}
+					else {
+
+						endingBlockTag = nextBlockTag;
+						break;
+					}
+
 				}
-
-				// Save off this conditional block!
-				conditionalBlocks.push(conditionalObj);
-
-				// Save off the index of the last conditional tag for the next round.
-				lastConditionalTagEnding = currentBlockSeporator.index + currentBlockSeporator[0].length;
-
-				// Save off this conditional tag
-				lastConditionalTag = currentBlockSeporator[0];
-
-				// Check to see if this is the fallback/fail block
-				// For switch
-				if (currentBlockSeporator[0].indexOf('default') > 0) {
-					foundFailureTag = true;
-				}
-				// For if
-				else if (currentBlockSeporator[0].indexOf('else') > 0 && currentBlockSeporator[0].indexOf('elseif') === -1) {
-					foundFailureTag = true;
-				}
-
 			}
-
 
 		}
 
-		endContext.conditionalBlocks = conditionalBlocks.concat();
-		endContext.failBlock = failBlock;
+		console.log("Ending block tag:");
 
-	}
-	else {
+		console.log(endingBlockTag);
 
-		return false;
-	}
+		console.log("==============================================\n\n");
 
-	return endContext;
+	};
+
+	// Return object
+	let endContents = {
+		conditionals: false,
+		fallback: false,
+		remaining: false
+	};
+
+	console.log("\n\n\n");
+	console.log(logicRegExResult);
+
+	// Pull out the full template
+	let sFullTemplate = logicRegExResult.input;
+
+	let oLogicBlockDef = findLogicBlockDef(logicRegExResult);
 
 };
 
@@ -322,28 +189,28 @@ var Parser = function _html_parser() {
 						AST.node = "logic";
 						AST.type = "block";
 
-						AST.context = BLOCKParser(fullTemplate, matchLogic);
+						console.log(AST);
 
-						console.log(AST.context);
+						AST.context = BLOCKParser(template);
 
 						// Generate the fail block
-						AST.context.failBlock.contents = await mainParser.parse(AST.context.failBlock.contents);
+						// AST.context.failBlock.contents = await mainParser.parse(AST.context.failBlock.contents);
 
-						let parsedConditionals = [];
+						// let parsedConditionals = [];
 
-						for (let cb = 0, cbLen = AST.context.conditionalBlocks.length; cb < cbLen; cb++) {
+						// for (let cb = 0, cbLen = AST.context.conditionalBlocks.length; cb < cbLen; cb++) {
 
-							let conditionalObj = AST.context.conditionalBlocks[cb];
+						// 	let conditionalObj = AST.context.conditionalBlocks[cb];
 
-							conditionalObj.contents = await mainParser.parse(AST.context.conditionalBlocks[cb].contents);
+						// 	conditionalObj.contents = await mainParser.parse(AST.context.conditionalBlocks[cb].contents);
 
-							parsedConditionals.push(conditionalObj);
+						// 	parsedConditionals.push(conditionalObj);
 
-						}
+						// }
 
-						AST.context.conditionalBlocks = parsedConditionals;
+						// AST.context.conditionalBlocks = parsedConditionals;
 
-						endResult.AST = AST;
+						// endResult.AST = AST;
 
 						resolve(endResult);
 
@@ -354,7 +221,7 @@ var Parser = function _html_parser() {
 						console.log("Helper Control called");
 						break;
 
-					case "{{@":
+				 	case "{{@":
 
 						console.log("Event Binding Control called");
 						break;
@@ -404,7 +271,7 @@ var Parser = function _html_parser() {
 
 	function registerHelpers(oHelpers) {
 		Helpers = oHelpers;
-	}
+	};
 
 	return {
 		check: check,

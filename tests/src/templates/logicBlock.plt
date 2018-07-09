@@ -11,5 +11,10 @@
 			<span>Static regular text</span>
 		{{/if}}
 
-	{{/if}}
+		{{#if this.subTitle}}
+			<sub>This is the subtitle</sub>
+		{{/if}}
+
+	{{/if    }}
+	<span> No - logic text </span>
 </p>
