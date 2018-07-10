@@ -251,7 +251,7 @@ module.exports = function(grunt) {
 									templateObj.raw = rawTemplateFile;
 
 									// Now we need to process the file
-									ParseTemplate.parse(templateObj.raw, templateObj)
+									ParseTemplate.parse(templateObj)
 										.then((templateAST) => {
 
 											templateObj.ast = templateAST;

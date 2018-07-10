@@ -1,290 +1,168 @@
 'use strict';
 
-// Get the logic parser
-const LOGICParser = require('./logic');
-
-const HTML_CHECK_CHAR = '<';
-
 // Look for html tag structure "<" followed by name and attributes and ends with ">"
 const HTML_TAGREGEX = /<(?:"[^"]*"['"]*|'[^']*'['"]*|[^'">])+>/;
 
-// Pulls the tag name out and ignores all attributes
-const HTML_TAG_NAME_REGEX = /(?:<[a-zA-Z\-\{\}]*)/;
+const HTML_ATTRIBUTES_SEPERATOR = /(?:[a-zA-Z0-9\-]*)=(?:["']+(?:[a-zA-Z0-9])*(?:["']+))|(?:[{]{2}(?:[\.\#\@](?:[a-zA-Z0-9\s\=\"\'\.\#\!\(\)]+[}]{2})))|(?:[a-zA-Z]+)/g;
 
-// Pulls all static attributes as well as inline helpers.
-const HTML_ATTRIBUTES_REGEX = /(?:[a-zA-Z\-]*)=(?:"|')(?:[a-zA-Z0-9\.\{\}\(\)\[\]\s\,\'\:\-])*(?:"|')|(?:checked)|(?:selected)|(?:required)|(?:disabled)|(?:multiple)|(?:autofocus)/g
+// Identify all of the inline elements for quick reference.
+const INLINE_ELEMS = ['img', 'br', 'hr', 'input'];
 
-const HTML_SELF_CLOSING = ['input', 'br', 'hr', 'img'];
+// Discovereds the entire html block region
+const HTMLBlock = (reTemplateResults) => {
 
-//const LOGIC_CHECK_CHAR = "{{";
-const LOGIC_TAGREG = /{{([^\}}]+)}}/;
+	let oHTMLSection = {
+		oOpenTag: {
+			sTag: false,
+			iStart: false,
+			iEnd: false
+		},
+		oCloseTag: {
+			sTag: false,
+			iStart: false,
+			iEnd: false
+		}
+	}
 
-var Parser = function _html_parser(settings) {
+	// Get the current template
+	let sFullTemplate = reTemplateResults.input;
+	let sTriggerElem = reTemplateResults[0];
 
-	function parse(currentTag, templateObj) {
+	// Save off the opening tag numbers
+	oHTMLSection.oOpenTag.sTag = reTemplateResults[0];
+	oHTMLSection.oOpenTag.iStart = reTemplateResults.index;
+	oHTMLSection.oOpenTag.iEnd = reTemplateResults.index + reTemplateResults[0].length;
 
-		return new Promise(async (resolve, reject) => {
+	// Break out the attributes and the tag.
+	let aOpeningAttributesNTag = sTriggerElem.match(HTML_ATTRIBUTES_SEPERATOR);
 
-			let AST = {
-				node: false,
-				attributes: false,
-				tag: false
-			};
+	let sHTMLTag = aOpeningAttributesNTag.shift();
 
-			// Current template send to parser
-			let template = currentTag.input;
+	let aHTMLAttributes = (aOpeningAttributesNTag.length) ? aOpeningAttributesNTag : false;
 
-			// tag structur variables
-			let openingTag = currentTag[0];
-			let selfClosed = false;
-			let closingTagRegEx = false;
+	// Now that we have all the basics, we need to find the end of the element... maybe.
+	if (INLINE_ELEMS.indexOf(sHTMLTag.toLowerCase()) === -1) {
 
-			let elemAttrProperties = false;
+		let reHTMLBLOCK = new RegExp(`(?:<[/]?${sHTMLTag}(?:[^>]*)>)`, 'g');
 
-			// Actual tag being requested
-			let tagName = false;
-			let attributes = [];
+		console.log("We need to find the closing tag!");
 
-			// Storage for additional children and remaining templates siblings
-			let childContents = false;
-			let remaining = false;
+		let sameElementOpen = 0;
+		let reEndingElemTag = false;
 
-			let dynamicTag = false;
+		while(true) {
 
-			let inlineHelpera = [];
+			let nextMatchingTag = reHTMLBLOCK.exec(sFullTemplate);
 
-			let endResult = false;
+			if (nextMatchingTag) {
 
-			const getElemAttrProperties = (openingTag, tagName) => {
+				// Check to see if this is a closing tag, as thats easier
+				if (nextMatchingTag[0].indexOf('</') !== -1) {
 
-				if (openingTag.slice(-2) === "/>") {
-					openingTag = openingTag.slice(0, openingTag.length - 2);
-				}
-				else {
-					openingTag = openingTag.slice(0, openingTag.length - 1);
-				}
+					if (sameElementOpen > 0) {
 
-				// Remove front and return
-				return openingTag.slice(tagName.length + 1);
-			};
-
-			const removeAttrQuotes = (attribute) => {
-
-				if (attribute.charAt(0) === "'" || attribute.charAt(0) === '"') {
-
-					return attribute.slice(1, attribute.length - 1);
-				}
-
-			};
-
-			// Test if this is a comment first!
-			if (openingTag.indexOf('<!--') === -1) {
-
-				AST.node = "elem";
-
-				// Start by yanking out the tagname
-				tagName = HTML_TAG_NAME_REGEX.exec(openingTag)[0].replace('<', '');
-
-				let tagNameLogicCheck = LOGIC_TAGREG.exec(tagName);
-
-				if (tagNameLogicCheck) {
-
-					dynamicTag = true;
-				}
-				else {
-
-					AST.tag = tagName;
-				}
-
-				// Identify if this is a self closing element or if its an node containing one.
-				if (HTML_SELF_CLOSING.indexOf(tagName) !== -1) {
-
-					selfClosed = true;
-				}
-				else {
-
-					// The element is not in the self defined self closing list so we need to manualy check
-					let sEndingChars = openingTag.slice(openingTag.length - 2);
-
-					// Check to see if this element is self closed
-					if (sEndingChars === '/>') {
-						selfClosed = true;
-					}
-				}
-
-				// Place to store the index to the closing part of the template
-				let endingIndex = false;
-
-				// Now if this is not a self closing tag it could have children so lets find the ending tag
-				if (!selfClosed) {
-					closingTagRegEx = new RegExp(`(?:<[\/]?${tagName}\s*[>]?)`, 'gm');
-
-					// Now scan the remaining template looking for the next proper closing tag
-					template = template.slice(openingTag.length);
-
-					let foundMatchingOpening = 0;
-
-					// console.log(nextClosingTag);
-					while (true) {
-
-						let nextElemTag = closingTagRegEx.exec(template);
-
-						if (!nextElemTag) {
-							break;
-						}
-
-						// check if this is a closing tag
-						if (nextElemTag[0].indexOf(`</${tagName}`) !== -1) {
-
-							if (foundMatchingOpening > 0) {
-
-								foundMatchingOpening -= 1;
-							}
-							else {
-
-								endingIndex = nextElemTag.index;
-							}
-						}
-						else {
-
-							// We got a opening tag, just found it.
-							foundMatchingOpening += 1;
-						}
-					}
-
-					// Check to see if we have the ending index. If we do then we know we dont have an error
-					if (endingIndex !== false) {
-
-						let iActualEndingIndex = endingIndex + (`</${tagName}>`).length
-
-						remaining = (template.slice(iActualEndingIndex).length > 0) ? template.slice(iActualEndingIndex) : false;
-
-						// Get the template section that we need to process
-						childContents = (endingIndex > 0) ? template.slice(0, endingIndex) : false;
-
-						// Setup element attrs and properties for the next proces
-						elemAttrProperties = getElemAttrProperties(openingTag, tagName);
-
+						sameElementOpen -= 1;
 					}
 					else {
 
-						let error = new Error("While processing template, no closing tag was found!")
-
-						reject(error);
+						// Found the matching closing tag
+						reEndingElemTag = nextMatchingTag
+						break;
 					}
 				}
 				else {
 
-					elemAttrProperties = getElemAttrProperties(openingTag, tagName);
-				}
-
-				// Filter out propertyless elements
-				if (elemAttrProperties.trim().length > 0) {
-
-					// Check to see if anything logic base exists here.
-					let logicTest = LOGIC_TAGREG.test(elemAttrProperties);
-
-					if (logicTest) {
-
-
-						
+					if (nextMatchingTag.index === reTemplateResults.index) {
+						continue;
 					}
 					else {
 
-						// Do a simple spit on attributes
-						let attributesList = elemAttrProperties.match(HTML_ATTRIBUTES_REGEX);
-
-						AST.attributes = [];
-
-						// Loop throught each attribute
-						for (let attr of attributesList) {
-
-							let keyValue = attr.split('=');
-
-							let attrTitle = keyValue[0];
-							let attrValue = removeAttrQuotes(keyValue[1]);
-
-							// Push the attribute onto the end!
-							AST.attributes.push({
-								static: true,
-								property: attrTitle,
-								value: attrValue
-							});
-
-						}
-
+						// We have a opening tag that matches, just count it for now.
+						sameElementOpen += 1;
 					}
+
 				}
-
-				// Rerturn my results
-				endResult = {
-					AST: AST,
-					children: childContents,
-					remaining: remaining
-				};
-
 			}
 			else {
 
-				// When we have comments, we dont want to fall back to the text parser, just incase a template developer comments out another html or logic tag.
+				console.log("FULL FAIL!");
 
-				AST.node = "comment";
-
-				// Get all of the comment and save off the remaining
-				let rawComment = template.slice(0, openingTag.length);
-				template = template.slice(openingTag.length);
-
-				AST.children = [
-					{
-						node: "text",
-						contents: rawComment.replace('<!--', '').replace('-->', '')
-					}
-				];
-
-				endResult = {
-					AST: AST,
-					children: false,
-					remaining: (template) ? template : false
-				};
-
+				break;
 			}
 
-			resolve(endResult);
+		}
 
-		});
+		if (reEndingElemTag) {
+
+			oHTMLSection.oCloseTag.sTag = reEndingElemTag[0];
+			oHTMLSection.oCloseTag.iStart = reEndingElemTag.index;
+			oHTMLSection.oCloseTag.iEnd = reEndingElemTag.index + reEndingElemTag[0].length;
+		}
+
+	}
+
+	return oHTMLSection;
+};
+
+var HTMLParser = function _html_parser() {
+
+	// This is the parser for this type of template contents.
+	const parser = (reTemplateResults) => {
+
+		let oAST = {
+			node: false,
+		};
+
+		// Get the full template string from the regular expressions results object
+		//let sFullTemplate = reTemplateResults.input;
+
+		// Get the discovered strong trigger that resulted in this parser being called
+		let sTemplateTrigger = reTemplateResults[0];
+
+		// Check to see if this is an HTML comments
+		if (sTemplateTrigger.indexOf('<!--') === -1) {
+
+			oAST.node = "elem";
+
+			let oElemSection = HTMLBlock(reTemplateResults);
+
+			console.log("==== oElemSection ====");
+			console.log(oElemSection);
+			console.log("======================");
+		}
+		else {
+
+			oAST.node = "comment";
+		}
 
 	};
 
-	function check(template) {
+	// Function is used to determine if the provided template string has contents that this parser can handle.
+	const check = (sTemplate) => {
 
-		return new Promise((resolve, reject) => {
+		// check the regular expression to see if it can find any HTML elements
+		let reCheck = HTML_TAGREGEX.exec(sTemplate);
 
-			let check = HTML_TAGREGEX.exec(template);
+		if (reCheck) {
 
-			if (check) {
+			let result = {
+				sSource: 'html',
+				fParser: parser,
+				reCheck: reCheck
+			};
 
-				let results = {
-					source: "html",
-					parser: parse,
-					results: check
-				}
+			return result;
 
-				resolve(results);
-			}
-			else {
+		}
 
-				resolve(false);
-			}
-
-		});
-
+		return false;
 	};
 
 	return {
 		check: check,
-		parse: parse
-	};
+		parser: parser,
+	}
 
 }
 
-module.exports = exports = new Parser();
+module.exports = exports = new HTMLParser();

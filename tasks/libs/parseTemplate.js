@@ -3,27 +3,25 @@
 // Load in the different parsers
 const HTMLParser = require('./parsers/html');
 const LOGICParser = require('./parsers/logic');
-const TEXTParser = require('./parsers/text');
+// const TEXTParser = require('./parsers/text');
+	
+let parsers = {};
+
+// // Add all the parsers to the parser object
+parsers.html = HTMLParser.parser;
+parsers.logic = LOGICParser.parser;
+// parsers.text = TEXTParser.parser;
+
+let checkers = {};
+
+// // Add all the check function to the check object
+checkers.html = HTMLParser.check;
+checkers.logic = LOGICParser.check;
+// templateChecks.text = TEXTParser.check;
 
 let _priv = {};
 
-let parsers = {};
-
-// Add all the parsers to the parser object
-parsers.html = HTMLParser.parser;
-parsers.logic = LOGICParser.parser;
-parsers.text = TEXTParser.parser;
-
-let templateChecks = {};
-
-// Add all the check function to the check object
-templateChecks.html = HTMLParser.check;
-templateChecks.logic = LOGICParser.check;
-templateChecks.text = TEXTParser.check;
-
 _priv.cleanupTemplate = (template) => {
-
-	console.log("cleanupTemplate");
 
 	// Remove all multi spaces
 	template = template.replace(/ +/g, " ");
@@ -40,180 +38,126 @@ _priv.cleanupTemplate = (template) => {
 	return template;
 };
 
-// This function loops through all of the parser tags looking for 
-_priv.parse = (template, templateObj) => {
+_priv.processTemplate = (oTemplate, fCallback) => {
 
-	function findNextSteps(stepTemplate) {
+	const findNextStep = function _find_next_step(sSrouce) {
 
-		return new Promise((resolve, reject) => {
+		let possibleSteps = [];
 
-			let checkers = Object.keys(templateChecks);
+		// First we need to loop through parser check processes
+		for (let check in checkers) {
+			
+			let results = checkers[check](sSrouce);
 
-			let checkPromises = [];
-
-			for (let c = 0, cLen = checkers.length; c < cLen; c++) {
-
-				checkPromises.push(templateChecks[checkers[c]](stepTemplate));
+			// the contents of the checker finds something it can work with its results are retured here.
+			if (results) {
+				possibleSteps.push(results);
 			}
 
-			Promise.all(checkPromises)
-				.then((checkResults) => {
+		}
 
-					let steps = [];
-
-					for (let cr = 0, crLen = checkResults.length; cr < crLen; cr++) {
-
-						if (checkResults[cr]) {
-
-							steps.push(checkResults[cr]);
-						}
-
-					}
-
-					if (steps.length) {
-
-						resolve(steps);
-					}
-					else {
-
-						resolve(false);
-					}
-
-				})
-				.catch((err) => {
-
-					console.log(err);
-
-					console.log("Error occured when looping through all template check promises");
-				})
-
-		});
-	}
-
-	return new Promise((resolve, reject) => {
-
-		var finishedAST = [];
-		
-		// Go out and find the next tag and let the proper parser do its job
-		(async function keepParsing(temp, templateObj) {
-
-			// console.log("=====================");
-			// console.log(temp);
-
-			let possibleSteps = await findNextSteps(temp);
-
-			let nextStep = false;
+		if (possibleSteps.length) {
 
 			if (possibleSteps.length === 1) {
 
-				nextStep = possibleSteps[0];
+				return possibleSteps[0];
 			}
 			else {
 
-				nextStep = possibleSteps.reduce((prev, curr) => {
-
-					return prev.results.index < curr.results.index ? prev : curr; 
-				});
+				console.log(possibleSteps.length);
 
 			}
 
-			// check to see if the index starts at 0
-			if (nextStep.source !== "text" && nextStep.results && nextStep.results.index > 0) {
+		}
+		else {
 
-				let inlineCheck = await TEXTParser.inlineCheck(temp);
+			return false;
+		}
+	}
 
-				if (inlineCheck) {
-					nextStep = inlineCheck;
-				}
-			}
+	let finishedAST = [];
 
-			let processResults = await nextStep.parser(nextStep.results, templateObj, new parseTemplate);
+	(function parse(sSource) {
 
-			//console.log("processResults", processResults);
+		if (sSource.length) {
 
-			// Add what we have to the finsihed AST array.
-			if (processResults.AST) {
+			// Request the next possible step
+			let oNextStep = findNextStep(sSource);
 
-				// Save off this elements AST.
-				finishedAST.push(processResults.AST);
-			}
+			if (oNextStep) {
 
-			// Check for and deal with children first!
-			if (processResults.children) {
+				let stepResults = oNextStep.fParser(oNextStep.reCheck);
 
-				//console.log(parseTemplate);
-
-				// Call the process for all of the children
-				let childResults = await _priv.parse(processResults.children, templateObj, new parseTemplate);
-
-				// Check and verify that the children attribute exists for this AST parent.
-				if (!finishedAST[finishedAST.length -1].children) {
-					finishedAST[finishedAST.length -1].children = false;
-				}
-
-				// Add the children AST
-				finishedAST[finishedAST.length -1].children = childResults;
-
-				// Check to see if we have leftover template code (siblings)
-				if (processResults.remaining) {
-
-					keepParsing(processResults.remaining, templateObj);
-				}
-				else {
-
-					resolve(finishedAST);
-				}
 			}
 			else {
 
-				if (processResults.remaining) {
+				let error = new Error(`No valid next step could be found:`);
 
-					keepParsing(processResults.remaining, templateObj);
-				}
-				else {
-
-					resolve(finishedAST);
-				}
-
+				fCallback(error)
 			}
 
-		})(template, templateObj);
-	});
+		}
+		else {
+
+			if (finishedAST.length) {
+
+				fCallback(finishedAST);
+			}
+			else {
+
+				fCallback(false);
+			}
+		}
+
+	})(oTemplate.workingCopy);
+
 };
 
 var parseTemplate = function _parse_template() {
 
-	function parse(templateStr, templateObj) {	
+	const parse = (oTemplate) => {
 
-		let template = _priv.cleanupTemplate(templateStr);
+		return new Promise((resolve, reject) => {
 
-		return new Promise((resolve, reject) => {	
+			// Make a working copy of the template
+			oTemplate.workingCopy = _priv.cleanupTemplate(oTemplate.raw);
 
-			if (template.length) {
+			console.log(oTemplate);
 
-				_priv.parse(template, templateObj)
-					.then((finishedAST) => {
+			// Verify we have contents before attempting to parse the template.
+			if (oTemplate.workingCopy.length) {
 
-						resolve(finishedAST);
-					})
-					.catch((err) => {
+				_priv.processTemplate(oTemplate, (templateResults) => {
 
-						console.log("Error when parsing");
-					})
+					console.log("templateResults", templateResults);
+
+					if (templateResults) {
+
+					}
+					else {
+
+						let error = new Error(`Template: ${oTemplate.path} contained unknown that our internal parsers could handle. Please review this template.`)
+
+						reject(error);
+					}
+
+				});
+
 			}
 			else {
 
-				// Template is empty return nothing.
-				resolve([]);
+				console.log(`Template: ${oTemplate.path} is being skipped as it has no contents`);
+
+				resolve(false);
 			}
 
 		});
-
-	};
+	}
 
 	return {
 		parse: parse
 	};
+
 };
 
 module.exports = exports = new parseTemplate();
