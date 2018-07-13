@@ -228,12 +228,13 @@ module.exports = function(grunt) {
 					}
 				}
 
+
 				// Loop through all the template files in a series
 				(function nextTemplate(templateFilePaths) {
 
 					let templatePath = templateFilePaths.shift();
 
-					if (templatePath.length) {
+					if (templatePath) {
 
 						let templateObj = {
 							path: templatePath,
@@ -287,11 +288,15 @@ module.exports = function(grunt) {
 										})
 										.catch((error) => {
 
+											console.log("Error reading template");
+
 											console.log(error);
 										});
 
 								}
 								else {
+
+									console.log(`Template: ${templatePath} is being skipped as it is empty.`);
 
 									if (templateFilePaths.length) {
 

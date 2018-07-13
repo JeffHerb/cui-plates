@@ -5,7 +5,7 @@ const LOGIC_TAGREG = /{{([^\}}]+)}}/;
 
 const HTML_OPENING_TAGREGEX = /^(.*?)(?:<.[a-zA-Z0-9\-]>)/;
 
-const TEXT_REG = /.+?/g;
+const TEXT_REG = /.+/g;
 
 var Parser = function _html_parser() {
 
@@ -59,7 +59,7 @@ var Parser = function _html_parser() {
 
 			let results = false;
 
-			if (htmlOpeningCheck && !logicOpeningCheck) {
+			if (!htmlOpeningCheck && !logicOpeningCheck) {
 
 				results = {
 					source: "text",
@@ -90,7 +90,10 @@ var Parser = function _html_parser() {
 			let htmlCheck = HTML_TAGREGEX.exec(template);
 			let logicCheck = LOGIC_TAGREG.exec(template);
 
-			if (!htmlCheck && !logicCheck) {
+			console.log(htmlCheck);
+			console.log(logicCheck);
+
+			if (htmlCheck === null && logicCheck === null) {
 
 				let results = {
 					source: "text",
@@ -106,6 +109,11 @@ var Parser = function _html_parser() {
 				}
 
 				resolve(results);
+			}
+			else if (htmlCheck && logicCheck === null) {
+
+				console.log("We found a htmlCheck but no logic");
+				
 			}
 			else {
 

@@ -3,21 +3,21 @@
 // Load in the different parsers
 const HTMLParser = require('./parsers/html');
 const LOGICParser = require('./parsers/logic');
-// const TEXTParser = require('./parsers/text');
+const TEXTParser = require('./parsers/text');
 	
 let parsers = {};
 
 // // Add all the parsers to the parser object
 parsers.html = HTMLParser.parser;
 parsers.logic = LOGICParser.parser;
-// parsers.text = TEXTParser.parser;
+parsers.text = TEXTParser.parser;
 
 let checkers = {};
 
 // // Add all the check function to the check object
 checkers.html = HTMLParser.check;
 checkers.logic = LOGICParser.check;
-// templateChecks.text = TEXTParser.check;
+//checkers.text = TEXTParser.check;
 
 let _priv = {};
 
@@ -40,9 +40,11 @@ _priv.cleanupTemplate = (template) => {
 
 _priv.processTemplate = (oTemplate, fCallback) => {
 
+	// Sub function will determine the next step based on first avaliable index.
 	const findNextStep = function _find_next_step(sSrouce) {
 
 		let possibleSteps = [];
+		let soonestStep = false;
 
 		// First we need to loop through parser check processes
 		for (let check in checkers) {
@@ -60,22 +62,59 @@ _priv.processTemplate = (oTemplate, fCallback) => {
 
 			if (possibleSteps.length === 1) {
 
-				return possibleSteps[0];
+				soonestStep = possibleSteps[0];
 			}
 			else {
 
-				console.log(possibleSteps.length);
+				for (let ps = 0, psLen = possibleSteps.length; ps < psLen; ps++) {
+
+					let rePS = possibleSteps[ps].reCheck;
+
+					if (soonestStep === false) {
+						soonestStep = possibleSteps[ps];
+					}
+					else {
+
+						if ( rePS.index < soonestStep.reCheck.index ) {
+
+							soonestStep = possibleSteps[ps];
+						}
+					}
+
+				}
 
 			}
 
+			if (soonestStep.reCheck.index > 0) {
+
+				console.log("Soonest step does not start at 0");
+
+				let reInlineTextCheck = TEXTParser.check(sSrouce);
+
+				if (reInlineTextCheck.reCheck.index < soonestStep.reCheck.index) {
+
+					return reInlineTextCheck;
+				}
+
+			}
+
+			return soonestStep;
 		}
 		else {
+
+			// No checker passed so double check with text parser
+			let reTextCheck = TEXTParser.check(sSrouce);
+
+			if (reTextCheck) {
+
+				return reTextCheck;
+			}
 
 			return false;
 		}
 	}
 
-	let finishedAST = [];
+	let oFinishedAST = [];
 
 	(function parse(sSource) {
 
@@ -86,12 +125,69 @@ _priv.processTemplate = (oTemplate, fCallback) => {
 
 			if (oNextStep) {
 
-				let stepResults = oNextStep.fParser(oNextStep.reCheck);
+				let oStepResults = oNextStep.fParser(oNextStep.reCheck);
+
+				if (oStepResults instanceof Error) {
+					fCallback(oStepResults);
+				}
+				else {
+
+					// Check to see if we got a valid set of results back.
+					if (oStepResults && oStepResults.oAST) {
+
+						// Add the current AST results to the finished set
+						oFinishedAST.push(oStepResults.oAST);
+
+						// Check to see if this element has sub children
+						if (oStepResults.sChildren) {
+
+							let oChildTemplate = Object.assign({}, oTemplate);
+
+							oChildTemplate.bChildRun = true;
+							oChildTemplate.workingCopy = oStepResults.sChildren;
+
+							// Call the processTemplate directly and build out all the children
+							_priv.processTemplate(oChildTemplate, (oChildTemplateResults) => {
+
+								if (oChildTemplateResults instanceof Error) {
+									fCallback(oChildTemplateResults);
+								}
+
+								if (oChildTemplateResults) {
+
+									// Get the last array element.
+									let oLastAST = oFinishedAST.length -1;
+
+									oFinishedAST[oLastAST].contents = oChildTemplateResults;
+								}
+
+							});
+
+						}
+
+						// Check for remaining
+						if (oStepResults.sRemaining) {
+
+							parse(oStepResults.sRemaining);
+						}
+						else {
+
+							fCallback(oFinishedAST);
+						}
+
+					}
+					else {
+
+						// No results returned
+						console.log("Empty template returned");
+
+					}
+				}
 
 			}
 			else {
 
-				let error = new Error(`No valid next step could be found:`);
+				let error = new Error(`No valid next step could be found for: ${oTemplate.path}\n Current working string: "${sSource}"`);
 
 				fCallback(error)
 			}
@@ -122,24 +218,30 @@ var parseTemplate = function _parse_template() {
 			// Make a working copy of the template
 			oTemplate.workingCopy = _priv.cleanupTemplate(oTemplate.raw);
 
-			console.log(oTemplate);
-
 			// Verify we have contents before attempting to parse the template.
 			if (oTemplate.workingCopy.length) {
 
-				_priv.processTemplate(oTemplate, (templateResults) => {
+				console.log(`Processing: ${oTemplate.path}`);
 
-					console.log("templateResults", templateResults);
+				_priv.processTemplate(oTemplate, (oTemplateResults) => {
 
-					if (templateResults) {
+					if (oTemplateResults instanceof Error) {
 
-					}
-					else {
+						let errorMessage = oTemplateResults.message;
 
-						let error = new Error(`Template: ${oTemplate.path} contained unknown that our internal parsers could handle. Please review this template.`)
+						// Swap out error message template.path string with actual.
+						let error = new Error(errorMessage.replace('|template.path|', oTemplate.path));
 
 						reject(error);
 					}
+					else {
+
+						console.log("Finished template");
+						console.log(oTemplateResults);
+
+						resolve(oTemplateResults);
+					}
+
 
 				});
 
