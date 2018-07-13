@@ -6,13 +6,38 @@ const TEXT_REGEX = /.+/;
 
 const findNonTextNodes = (reTemplateResults) => {
 
+	let oTextMeta = {
+		sContents: false,
+		sRemaining: false
+	};
+
 	let sTemplate = reTemplateResults.input;
 
 	// Check to see if HTML or logic sections exist
 
-	console.log(sTemplate);
+	// Run the basic element and logic check
+	let reHTMLCheck = HTML_TAGREGEX.exec(sTemplate);
+	let reLogicCheck = LOGIC_TAGREGEX.exec(sTemplate);
 
-	return false;
+	// When nothing is found return then the whole input
+	if (!reHTMLCheck && !reLogicCheck) {
+
+		oTextMeta.sContents = sTemplate;
+	}
+	else if (reHTMLCheck && !reLogicCheck) {
+
+		// Get the substring
+		oTextMeta.sContents = sTemplate.slice(reTemplateResults.index, reHTMLCheck.index);
+		oTextMeta.sRemaining = sTemplate.slice(reHTMLCheck.index);
+	}
+	else if (!reHTMLCheck && reLogicCheck) {
+
+	}
+	else {
+
+	}
+
+	return oTextMeta;
 
 }
 
@@ -21,13 +46,27 @@ var TextParser = function _text_parser() {
 	// This is the parser for this type of template contents.
 	const parser = (reTemplateResults) => {
 
-		let textResults = findNonTextNodes(reTemplateResults);
+		let oTextMeta = findNonTextNodes(reTemplateResults);
 
 		let oEndResults = {
 			oAST: false,
-			sChildren: false,
+			sChildren: false, // Remember text can never have children!
 			sRemaining: false
 		};
+
+		let oAST = {
+			node: "text",
+			contents: false
+		};
+
+		// Save off the string of text
+		oAST.contents = oTextMeta.sContents;
+
+		if (oTextMeta.sRemaining) {
+			oEndResults.sRemaining = oTextMeta.sRemaining;
+		}
+
+		oEndResults.oAST = oAST;
 
 		return oEndResults;
 

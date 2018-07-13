@@ -8815,7 +8815,12 @@ define('plates',[],function () { 'use strict';
 	            "node": "elem",
 	            "tag": "p",
 	            "attributes": false,
-	            "contents": false
+	            "contents": [
+	                {
+	                    "node": "text",
+	                    "contents": "This is a single element template."
+	                }
+	            ]
 	        }
 	    ],
 	    "commentHTMLTest": [
@@ -8830,7 +8835,12 @@ define('plates',[],function () { 'use strict';
 	                    "node": "elem",
 	                    "tag": "p",
 	                    "attributes": false,
-	                    "contents": false
+	                    "contents": [
+	                        {
+	                            "node": "text",
+	                            "contents": "No Comment here"
+	                        }
+	                    ]
 	                }
 	            ]
 	        },
@@ -8851,7 +8861,12 @@ define('plates',[],function () { 'use strict';
 	                    "node": "elem",
 	                    "tag": "p",
 	                    "attributes": false,
-	                    "contents": false
+	                    "contents": [
+	                        {
+	                            "node": "text",
+	                            "contents": "There is a comment above"
+	                        }
+	                    ]
 	                }
 	            ]
 	        }
@@ -8872,7 +8887,27 @@ define('plates',[],function () { 'use strict';
 	            "node": "elem",
 	            "tag": "p",
 	            "attributes": false,
-	            "contents": false
+	            "contents": [
+	                {
+	                    "node": "text",
+	                    "contents": "This requires some additional "
+	                },
+	                {
+	                    "node": "elem",
+	                    "tag": "em",
+	                    "attributes": false,
+	                    "contents": [
+	                        {
+	                            "node": "text",
+	                            "contents": "emphasis"
+	                        }
+	                    ]
+	                },
+	                {
+	                    "node": "text",
+	                    "contents": "."
+	                }
+	            ]
 	        }
 	    ],
 	    "nestedHTMLTest": [
@@ -8887,7 +8922,12 @@ define('plates',[],function () { 'use strict';
 	                    "node": "elem",
 	                    "tag": "p",
 	                    "attributes": false,
-	                    "contents": false
+	                    "contents": [
+	                        {
+	                            "node": "text",
+	                            "contents": "First div."
+	                        }
+	                    ]
 	                },
 	                {
 	                    "node": "elem",
@@ -8900,7 +8940,12 @@ define('plates',[],function () { 'use strict';
 	                            "node": "elem",
 	                            "tag": "p",
 	                            "attributes": false,
-	                            "contents": false
+	                            "contents": [
+	                                {
+	                                    "node": "text",
+	                                    "contents": "First inner div!"
+	                                }
+	                            ]
 	                        }
 	                    ]
 	                }
@@ -8917,7 +8962,12 @@ define('plates',[],function () { 'use strict';
 	                    "node": "elem",
 	                    "tag": "span",
 	                    "attributes": false,
-	                    "contents": false
+	                    "contents": [
+	                        {
+	                            "node": "text",
+	                            "contents": "Second Div"
+	                        }
+	                    ]
 	                }
 	            ]
 	        }

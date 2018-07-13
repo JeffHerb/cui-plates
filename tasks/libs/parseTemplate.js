@@ -87,10 +87,10 @@ _priv.processTemplate = (oTemplate, fCallback) => {
 
 			if (soonestStep.reCheck.index > 0) {
 
-				console.log("Soonest step does not start at 0");
-
+				// Run the inline text check
 				let reInlineTextCheck = TEXTParser.check(sSrouce);
 
+				// Double check the indicies to verify the text comes first.
 				if (reInlineTextCheck.reCheck.index < soonestStep.reCheck.index) {
 
 					return reInlineTextCheck;
