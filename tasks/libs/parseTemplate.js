@@ -236,8 +236,8 @@ var parseTemplate = function _parse_template() {
 					}
 					else {
 
-						console.log("Finished template");
-						console.log(oTemplateResults);
+						//console.log("Finished template");
+						//console.log(oTemplateResults);
 
 						resolve(oTemplateResults);
 					}

@@ -8810,7 +8810,7 @@ define('plates',[],function () { 'use strict';
 	});
 
 	const templates = {
-	    "blockHTMLTest": [
+	    "HTMLBlockElem": [
 	        {
 	            "node": "elem",
 	            "tag": "p",
@@ -8818,12 +8818,27 @@ define('plates',[],function () { 'use strict';
 	            "contents": [
 	                {
 	                    "node": "text",
-	                    "contents": "This is a single element template."
+	                    "contents": "This requires some additional "
+	                },
+	                {
+	                    "node": "elem",
+	                    "tag": "em",
+	                    "attributes": false,
+	                    "contents": [
+	                        {
+	                            "node": "text",
+	                            "contents": "emphasis"
+	                        }
+	                    ]
+	                },
+	                {
+	                    "node": "text",
+	                    "contents": "."
 	                }
 	            ]
 	        }
 	    ],
-	    "commentHTMLTest": [
+	    "HTMLCommentElem": [
 	        {
 	            "node": "elem",
 	            "tag": "div",
@@ -8871,7 +8886,7 @@ define('plates',[],function () { 'use strict';
 	            ]
 	        }
 	    ],
-	    "inlineBlockElement": [
+	    "HTMLInlineElem": [
 	        {
 	            "node": "elem",
 	            "tag": "input",
@@ -8882,35 +8897,7 @@ define('plates',[],function () { 'use strict';
 	            "contents": false
 	        }
 	    ],
-	    "inlineTextElements": [
-	        {
-	            "node": "elem",
-	            "tag": "p",
-	            "attributes": false,
-	            "contents": [
-	                {
-	                    "node": "text",
-	                    "contents": "This requires some additional "
-	                },
-	                {
-	                    "node": "elem",
-	                    "tag": "em",
-	                    "attributes": false,
-	                    "contents": [
-	                        {
-	                            "node": "text",
-	                            "contents": "emphasis"
-	                        }
-	                    ]
-	                },
-	                {
-	                    "node": "text",
-	                    "contents": "."
-	                }
-	            ]
-	        }
-	    ],
-	    "nestedHTMLTest": [
+	    "HTMLNestedElem": [
 	        {
 	            "node": "elem",
 	            "tag": "div",
@@ -8970,6 +8957,14 @@ define('plates',[],function () { 'use strict';
 	                    ]
 	                }
 	            ]
+	        }
+	    ],
+	    "LOGICContext": [
+	        {
+	            "node": "elem",
+	            "tag": "p",
+	            "attributes": false,
+	            "contents": false
 	        }
 	    ]
 	};
