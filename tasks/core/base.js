@@ -38,7 +38,7 @@ export default class plates {
 				return compiledContext;
 			}
 
-			console.log("Done!");
+			console.log("Runtime /Done!");
 
 		})
 

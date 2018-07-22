@@ -127,10 +127,14 @@ _priv.processTemplate = (oTemplate, fCallback) => {
 
 				let oStepResults = oNextStep.fParser(oNextStep.reCheck);
 
+				console.log("oStepResults", oStepResults);
+
 				if (oStepResults instanceof Error) {
 					fCallback(oStepResults);
 				}
 				else {
+
+					console.log("oStepResults", oStepResults);
 
 					// Check to see if we got a valid set of results back.
 					if (oStepResults && oStepResults.oAST) {
@@ -178,8 +182,10 @@ _priv.processTemplate = (oTemplate, fCallback) => {
 					}
 					else {
 
+						console.log()
+
 						// No results returned
-						console.log("Empty template returned");
+						console.log(`${oTemplate.path} returned empty!`);
 
 					}
 				}
