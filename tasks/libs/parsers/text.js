@@ -59,11 +59,11 @@ var TextParser = function _text_parser() {
 
 		let oAST = {
 			node: "text",
-			contents: false
+			text: false
 		};
 
 		// Save off the string of text
-		oAST.contents = oTextMeta.sContents;
+		oAST.text = oTextMeta.sContents;
 
 		if (oTextMeta.sRemaining) {
 			oEndResults.sRemaining = oTextMeta.sRemaining;

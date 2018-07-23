@@ -8818,7 +8818,7 @@ define('plates',[],function () { 'use strict';
 	            "contents": [
 	                {
 	                    "node": "text",
-	                    "contents": "This requires some additional "
+	                    "text": "This requires some additional "
 	                },
 	                {
 	                    "node": "elem",
@@ -8827,13 +8827,13 @@ define('plates',[],function () { 'use strict';
 	                    "contents": [
 	                        {
 	                            "node": "text",
-	                            "contents": "emphasis"
+	                            "text": "emphasis"
 	                        }
 	                    ]
 	                },
 	                {
 	                    "node": "text",
-	                    "contents": "."
+	                    "text": "."
 	                }
 	            ]
 	        }
@@ -8853,7 +8853,7 @@ define('plates',[],function () { 'use strict';
 	                    "contents": [
 	                        {
 	                            "node": "text",
-	                            "contents": "No Comment here"
+	                            "text": "No Comment here"
 	                        }
 	                    ]
 	                }
@@ -8879,7 +8879,7 @@ define('plates',[],function () { 'use strict';
 	                    "contents": [
 	                        {
 	                            "node": "text",
-	                            "contents": "There is a comment above"
+	                            "text": "There is a comment above"
 	                        }
 	                    ]
 	                }
@@ -8912,7 +8912,7 @@ define('plates',[],function () { 'use strict';
 	                    "contents": [
 	                        {
 	                            "node": "text",
-	                            "contents": "First div."
+	                            "text": "First div."
 	                        }
 	                    ]
 	                },
@@ -8930,7 +8930,7 @@ define('plates',[],function () { 'use strict';
 	                            "contents": [
 	                                {
 	                                    "node": "text",
-	                                    "contents": "First inner div!"
+	                                    "text": "First inner div!"
 	                                }
 	                            ]
 	                        }
@@ -8952,7 +8952,7 @@ define('plates',[],function () { 'use strict';
 	                    "contents": [
 	                        {
 	                            "node": "text",
-	                            "contents": "Second Div"
+	                            "text": "Second Div"
 	                        }
 	                    ]
 	                }
@@ -8967,7 +8967,7 @@ define('plates',[],function () { 'use strict';
 	            "contents": [
 	                {
 	                    "node": "text",
-	                    "contents": "This is a text value with "
+	                    "text": "This is a text value with "
 	                },
 	                {
 	                    "node": "logic",
@@ -8977,7 +8977,7 @@ define('plates',[],function () { 'use strict';
 	                },
 	                {
 	                    "node": "text",
-	                    "contents": "found inside of a logic context wrapper."
+	                    "text": "found inside of a logic context wrapper."
 	                }
 	            ]
 	        }
@@ -9002,74 +9002,133 @@ define('plates',[],function () { 'use strict';
 
 	var elem = new Elem();
 
+	class Text {
+
+		constuctor() {}
+
+		parse(oContext, oASTNode) {
+
+			// Start by creating the element,
+			let textNode = document.createTextNode(oASTNode.text);
+
+			//console.log("textNode", textNode);
+
+			return textNode;
+		}
+
+	}
+
+	var text = new Text();
+
 	const ASTs = templates;
 
 	// Helper function that determins the proper AST template and calls the corresponding parser functions
-	const ASTsToDOM = (oContext, aPassedAST) => {
+	const ASTsToDOM = (oContext, aPassedAST, fCallback) => {
 
-		let aRootAST = false;
+		console.log("AST to DOM Called!");
+		//console.log(oContext, aPassedAST, fCallback);
 
+		let aRootASTs = false;
+
+		// Check to see if a passed 
 		if (aPassedAST) {
 
-			console.log("We need to use the passed AST credentials.");
-
-			aRootAST = aPassedAST.slice();
+			aRootASTs = aPassedAST;
 		} else if (oContext && oContext.template) {
 
-			aRootAST = ASTs[oContext.template].slice();
-		} else {
-
-			console.log("We should error!");
+			aRootASTs = ASTs[oContext.template].slice();
 		}
 
-		// Now process down the AST
-		console.log(aRootAST);
+		let dCollectedDOMFragments = false;
 
-		(function nextASTNode(aAST) {
+		(function nextASTNode(aASTs) {
 
-			let oCurrentNode = aAST.shift();
-			let fNodeParser = false;
+			let oCurrentASTNode = aASTs.shift();
+			let fParser = false;
 
-			console.log("Current node: ", oCurrentNode);
-
-			// Determin the node type and process down that node into a actual document fragment
-			switch (oCurrentNode.node) {
+			switch (oCurrentASTNode.node) {
 
 				case "elem":
+					fParser = elem.parse;
+					break;
 
-					fNodeParser = elem.parse;
-
+				case "text":
+					fParser = text.parse;
 					break;
 
 				default:
 
-					console.log("Unknown node prasesor");
-
 					break;
 
 			}
 
-			let dASTDOM = fNodeParser(oContext, oCurrentNode);
+			if (fParser) {
 
-			console.log("What was compiled: ", dASTDOM);
+				let dParserResults = fParser(oContext, oCurrentASTNode) || false;
 
-			// Check to see if something was returned
-			if (dASTDOM) {
+				if (dParserResults) {
 
-				console.log("Generated: ", dASTDOM);
+					if (!dCollectedDOMFragments) {
+						dCollectedDOMFragments = document.createDocumentFragment();
+					}
+
+					//Check for children
+					if (oCurrentASTNode.contents && oCurrentASTNode.contents.length) {
+
+						console.log("Parent Parse Results", dParserResults);
+
+						// Call a sub ASTsToDOM instance because we have children.
+						ASTsToDOM(oContext, oCurrentASTNode.contents, dChildrenFragements => {
+
+							// Append all the children to the parent
+							dParserResults.appendChild(dChildrenFragements);
+
+							// Append the parent to the collection
+							dCollectedDOMFragments.appendChild(dParserResults);
+
+							if (aASTs.length) {
+								nextASTNode(aASTs);
+							} else {
+
+								fCallback(dCollectedDOMFragments);
+							}
+						});
+					} else {
+
+						// No children so just add it to the return.
+						dCollectedDOMFragments.appendChild(dParserResults);
+
+						if (aASTs.length) {
+							nextASTNode(aASTs);
+						} else {
+
+							fCallback(dCollectedDOMFragments);
+						}
+					}
+				} else {
+
+					// Check to see if this item has contents, if so we have a problem because contents can not be appended if the last result failed!
+					if (oCurrentASTNode.contents && oCurrentASTNode.contents.length) ; else {
+
+						if (aASTs.length) {
+							nextASTNode(aASTs);
+						} else {
+
+							fCallback(dCollectedDOMFragments);
+						}
+					}
+				}
 			} else {
 
-				if (aAST.length) {
-					nextASTNode(aAST);
-				}
+				console.log("Failed to find parser in ASTsToDOM");
 			}
-		})(aRootAST.slice());
+		})(aRootASTs);
 	};
 
 	// Generator will loop through a context array and parse them one at a time.
-	const Generator = aContext => {
+	const Generator = (aContext, fCallback) => {
 
-		let dDOMFragment = false; //document.createDocumentFragment();
+		let dFinishedContext = document.createDocumentFragment();
 
 		(function nextContext(aContexts) {
 
@@ -9078,59 +9137,32 @@ define('plates',[],function () { 'use strict';
 			console.log("oCurrentContext", oCurrentContext);
 
 			// Porcess said context
-			let processedContext = ASTsToDOM(oCurrentContext);
+			ASTsToDOM(oCurrentContext, false, dProcessedContext => {
 
-			console.log("processedContext", processedContext);
+				// Append results to finished context
+				dFinishedContext.appendChild(dProcessedContext);
 
-			if (aContexts.length) {
-				nextContext(aContexts);
-			}
+				if (aContexts.length) {
+					nextContext(aContexts);
+				} else {
+
+					fCallback(dFinishedContext);
+				}
+			});
 		})(aContext);
-
-		// // Loop over the context
-		// for (let nextContext of aContext) {
-
-		// 	let compiledContext = ASTsToDOM(nextContext);
-
-		// 	if (compiledContext instanceof Error) {
-
-		// 		console.error(Error.message);
-
-		// 		return false;
-
-		// 	}
-		// 	else {
-
-		// 		// If something returns add it to the running fragment
-		// 		if (compiledContext) {
-		// 			dDOMFragment.appendChild(compiledContext);
-		// 		}
-		// 	}
-
-		// 	console.log("Compiled context:", compiledContext);
-		// }
-
-		console.log("Finished with generator");
-
-		return dDOMFragment;
 	};
 
 	class Runtime {
 
 		constructor() {}
 
-		generate(aContext, cb) {
+		generate(aContext, fCallback) {
 
-			//return new Promise((resolve, reject) => {
+			// Call the private generation function
+			Generator(aContext, function (dFinishedGeneration) {
 
-			//resolve(Generator(aContext));
-			//});
-
-			let compiledContext = Generator(aContext);
-
-			if (typeof cb === "function") {
-				cb(compiledContext);
-			}
+				fCallback(dFinishedGeneration);
+			});
 		}
 	}
 

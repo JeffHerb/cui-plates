@@ -17,7 +17,7 @@ var Parser = function _html_parser() {
 
 			let AST = {
 				node: 'text',
-				contents: false // Take the input value as grunt watch rebuilds kill the context sometimes
+				text: false // Take the input value as grunt watch rebuilds kill the context sometimes
 			};
 
 			let remaining = false;
@@ -32,12 +32,12 @@ var Parser = function _html_parser() {
 				let temp = fullText.slice(currentTemplate.index.start, currentTemplate.index.end);
 
 				// Append the contents to the AST
-				AST.contents = temp;
+				AST.text = temp;
 			}
 			else {
 
 				// Process a string
-				AST.contents = currentTemplate.text;
+				AST.text = currentTemplate.text;
 			}
 
 			resolve({
