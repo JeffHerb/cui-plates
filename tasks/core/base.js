@@ -20,8 +20,6 @@ export default class plates {
 			context = [ context ];
 		}
 
-		console.log("Context to be processed:", context);
-
 		Runtime.generate(context, function(compiledContext) {
 
 			if (target) {

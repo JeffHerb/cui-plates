@@ -6,12 +6,8 @@ class Text {
 
 	parse(oContext, oASTNode) {
 
-		// Start by creating the element,
-		let textNode = document.createTextNode(oASTNode.text);
-
-		//console.log("textNode", textNode);
-
-		return textNode;
+		// This is simple so just put the text into the text node and return the whole node.
+		return document.createTextNode(oASTNode.text);;
 	}
 
 }

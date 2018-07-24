@@ -1,5 +1,8 @@
 'use strict';
 
+// Utilities
+const ATTRIBUTES_UTIL = require('./utils/attributes');
+
 // Look for html tag structure "<" followed by name and attributes and ends with ">"
 const HTML_TAGREGEX = /<(?:"[^"]*"['"]*|'[^']*'['"]*|[^'">])+>/;
 
@@ -205,8 +208,13 @@ var HTMLParser = function _html_parser() {
 			// Save off the tag
 			oAST.tag = oElemSection.oOpenTag.sTag;
 
-			// Save off the attributes
-			oAST.attributes = oElemSection.oOpenTag.aAttributes;
+			let oFinishedAttributes = ATTRIBUTES_UTIL.parser(oElemSection.oOpenTag.aAttributes);
+
+			if (oFinishedAttributes.block.length || oFinishedAttributes.simple.length) {
+
+				// Save off the attributes
+				oAST.attributes = oFinishedAttributes;
+			}
 
 			oEndResults.oAST = oAST;
 
@@ -218,7 +226,7 @@ var HTMLParser = function _html_parser() {
 			let oElemSection = HTMLBlock(reTemplateResults);
 
 			// Lets get the text out of the comment
-			oAST.contents = sTemplate.slice(oElemSection.oOpenTag.iEnd, oElemSection.oCloseTag.iStart);
+			oAST.text = sTemplate.slice(oElemSection.oOpenTag.iEnd, oElemSection.oCloseTag.iStart).trim();
 
 			// Save of any remaining template contents.
 			sRemaining = sTemplate.slice(oElemSection.oCloseTag.iEnd);

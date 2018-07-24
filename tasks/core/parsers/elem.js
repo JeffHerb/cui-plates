@@ -1,3 +1,5 @@
+import ATTRIBUTES_PARSER from './utils/attributes';
+
 class Elem {
 
 	constuctor() {
@@ -6,12 +8,15 @@ class Elem {
 
 	parse(oContext, oASTNode) {
 
-		console.log("In Elem node processor");
-
 		// Start by creating the element,
 		let dNodeElem = document.createElement(oASTNode.tag);
 
+		if (oASTNode.attributes) {
 
+			ATTRIBUTES_PARSER.parse(dNodeElem, oContext, oASTNode.attributes);
+		}
+
+		// Return this element!
 		return dNodeElem;
 
 	}

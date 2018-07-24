@@ -152,10 +152,6 @@ var LogicParser = function _logic_parser() {
 				return error.message;
 			}
 
-			console.log("Callback fallback");			
-
-			console.log(oEndResult);
-
 			return oEndResult;
 
 		}

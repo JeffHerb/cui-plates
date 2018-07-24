@@ -8842,9 +8842,21 @@ define('plates',[],function () { 'use strict';
 	        {
 	            "node": "elem",
 	            "tag": "div",
-	            "attributes": [
-	                "class=\"no-comment\""
-	            ],
+	            "attributes": {
+	                "block": [],
+	                "simple": [
+	                    {
+	                        "oName": {
+	                            "sNode": "static",
+	                            "sName": "class"
+	                        },
+	                        "oValue": {
+	                            "sNode": "static",
+	                            "contents": "no-comment"
+	                        }
+	                    }
+	                ]
+	            },
 	            "contents": [
 	                {
 	                    "node": "elem",
@@ -8862,15 +8874,28 @@ define('plates',[],function () { 'use strict';
 	        {
 	            "node": "elem",
 	            "tag": "div",
-	            "attributes": [
-	                "class=\"with-comment\""
-	            ],
+	            "attributes": {
+	                "block": [],
+	                "simple": [
+	                    {
+	                        "oName": {
+	                            "sNode": "static",
+	                            "sName": "class"
+	                        },
+	                        "oValue": {
+	                            "sNode": "static",
+	                            "contents": "with-comment"
+	                        }
+	                    }
+	                ]
+	            },
 	            "contents": [
 	                {
 	                    "node": "comment",
 	                    "tag": false,
 	                    "attributes": false,
-	                    "contents": " This is the comment "
+	                    "contents": false,
+	                    "text": "This is the comment"
 	                },
 	                {
 	                    "node": "elem",
@@ -8890,10 +8915,31 @@ define('plates',[],function () { 'use strict';
 	        {
 	            "node": "elem",
 	            "tag": "input",
-	            "attributes": [
-	                "type=\"hidden\"",
-	                "value=\"this\""
-	            ],
+	            "attributes": {
+	                "block": [],
+	                "simple": [
+	                    {
+	                        "oName": {
+	                            "sNode": "static",
+	                            "sName": "type"
+	                        },
+	                        "oValue": {
+	                            "sNode": "static",
+	                            "contents": "hidden"
+	                        }
+	                    },
+	                    {
+	                        "oName": {
+	                            "sNode": "static",
+	                            "sName": "value"
+	                        },
+	                        "oValue": {
+	                            "sNode": "static",
+	                            "contents": "this"
+	                        }
+	                    }
+	                ]
+	            },
 	            "contents": false
 	        }
 	    ],
@@ -8901,9 +8947,21 @@ define('plates',[],function () { 'use strict';
 	        {
 	            "node": "elem",
 	            "tag": "div",
-	            "attributes": [
-	                "class=\"first\""
-	            ],
+	            "attributes": {
+	                "block": [],
+	                "simple": [
+	                    {
+	                        "oName": {
+	                            "sNode": "static",
+	                            "sName": "class"
+	                        },
+	                        "oValue": {
+	                            "sNode": "static",
+	                            "contents": "first"
+	                        }
+	                    }
+	                ]
+	            },
 	            "contents": [
 	                {
 	                    "node": "elem",
@@ -8919,9 +8977,21 @@ define('plates',[],function () { 'use strict';
 	                {
 	                    "node": "elem",
 	                    "tag": "div",
-	                    "attributes": [
-	                        "class=\"first-first\""
-	                    ],
+	                    "attributes": {
+	                        "block": [],
+	                        "simple": [
+	                            {
+	                                "oName": {
+	                                    "sNode": "static",
+	                                    "sName": "class"
+	                                },
+	                                "oValue": {
+	                                    "sNode": "static",
+	                                    "contents": "first-first"
+	                                }
+	                            }
+	                        ]
+	                    },
 	                    "contents": [
 	                        {
 	                            "node": "elem",
@@ -8941,9 +9011,21 @@ define('plates',[],function () { 'use strict';
 	        {
 	            "node": "elem",
 	            "tag": "div",
-	            "attributes": [
-	                "class=\"second\""
-	            ],
+	            "attributes": {
+	                "block": [],
+	                "simple": [
+	                    {
+	                        "oName": {
+	                            "sNode": "static",
+	                            "sName": "class"
+	                        },
+	                        "oValue": {
+	                            "sNode": "static",
+	                            "contents": "second"
+	                        }
+	                    }
+	                ]
+	            },
 	            "contents": [
 	                {
 	                    "node": "elem",
@@ -8984,17 +9066,87 @@ define('plates',[],function () { 'use strict';
 	    ]
 	};
 
+	class Comment {
+
+		constuctor() {}
+
+		parse(oContext, oASTNode) {
+
+			// Check to see if this browser support comments appedning before creating it.
+			if (document.createComment) {
+
+				return document.createComment(oASTNode.text);
+			}
+
+			return false;
+		}
+
+	}
+
+	var comment = new Comment();
+
+	class Attributes {
+
+		constuctor() {}
+
+		parse(dNodeElem, oContext, oASTNode) {
+
+			let oFinishedAttributes = {};
+
+			if (oASTNode.block.length) ;
+
+			// Start with simple attributes
+			if (oASTNode.simple.length) {
+
+				for (let oAttr of oASTNode.simple) {
+
+					// Check the name type
+					if (oAttr.oName.sNode === "static") {
+
+						// check to see if the attributes exist
+						if (!oFinishedAttributes[oAttr.oName.sName]) {
+							oFinishedAttributes[oAttr.oName.sName] = "";
+						}
+					} else {
+
+						console.log("We need to figure out the attribute name");
+					}
+
+					// Check the value type
+					if (oAttr.oValue.sNode === "static") {
+						oFinishedAttributes[oAttr.oName.sName] += ` ${oAttr.oValue.contents}`;
+					}
+				}
+			}
+
+			if (Object.keys(oFinishedAttributes).length) {
+
+				for (let attr in oFinishedAttributes) {
+
+					dNodeElem.setAttribute(attr, oFinishedAttributes[attr].trim());
+				}
+			}
+		}
+
+	}
+
+	var ATTRIBUTES_PARSER = new Attributes();
+
 	class Elem {
 
 		constuctor() {}
 
 		parse(oContext, oASTNode) {
 
-			console.log("In Elem node processor");
-
 			// Start by creating the element,
 			let dNodeElem = document.createElement(oASTNode.tag);
 
+			if (oASTNode.attributes) {
+
+				ATTRIBUTES_PARSER.parse(dNodeElem, oContext, oASTNode.attributes);
+			}
+
+			// Return this element!
 			return dNodeElem;
 		}
 
@@ -9002,19 +9154,47 @@ define('plates',[],function () { 'use strict';
 
 	var elem = new Elem();
 
+	// Function handles all context based results
+	const CONTEXT_PARSER = (oContext, oASTNode) => {
+
+		let sContext = oASTNode.contents;
+
+		console.log(oContext);
+	};
+
+	class Logic {
+
+		constuctor() {}
+
+		parse(oContext, oASTNode) {
+
+			let logicResults = false;
+			let fParseMethod = false;
+
+			// Figure out what parser method to use based on the provided tag context
+			switch (oASTNode.tag) {
+
+				case "context":
+					fParseMethod = CONTEXT_PARSER;
+					break;
+
+			}
+
+			logicResults = fParseMethod(oContext, oASTNode);
+		}
+
+	}
+
+	var logic = new Logic();
+
 	class Text {
 
 		constuctor() {}
 
 		parse(oContext, oASTNode) {
 
-			// Start by creating the element,
-			let textNode = document.createTextNode(oASTNode.text);
-
-			//console.log("textNode", textNode);
-
-			return textNode;
-		}
+			// This is simple so just put the text into the text node and return the whole node.
+			return document.createTextNode(oASTNode.text);	}
 
 	}
 
@@ -9024,9 +9204,6 @@ define('plates',[],function () { 'use strict';
 
 	// Helper function that determins the proper AST template and calls the corresponding parser functions
 	const ASTsToDOM = (oContext, aPassedAST, fCallback) => {
-
-		console.log("AST to DOM Called!");
-		//console.log(oContext, aPassedAST, fCallback);
 
 		let aRootASTs = false;
 
@@ -9056,6 +9233,14 @@ define('plates',[],function () { 'use strict';
 					fParser = text.parse;
 					break;
 
+				case "comment":
+					fParser = comment.parse;
+					break;
+
+				case "logic":
+					fParser = logic.parse;
+					break;
+
 				default:
 
 					break;
@@ -9072,10 +9257,13 @@ define('plates',[],function () { 'use strict';
 						dCollectedDOMFragments = document.createDocumentFragment();
 					}
 
+					if (oCurrentASTNode.attributes && oCurrentASTNode.attributes.length) {
+
+						ATTRIBUTES_PARSER.parse(dParserResults, oContext, oCurrentASTNode);
+					}
+
 					//Check for children
 					if (oCurrentASTNode.contents && oCurrentASTNode.contents.length) {
-
-						console.log("Parent Parse Results", dParserResults);
 
 						// Call a sub ASTsToDOM instance because we have children.
 						ASTsToDOM(oContext, oCurrentASTNode.contents, dChildrenFragements => {
@@ -9110,6 +9298,10 @@ define('plates',[],function () { 'use strict';
 					// Check to see if this item has contents, if so we have a problem because contents can not be appended if the last result failed!
 					if (oCurrentASTNode.contents && oCurrentASTNode.contents.length) ; else {
 
+						// ============ Logging Verbose 
+						// We could add some more verbose logging in the future to indicate when something failed to generate.
+						// ============ Logging Verbose 
+
 						if (aASTs.length) {
 							nextASTNode(aASTs);
 						} else {
@@ -9133,8 +9325,6 @@ define('plates',[],function () { 'use strict';
 		(function nextContext(aContexts) {
 
 			let oCurrentContext = aContexts.shift();
-
-			console.log("oCurrentContext", oCurrentContext);
 
 			// Porcess said context
 			ASTsToDOM(oCurrentContext, false, dProcessedContext => {
@@ -9184,8 +9374,6 @@ define('plates',[],function () { 'use strict';
 			if (!Array.isArray(context)) {
 				context = [context];
 			}
-
-			console.log("Context to be processed:", context);
 
 			Runtime$1.generate(context, function (compiledContext) {
 

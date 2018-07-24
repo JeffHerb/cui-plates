@@ -2,16 +2,18 @@ import "babel-polyfill";
 import { templates } from 'templates';
 
 // Local Core Parser Libs
+import comment from './parsers/comment';
 import elem from './parsers/elem';
+import logic from './parsers/logic';
 import text from './parsers/text';
+
+// Utility Parser Libs
+import attributes from './parsers/utils/attributes';
 
 const ASTs = templates;
 
 // Helper function that determins the proper AST template and calls the corresponding parser functions
 const ASTsToDOM = (oContext, aPassedAST, fCallback) => {
-
-	console.log("AST to DOM Called!");
-	//console.log(oContext, aPassedAST, fCallback);
 
 	let aRootASTs = false;
 
@@ -42,6 +44,14 @@ const ASTsToDOM = (oContext, aPassedAST, fCallback) => {
 				fParser = text.parse;
 				break;
 
+			case "comment":
+				fParser = comment.parse;
+				break;
+
+			case "logic":
+				fParser = logic.parse;
+				break;
+
 			default:
 
 				break;
@@ -52,17 +62,19 @@ const ASTsToDOM = (oContext, aPassedAST, fCallback) => {
 
 			let dParserResults = fParser(oContext, oCurrentASTNode) ||  false;
 
-
 			if (dParserResults) {
 
 				if (!dCollectedDOMFragments) {
 					dCollectedDOMFragments = document.createDocumentFragment();
 				}
 
+				if (oCurrentASTNode.attributes && oCurrentASTNode.attributes.length) {
+
+					attributes.parse(dParserResults, oContext, oCurrentASTNode);
+				}
+
 				//Check for children
 				if (oCurrentASTNode.contents && oCurrentASTNode.contents.length) {
-
-					console.log("Parent Parse Results", dParserResults);
 
 					// Call a sub ASTsToDOM instance because we have children.
 					ASTsToDOM(oContext, oCurrentASTNode.contents, (dChildrenFragements) => {
@@ -104,8 +116,16 @@ const ASTsToDOM = (oContext, aPassedAST, fCallback) => {
 				// Check to see if this item has contents, if so we have a problem because contents can not be appended if the last result failed!
 				if (oCurrentASTNode.contents && oCurrentASTNode.contents.length) {
 
+					// ============ FATAL FAILURE 
+					// We need to throw a fatal error as AST has children but the root failed to generate.
+					// ============ FATAL FAILURE
+
 				}
 				else {
+
+					// ============ Logging Verbose 
+					// We could add some more verbose logging in the future to indicate when something failed to generate.
+					// ============ Logging Verbose 
 
 					if (aASTs.length) {
 						nextASTNode(aASTs);
@@ -135,8 +155,6 @@ const Generator = (aContext, fCallback) => {
 	(function nextContext(aContexts) {
 
 		let oCurrentContext = aContexts.shift();
-
-		console.log("oCurrentContext", oCurrentContext);
 
 		// Porcess said context
 		ASTsToDOM(oCurrentContext, false, (dProcessedContext) => {
