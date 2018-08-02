@@ -1,6 +1,7 @@
 'use strict';
 
 const LOGIC_TAGREGEX = /[{]{2}(?:[\#\.\@\>]?[^\}]+)[}]{2}/g;
+const LOGIC_TAG_CONTENTS_REGEX = / /g;
 
 const LOGIC_TAGS = {
 	"{{": {
@@ -24,6 +25,7 @@ const LOGIC_TAGS = {
 				node: "context",
 				tag: false,
 				attributes: false,
+				text: false,
 				contents: false
 			};
 
@@ -84,7 +86,7 @@ const LOGIC_TAGS = {
 				// Generate the local AST
 				oAST.node = "logic";
 				oAST.tag = "context";
-				oAST.contents = sContents;
+				oAST.text = sContents;
 
 				oEndResult.oAST = oAST;
 
@@ -96,14 +98,47 @@ const LOGIC_TAGS = {
 
 				cb(error, false, false);
 			}
-
-
-
 		}
 	},
 	"{{#": {
-		fProcess: () => {
+		fProcess: (reTemplateResults) => {
 			console.log("Block Logic");
+			console.log(reTemplateResults);
+
+			let oLogicSection = {
+				sMethod: false,
+				oOpening: {
+					sTag: false,
+					iStart: false,
+					iEnd: false
+				},
+				oClosing: {
+					sTag: false,
+					iStart: false,
+					iEnd: false
+				}
+			};
+
+			let oAST = {
+				node: "block",
+				tag: false,
+				conditionals: [],
+				fallback: false
+			};
+
+			let oEndResult = {
+				oAST: false,
+				sChildren: false,
+				sRemaining: false
+			};
+
+			// Save off the opening info
+			oLogicSection.oOpening.sTag = reTemplateResults[0];
+			oLogicSection.oOpening.iStart = reTemplateResults.index;
+			oLogicSection.oOpening.iEndIndex = reTemplateResults.index + oLogicSection.oOpening.sTag.length;
+
+			// No we need to break out the insides of the opening conditional block.
+
 		}
 	},
 	"{{@": {

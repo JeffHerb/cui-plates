@@ -7,7 +7,7 @@ class Text {
 	parse(oContext, oASTNode) {
 
 		// This is simple so just put the text into the text node and return the whole node.
-		return document.createTextNode(oASTNode.text);;
+		return document.createTextNode(oASTNode.text);
 	}
 
 }

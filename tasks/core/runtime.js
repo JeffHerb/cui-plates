@@ -33,6 +33,7 @@ const ASTsToDOM = (oContext, aPassedAST, fCallback) => {
 
 		let oCurrentASTNode = aASTs.shift();
 		let fParser = false;
+		let sScope = 'page';
 
 		switch (oCurrentASTNode.node) {
 
@@ -60,7 +61,9 @@ const ASTsToDOM = (oContext, aPassedAST, fCallback) => {
 
 		if (fParser) {
 
-			let dParserResults = fParser(oContext, oCurrentASTNode) ||  false;
+			let dParserResults = fParser(oContext, oCurrentASTNode, sScope) ||  false;
+
+			// What if we need to reparse because we got a sub parse!
 
 			if (dParserResults) {
 
