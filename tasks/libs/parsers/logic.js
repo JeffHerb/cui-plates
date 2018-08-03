@@ -1,7 +1,7 @@
 'use strict';
 
 const LOGIC_TAGREGEX = /[{]{2}(?:[\#\.\@\>]?[^\}]+)[}]{2}/g;
-const LOGIC_TAG_CONTENTS_REGEX = / /g;
+const LOGIC_TAG_CONTENTS_REGEX = /\((?:(.*?))\)|(?:[a-zA-Z0-9\.\=\!\<\>\&\|\"\']+)/g;
 
 const LOGIC_TAGS = {
 	"{{": {
@@ -24,9 +24,7 @@ const LOGIC_TAGS = {
 			let oAST = {
 				node: "context",
 				tag: false,
-				attributes: false,
-				text: false,
-				contents: false
+				text: false
 			};
 
 			let oEndResult = {
@@ -102,8 +100,6 @@ const LOGIC_TAGS = {
 	},
 	"{{#": {
 		fProcess: (reTemplateResults) => {
-			console.log("Block Logic");
-			console.log(reTemplateResults);
 
 			let oLogicSection = {
 				sMethod: false,
@@ -132,12 +128,117 @@ const LOGIC_TAGS = {
 				sRemaining: false
 			};
 
+			let sFullTemplate = reTemplateResults.input;
+			let sBlockTemplate = false;
+
 			// Save off the opening info
 			oLogicSection.oOpening.sTag = reTemplateResults[0];
 			oLogicSection.oOpening.iStart = reTemplateResults.index;
-			oLogicSection.oOpening.iEndIndex = reTemplateResults.index + oLogicSection.oOpening.sTag.length;
+			oLogicSection.oOpening.iEnd = reTemplateResults.index + oLogicSection.oOpening.sTag.length;
+
+			// Take off the openining tag
+			let sRemaining = sFullTemplate.slice(oLogicSection.oOpening.iEnd);
 
 			// No we need to break out the insides of the opening conditional block.
+			let aBlockConditionals = oLogicSection.oOpening.sTag.match(LOGIC_TAG_CONTENTS_REGEX);
+
+			// Get the block method
+			oLogicSection.sMethod = aBlockConditionals.shift();
+
+			// generate closing tag regular expression
+			let reClosingBlock = new RegExp(`\{{2}[\/\#]${oLogicSection.sMethod}`, 'g');
+			let iSameBlockOpen = 0;
+			let iEndingTagCount = 0;
+			let reEndingBlockTag = false;
+
+			// Loop till we get the ending tag or find the end for this block type
+			while(true) {
+
+				let nextBlockTag = reClosingBlock.exec(sRemaining);
+
+				if (!nextBlockTag) {
+					break;
+				}
+
+				// Check to see if this is an opening tag
+				if (nextBlockTag[0].indexOf('#') !== -1) {
+
+					iSameBlockOpen += 1;
+				}
+				else {
+
+					iEndingTagCount += 1;
+
+					if (iSameBlockOpen >= 1) {
+						iSameBlockOpen -= 1;
+					}
+					else {
+
+						reEndingBlockTag = nextBlockTag;
+						break;
+					}
+
+				}
+
+			}
+
+			// If we found an ending tag
+			if (reEndingBlockTag) {
+
+				// Create a regular expression to get all the matching ending tags in general
+				let reFullClosingTag = new RegExp(`\{{2}\/${oLogicSection.sMethod}[ ]*\}{2}`, 'g');
+				let reFullEndingBlockTag = false;
+				let bPastEndingIndex = false;
+
+				// Loop through each ending tag this time finding the full ending tag.
+				while(true) {
+
+					let nextEndingBlockTag = reFullClosingTag.exec(sRemaining);
+
+					if (!nextEndingBlockTag) {
+						break;
+					}
+
+					if (nextEndingBlockTag.index === reEndingBlockTag.index) {
+						reFullEndingBlockTag = nextEndingBlockTag;
+						break;
+					}
+					// check if we some how went too far.
+					else if (nextEndingBlockTag.index > reEndingBlockTag.index ) {
+						bPastEndingIndex = true;
+					}
+
+				}
+
+				// If we got the full ending block!
+				if (reFullEndingBlockTag) {
+
+					// Save off all the ending tag information
+					oLogicSection.oClosing.sTag = reFullEndingBlockTag[0];
+					oLogicSection.oClosing.iStart = reFullEndingBlockTag.index;
+					oLogicSection.oClosing.iEnd = reFullEndingBlockTag.index + reFullEndingBlockTag[0].length;
+
+					// Split the proper block template string from the rest
+
+					sBlockTemplate = sRemaining.slice(0, oLogicSection.oClosing.iStart);
+					sRemaining = sRemaining.slice(oLogicSection.oClosing.iEnd);
+
+				}
+				else {
+
+					let error = new Error(`Template |template.path| Ending tag not properly closed or contains additional invalid characters.`);
+
+					return error;
+				}
+
+
+			}
+			else {
+
+				let error = new Error(`Template |template.path| is missing the closing block tag for ${oLogicSection.oOpening.sTag}`);
+
+				return error;
+			}
 
 		}
 	},
@@ -184,7 +285,8 @@ var LogicParser = function _logic_parser() {
 			let oEndResult = fLogicProcessor(reTemplateResults);
 
 			if (oEndResult instanceof Error) {
-				return error.message;
+
+				return oEndResult;
 			}
 
 			return oEndResult;
