@@ -1,7 +1,140 @@
 'use strict';
 
+// Global Detector
 const LOGIC_TAGREGEX = /[{]{2}(?:[\#\.\@\>]?[^\}]+)[}]{2}/g;
+
+// Context level regular expressions
 const LOGIC_TAG_CONTENTS_REGEX = /\((?:(.*?))\)|(?:[a-zA-Z0-9\.\=\!\<\>\&\|\"\']+)/g;
+
+// Block level regular expressions
+const LOGIC_TAG_BLOCK_DESIGNATOR = /(?:\{{2}[\/|\#](?:if|switch|each)(?:[a-zA-Z0-9\.\ \=\!\&\|\"\'\(\)]*)\}{2})/g;
+const LOGIC_TAG_BLOCK_SEPERATOR = /(?:\{{2}(?:case|default|elseif|else)(?:[a-zA-Z0-9\.\ \=\!\&\|\"\'\(\)]*)\}{2})/g;
+
+const LOGIC_BLOCK_TAGS_META = {
+	'each': {
+		seperators: false,
+		finalFallback: false
+	},
+	'if': {
+		seperators: ['elseif', 'else'],
+		finalFallback: 'else'
+	},
+	'switch': {
+		seperators: ['case', 'default'],
+		finalFallback: 'default'
+	}
+};
+
+const LOGIC_BLOCK_TAGS = Object.keys(LOGIC_BLOCK_TAGS_META);
+
+// This function is sperate from the root block logic tag parser for resusability
+const FIND_LOGIC_BLOCK = (reTemplateResults) => {
+
+	let oLogicSection = {
+		sMethod: false,
+		oOpening: {
+			sTag: false,
+			iStart: false,
+			iEnd: false
+		},
+		oClosing: {
+			sTag: false,
+			iStart: false,
+			iEnd: false
+		}
+	};
+
+	let sFullTemplate = reTemplateResults.input;
+
+	// Save off the opening info
+	oLogicSection.oOpening.sTag = reTemplateResults[0];
+	oLogicSection.oOpening.iStart = reTemplateResults.index;
+	oLogicSection.oOpening.iEnd = reTemplateResults.index + oLogicSection.oOpening.sTag.length;
+
+	// Break the opening conditional page into pieces
+	let aConditionalOpeningParts = oLogicSection.oOpening.sTag.match(LOGIC_TAG_CONTENTS_REGEX);
+
+	// Save off the tag and the conditional parts for now.
+	let oStartingConditional = {
+		sTag: aConditionalOpeningParts.shift(),
+		aConditionals: aConditionalOpeningParts
+	};
+
+	// Save of first conditional to root section as well
+	oLogicSection.sMethod = oStartingConditional.sTag;
+
+	// Remove the opeing conditional block tag
+	let sRemaining = sFullTemplate.slice(oLogicSection.oOpening.iEnd);
+
+	let iSameOpeningDesignator = 0;
+	let reSameBlockDesignator = new RegExp(`(?:\{{2}[\/|\#](?:${oLogicSection.sMethod})(?:[a-zA-Z0-9\.\ \=\!\&\|\"\'\(\)]*)\}{2})`, 'g');
+	let reEndingBlockDesignator = false;
+
+	while(true) {
+
+		let reNextBlockDesignator = reSameBlockDesignator.exec(sRemaining);
+
+		if (!reNextBlockDesignator) {
+			break;
+		}
+
+		// Check to see if this is a matching logic block type
+		if (reNextBlockDesignator[0].indexOf('{{#') !== -1) {
+			iSameOpeningDesignator += 1;
+		}
+		else {
+
+			if (iSameOpeningDesignator >= 1) {
+				iSameOpeningDesignator -= 1;		
+			}
+			else {
+
+				reEndingBlockDesignator = reNextBlockDesignator;
+			}
+
+		}
+
+	}
+
+	if (reEndingBlockDesignator) {
+
+		oLogicSection.oClosing.sTag = reEndingBlockDesignator[0];
+		oLogicSection.oClosing.iStart = reEndingBlockDesignator.index;
+		oLogicSection.oClosing.iEnd = reEndingBlockDesignator.index + reEndingBlockDesignator[0].length;
+
+		// Now that we have the end block we can seperate at least that much
+		let sBlockContents = sRemaining.slice(0, oLogicSection.oClosing.iStart);
+
+		// Get everything not found in our logic block;
+		sRemaining = sRemaining.slice(oLogicSection.oClosing.iEnd);
+
+		// Return the section results
+		return {
+			oSectionMeta: oLogicSection,
+			sRemaining: sRemaining,
+			sBlockContents: sBlockContents
+		};
+
+	}
+	else {
+
+		let error = new Error(`Template |template.path| No ending tag could be found for ${oLogicSection.oOpening.sTag}.`);
+
+		return error;
+	}
+
+};
+
+// This function is used to break appear conditional blocks.
+const SEPERATE_CONDITIONAL_BLOCKS_SECTIONS = () => {
+
+
+
+};
+
+const SEPERATE_CONDTIONAL_BLOCK_LOGIC = () => {
+
+};
 
 const LOGIC_TAGS = {
 	"{{": {
@@ -99,146 +232,74 @@ const LOGIC_TAGS = {
 		}
 	},
 	"{{#": {
-		fProcess: (reTemplateResults) => {
-
-			let oLogicSection = {
-				sMethod: false,
-				oOpening: {
-					sTag: false,
-					iStart: false,
-					iEnd: false
-				},
-				oClosing: {
-					sTag: false,
-					iStart: false,
-					iEnd: false
-				}
-			};
+		fProcess: (reTemplateResults, fProcessTemplate) => {
 
 			let oAST = {
 				node: "block",
-				tag: false,
 				conditionals: [],
 				fallback: false
 			};
 
 			let oEndResult = {
 				oAST: false,
+				aSubProcess: ['conditionals', 'fallback'],
 				sChildren: false,
 				sRemaining: false
 			};
 
-			let sFullTemplate = reTemplateResults.input;
-			let sBlockTemplate = false;
+			// See if we can get the logic information for this section
+			let oLogicSectionData = FIND_LOGIC_BLOCK(reTemplateResults);
 
-			// Save off the opening info
-			oLogicSection.oOpening.sTag = reTemplateResults[0];
-			oLogicSection.oOpening.iStart = reTemplateResults.index;
-			oLogicSection.oOpening.iEnd = reTemplateResults.index + oLogicSection.oOpening.sTag.length;
+			if (oLogicSectionData instanceof Error) {
+				return oLogicSection;
+			}
 
-			// Take off the openining tag
-			let sRemaining = sFullTemplate.slice(oLogicSection.oOpening.iEnd);
+			// No we need to take a deeper look into the block contents and break the different conditionals apart!
+			if (oLogicSectionData.sBlockContents.length) {
 
-			// No we need to break out the insides of the opening conditional block.
-			let aBlockConditionals = oLogicSection.oOpening.sTag.match(LOGIC_TAG_CONTENTS_REGEX);
+				// Create a regular expression only looking for the conditional sperators that mater to this tag
+				let reConditionalSeperators = new RegExp(`(?:\{{2}(?:${LOGIC_BLOCK_TAGS_META[oLogicSectionData.oSectionMeta.sMethod].seperators.join('|')})(?:[a-zA-Z0-9\.\ \=\!\&\|\"\'\(\)]*)\}{2})`, 'g');
 
-			// Get the block method
-			oLogicSection.sMethod = aBlockConditionals.shift();
+				// Try to first detect our conditional seperators
+				let aPossibleConditionalBlocks = oLogicSectionData.sBlockContents.match(reConditionalSeperators);
 
-			// generate closing tag regular expression
-			let reClosingBlock = new RegExp(`\{{2}[\/\#]${oLogicSection.sMethod}`, 'g');
-			let iSameBlockOpen = 0;
-			let iEndingTagCount = 0;
-			let reEndingBlockTag = false;
+				// Cehck to see if there are any conditional seperators in the string, even though they may not apply
+				if (aPossibleConditionalBlocks && aPossibleConditionalBlocks.length) {
 
-			// Loop till we get the ending tag or find the end for this block type
-			while(true) {
-
-				let nextBlockTag = reClosingBlock.exec(sRemaining);
-
-				if (!nextBlockTag) {
-					break;
-				}
-
-				// Check to see if this is an opening tag
-				if (nextBlockTag[0].indexOf('#') !== -1) {
-
-					iSameBlockOpen += 1;
-				}
+					console.log("We have valid conditionls");
+				}	
 				else {
 
-					iEndingTagCount += 1;
+					// Save off default conditional object
+					let oSubAST = {
+						sMethod: false,
+						aConditions: false,
+						sSubTemplate: false,
+					};
 
-					if (iSameBlockOpen >= 1) {
-						iSameBlockOpen -= 1;
-					}
-					else {
+					// Save of the conditionals
+					let aConditions = oLogicSectionData.oSectionMeta.oOpening.sTag.match(LOGIC_TAG_CONTENTS_REGEX);
 
-						reEndingBlockTag = nextBlockTag;
-						break;
-					}
+					// Save off the tag
+					oSubAST.sMethod = aConditions.shift();
 
+					// Save of the actual conditionals.
+					oSubAST.aConditions = aConditions;
+
+					oSubAST.sSubTemplate = oLogicSectionData.sBlockContents;
+
+					oAST.conditionals.push(oSubAST);
+
+					oEndResult.oAST = oAST;
 				}
-
 			}
 
-			// If we found an ending tag
-			if (reEndingBlockTag) {
+			// If there are remaning siblings, add them to the end result for the rest of the parser.
+			// if (oLogicSectionData.sRemaining.legnth) {
+			// 	oEndResult.sRemaining = oLogicSectionData.sRemaining;
+			// }
 
-				// Create a regular expression to get all the matching ending tags in general
-				let reFullClosingTag = new RegExp(`\{{2}\/${oLogicSection.sMethod}[ ]*\}{2}`, 'g');
-				let reFullEndingBlockTag = false;
-				let bPastEndingIndex = false;
-
-				// Loop through each ending tag this time finding the full ending tag.
-				while(true) {
-
-					let nextEndingBlockTag = reFullClosingTag.exec(sRemaining);
-
-					if (!nextEndingBlockTag) {
-						break;
-					}
-
-					if (nextEndingBlockTag.index === reEndingBlockTag.index) {
-						reFullEndingBlockTag = nextEndingBlockTag;
-						break;
-					}
-					// check if we some how went too far.
-					else if (nextEndingBlockTag.index > reEndingBlockTag.index ) {
-						bPastEndingIndex = true;
-					}
-
-				}
-
-				// If we got the full ending block!
-				if (reFullEndingBlockTag) {
-
-					// Save off all the ending tag information
-					oLogicSection.oClosing.sTag = reFullEndingBlockTag[0];
-					oLogicSection.oClosing.iStart = reFullEndingBlockTag.index;
-					oLogicSection.oClosing.iEnd = reFullEndingBlockTag.index + reFullEndingBlockTag[0].length;
-
-					// Split the proper block template string from the rest
-
-					sBlockTemplate = sRemaining.slice(0, oLogicSection.oClosing.iStart);
-					sRemaining = sRemaining.slice(oLogicSection.oClosing.iEnd);
-
-				}
-				else {
-
-					let error = new Error(`Template |template.path| Ending tag not properly closed or contains additional invalid characters.`);
-
-					return error;
-				}
-
-
-			}
-			else {
-
-				let error = new Error(`Template |template.path| is missing the closing block tag for ${oLogicSection.oOpening.sTag}`);
-
-				return error;
-			}
+			return oEndResult;
 
 		}
 	},

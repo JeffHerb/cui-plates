@@ -7,14 +7,14 @@ const TEXTParser = require('./parsers/text');
 	
 let parsers = {};
 
-// // Add all the parsers to the parser object
+// Add all the parsers to the parser object
 parsers.html = HTMLParser.parser;
 parsers.logic = LOGICParser.parser;
 parsers.text = TEXTParser.parser;
 
 let checkers = {};
 
-// // Add all the check function to the check object
+// Add all the check function to the check object
 checkers.html = HTMLParser.check;
 checkers.logic = LOGICParser.check;
 //checkers.text = TEXTParser.check;
@@ -125,7 +125,8 @@ _priv.processTemplate = (oTemplate, fCallback) => {
 
 			if (oNextStep) {
 
-				let oStepResults = oNextStep.fParser(oNextStep.reCheck);
+				// Parse the tem
+				let oStepResults = oNextStep.fParser(oNextStep.reCheck, _priv.processTemplate);
 
 				if (oStepResults instanceof Error) {
 					fCallback(oStepResults);
@@ -137,6 +138,79 @@ _priv.processTemplate = (oTemplate, fCallback) => {
 
 						// Add the current AST results to the finished set
 						oFinishedAST.push(oStepResults.oAST);
+
+						if (oStepResults.aSubProcess && oStepResults.aSubProcess.length) {
+
+							for (let sProcess of oStepResults.aSubProcess) {
+
+								//console.log(sProcess);
+
+								if (oStepResults.oAST[sProcess]) {
+
+									// for (let subTemplateProcess of oStepResults.oAST[sProcess]) {
+
+									// 	let oSubTemplate = Object.assign({}, oTemplate);
+
+									// 	oSubTemplate.bChildRun = true;
+									// 	oSubTemplate.workingCopy = subTemplateProcess.sSubTemplate;
+
+									// 	// Call the processTemplate directly and build out all the children
+									// 	_priv.processTemplate(oSubTemplate, (oSubProcessTemplateResults) => {
+
+									// 		if (oSubProcessTemplateResults instanceof Error) {
+									// 			fCallback(oSubProcessTemplateResults);
+									// 		}
+
+									// 		if (oSubProcessTemplateResults) {
+
+									// 			console.log(oSubProcessTemplateResults);
+
+									// 			// // Get the last array element.
+									// 			// let oLastAST = oFinishedAST.length -1;
+
+									// 			// oFinishedAST[oLastAST].contents = oChildTemplateResults;
+									// 		}
+
+									// 	});
+
+									// }
+
+									for (let sp = 0, spLen = oStepResults.oAST[sProcess].length; sp < spLen; sp++) {
+
+										let oSubTemplate = Object.assign({}, oTemplate);
+
+										oSubTemplate.bChildRun = true;
+										oSubTemplate.workingCopy = oStepResults.oAST[sProcess][sp].sSubTemplate;
+
+										console.log(oSubTemplate);
+
+										// Call the processTemplate directly and build out all the children
+										_priv.processTemplate(oSubTemplate, (oSubProcessTemplateResults) => {
+
+											console.log("subprocess");
+											console.log(oSubProcessTemplateResults);
+
+											if (oSubProcessTemplateResults instanceof Error) {
+												fCallback(oSubProcessTemplateResults);
+											}
+
+											if (oSubProcessTemplateResults) {
+
+												console.log(oSubProcessTemplateResults);
+												console.log("===========");
+												console.log(oStepResults.oAST[sProcess][sp]);
+
+												oStepResults.oAST[sProcess][sp] = oSubProcessTemplateResults;
+											}
+
+										});
+
+									}
+
+								}
+							}
+
+						}
 
 						// Check to see if this element has sub children
 						if (oStepResults.sChildren) {
@@ -195,9 +269,9 @@ _priv.processTemplate = (oTemplate, fCallback) => {
 		}
 		else {
 
-			if (finishedAST.length) {
+			if (oFinishedAST.length) {
 
-				fCallback(finishedAST);
+				fCallback(oFinishedAST);
 			}
 			else {
 
@@ -206,7 +280,6 @@ _priv.processTemplate = (oTemplate, fCallback) => {
 		}
 
 	})(oTemplate.workingCopy);
-
 };
 
 var parseTemplate = function _parse_template() {
