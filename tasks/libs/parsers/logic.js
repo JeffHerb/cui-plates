@@ -1,7 +1,7 @@
 'use strict';
 
 // Global Detector
-const LOGIC_TAGREGEX = /[{]{2}(?:[\#\.\@\>]?[^\}]+)[}]{2}/g;
+const LOGIC_TAGREGEX = /[{]{2}(?:[\#\.\@\>]?[^\}]+)[}]{2}/;
 
 // Context level regular expressions
 const LOGIC_TAG_CONTENTS_REGEX = /\((?:(.*?))\)|(?:[a-zA-Z0-9\.\=\!\<\>\&\|\"\']+)/g;
@@ -28,7 +28,7 @@ const LOGIC_BLOCK_TAGS_META = {
 const LOGIC_BLOCK_TAGS = Object.keys(LOGIC_BLOCK_TAGS_META);
 
 // This function is sperate from the root block logic tag parser for resusability
-const FIND_LOGIC_BLOCK = (reTemplateResults) => {
+const FIND_LOGIC_BLOCK = (reTemplateResults, gracefulFail) => {
 
 	let oLogicSection = {
 		sMethod: false,
@@ -118,21 +118,18 @@ const FIND_LOGIC_BLOCK = (reTemplateResults) => {
 	}
 	else {
 
-		let error = new Error(`Template |template.path| No ending tag could be found for ${oLogicSection.oOpening.sTag}.`);
+		if (!gracefulFail) {
 
-		return error;
+			let error = new Error(`Template |template.path| No ending tag could be found for ${oLogicSection.oOpening.sTag}.`);
+
+			return error;
+		}
+		else {
+
+			return false;
+		}
+
 	}
-
-};
-
-// This function is used to break appear conditional blocks.
-const SEPERATE_CONDITIONAL_BLOCKS_SECTIONS = () => {
-
-
-
-};
-
-const SEPERATE_CONDTIONAL_BLOCK_LOGIC = () => {
 
 };
 
@@ -155,8 +152,8 @@ const LOGIC_TAGS = {
 			};
 
 			let oAST = {
-				node: "context",
-				tag: false,
+				node: "logic",
+				tag: "context",
 				text: false
 			};
 
@@ -235,7 +232,9 @@ const LOGIC_TAGS = {
 		fProcess: (reTemplateResults, fProcessTemplate) => {
 
 			let oAST = {
-				node: "block",
+				node: "logic",
+				tag: "block",
+				method: false,
 				conditionals: [],
 				fallback: false
 			};
@@ -250,6 +249,8 @@ const LOGIC_TAGS = {
 			// See if we can get the logic information for this section
 			let oLogicSectionData = FIND_LOGIC_BLOCK(reTemplateResults);
 
+			//console.log(oLogicSectionData);
+
 			if (oLogicSectionData instanceof Error) {
 				return oLogicSection;
 			}
@@ -257,41 +258,140 @@ const LOGIC_TAGS = {
 			// No we need to take a deeper look into the block contents and break the different conditionals apart!
 			if (oLogicSectionData.sBlockContents.length) {
 
-				// Create a regular expression only looking for the conditional sperators that mater to this tag
-				let reConditionalSeperators = new RegExp(`(?:\{{2}(?:${LOGIC_BLOCK_TAGS_META[oLogicSectionData.oSectionMeta.sMethod].seperators.join('|')})(?:[a-zA-Z0-9\.\ \=\!\&\|\"\'\(\)]*)\}{2})`, 'g');
+				// Small function used to create the subAST object
+				let fCreateSuboAST = (sMethod, aConditionals, sSubTemplate) => {
 
-				// Try to first detect our conditional seperators
-				let aPossibleConditionalBlocks = oLogicSectionData.sBlockContents.match(reConditionalSeperators);
-
-				// Cehck to see if there are any conditional seperators in the string, even though they may not apply
-				if (aPossibleConditionalBlocks && aPossibleConditionalBlocks.length) {
-
-					console.log("We have valid conditionls");
-				}	
-				else {
-
-					// Save off default conditional object
-					let oSubAST = {
-						sMethod: false,
-						aConditions: false,
-						sSubTemplate: false,
+					return {
+						sMethod: sMethod,
+						aConditions: aConditionals,
+						sSubTemplate: sSubTemplate,
 					};
 
-					// Save of the conditionals
-					let aConditions = oLogicSectionData.oSectionMeta.oOpening.sTag.match(LOGIC_TAG_CONTENTS_REGEX);
-
-					// Save off the tag
-					oSubAST.sMethod = aConditions.shift();
-
-					// Save of the actual conditionals.
-					oSubAST.aConditions = aConditions;
-
-					oSubAST.sSubTemplate = oLogicSectionData.sBlockContents;
-
-					oAST.conditionals.push(oSubAST);
-
-					oEndResult.oAST = oAST;
 				}
+
+				// Create a regular expression only looking for the conditional sperators that matter to this tag
+				let reConditionalSeperators = new RegExp(`(?:\{{2}(?:${LOGIC_BLOCK_TAGS_META[oLogicSectionData.oSectionMeta.sMethod].seperators.join('|')})(?:[a-zA-Z0-9\.\ \=\!\&\|\"\'\(\)]*)\}{2})`, 'g');
+
+				let sCurrentWorkingSubTemplate = oLogicSectionData.sBlockContents;
+				let aCurrentCondtionals = oLogicSectionData.oSectionMeta.oOpening.sTag.match(LOGIC_TAG_CONTENTS_REGEX);
+				let sCurrentConditionalMethod = aCurrentCondtionals.shift();
+				let iLastConditionalBlockStartInd = 0;
+
+				let sRootMethod = sCurrentConditionalMethod;
+
+				oAST.method = sRootMethod;
+
+				// Test to see if we have other matching logic blocks
+				while (true) {
+
+					let oSubAST = false;
+
+					// break if the current sub template has no length
+					if (!sCurrentWorkingSubTemplate.length) {
+						break;
+					}
+
+					// Find the next condtional block seperator tag, {{else}} 
+					let reNextConditionalTag = reConditionalSeperators.exec(oLogicSectionData.sBlockContents);
+
+					// If we found the 
+					if (reNextConditionalTag) {
+
+						//console.log(reNextConditionalTag);
+						let iNextConditionalIndex = reNextConditionalTag.index;
+
+						// Slice the substring and look for a similar opening logic tag!
+						let sPossibleSubTemplate = sCurrentWorkingSubTemplate.slice(iLastConditionalBlockStartInd, reNextConditionalTag.index);
+
+						// Create and on the fly reg ex for detecting same logic sub tag.
+						let reLogicCheck = new RegExp(`(?:\{{2}[\/|\#](?:${sCurrentConditionalMethod})(?:[a-zA-Z0-9\.\ \=\!\&\|\"\'\(\)]*)\}{2})`,'g');
+
+						let aLogicCheckMatches = sPossibleSubTemplate.match(reLogicCheck);
+
+						// Check if we found any matching tags!
+						if (aLogicCheckMatches) {
+
+							// Find the first sub logic tag
+							let reFirstSubLogicTag = reLogicCheck.exec(sCurrentWorkingSubTemplate);
+
+							let oSubLogicSectionData = FIND_LOGIC_BLOCK(reFirstSubLogicTag, true);
+
+							// console.log(iNextConditionalIndex, (reFirstSubLogicTag.index + oSubLogicSectionData.oSectionMeta.oClosing.iEnd));
+
+							if (iNextConditionalIndex > (reFirstSubLogicTag.index + oSubLogicSectionData.oSectionMeta.oClosing.iEnd)) {
+
+								oSubAST = fCreateSuboAST(sCurrentConditionalMethod, aCurrentCondtionals, sPossibleSubTemplate);
+
+								// check to see if this is a fallback item or a regular conditional
+								if (LOGIC_BLOCK_TAGS_META[sRootMethod].finalFallback === sCurrentConditionalMethod) {
+									
+									oAST.fallback = oSubAST;
+								}
+								else {
+
+									oAST.conditionals.push(oSubAST);
+								}
+
+								// Update all of our references for the next
+								sCurrentWorkingSubTemplate = sCurrentWorkingSubTemplate.slice(reNextConditionalTag.index + reNextConditionalTag[0].length);
+								aCurrentCondtionals = reNextConditionalTag[0].match(LOGIC_TAG_CONTENTS_REGEX);
+								sCurrentConditionalMethod = aCurrentCondtionals.shift();
+								iLastConditionalBlockStartInd = reNextConditionalTag.index + reNextConditionalTag[0].length;
+
+							}
+							else {	
+								/// This conditional is like part of a sub conditional so we need to move to the next occurance
+								continue;
+							}
+
+						}
+						else {
+
+							oSubAST = fCreateSuboAST(sCurrentConditionalMethod, aCurrentCondtionals, sPossibleSubTemplate);
+
+							// check to see if this is a fallback item or a regular conditional
+							if (LOGIC_BLOCK_TAGS_META[sRootMethod].finalFallback === sCurrentConditionalMethod) {
+								
+								oAST.fallback = oSubAST;
+							}
+							else {
+
+								oAST.conditionals.push(oSubAST);
+							}
+
+							// Update all of our references for the next
+							sCurrentWorkingSubTemplate = sCurrentWorkingSubTemplate.slice(reNextConditionalTag.index + reNextConditionalTag[0].length);
+							aCurrentCondtionals = reNextConditionalTag[0].match(LOGIC_TAG_CONTENTS_REGEX);
+							sCurrentConditionalMethod = aCurrentCondtionals.shift();
+							iLastConditionalBlockStartInd = reNextConditionalTag.index + reNextConditionalTag[0].length;
+						}
+
+					}
+					else {
+
+						oSubAST = fCreateSuboAST(sCurrentConditionalMethod, aCurrentCondtionals, sCurrentWorkingSubTemplate);
+
+						// check to see if this is a fallback item or a regular conditional
+						if (LOGIC_BLOCK_TAGS_META[sRootMethod].finalFallback === sCurrentConditionalMethod) {
+							
+							oAST.fallback = oSubAST;
+						}
+						else {
+
+							oAST.conditionals.push(oSubAST);
+						}
+
+
+						break;
+					}
+
+				}
+
+				//console.log(oAST);
+
+
+				oEndResult.oAST = oAST;
+
 			}
 
 			// If there are remaning siblings, add them to the end result for the rest of the parser.
@@ -366,6 +466,15 @@ var LogicParser = function _logic_parser() {
 	const check = (sTemplate) => {
 
 		let reLogic = LOGIC_TAGREGEX.exec(sTemplate);
+
+		if (reLogic) {
+
+			console.log(sTemplate.match(reLogic));
+
+		}
+
+
+		//console.log(reLogic);
 
 		if (reLogic) {
 

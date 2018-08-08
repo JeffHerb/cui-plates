@@ -58,6 +58,8 @@ _priv.processTemplate = (oTemplate, fCallback) => {
 
 		}
 
+		//console.log(possibleSteps);
+
 		if (possibleSteps.length) {
 
 			if (possibleSteps.length === 1) {
@@ -143,52 +145,44 @@ _priv.processTemplate = (oTemplate, fCallback) => {
 
 							for (let sProcess of oStepResults.aSubProcess) {
 
-								//console.log(sProcess);
-
 								if (oStepResults.oAST[sProcess]) {
 
-									// for (let subTemplateProcess of oStepResults.oAST[sProcess]) {
+									if (Array.isArray(oStepResults.oAST[sProcess])) {
 
-									// 	let oSubTemplate = Object.assign({}, oTemplate);
+										for (let sp = 0, spLen = oStepResults.oAST[sProcess].length; sp < spLen; sp++) {
 
-									// 	oSubTemplate.bChildRun = true;
-									// 	oSubTemplate.workingCopy = subTemplateProcess.sSubTemplate;
+											let oSubTemplate = Object.assign({}, oTemplate);
 
-									// 	// Call the processTemplate directly and build out all the children
-									// 	_priv.processTemplate(oSubTemplate, (oSubProcessTemplateResults) => {
+											oSubTemplate.bChildRun = true;
+											oSubTemplate.workingCopy = oStepResults.oAST[sProcess][sp].sSubTemplate;
 
-									// 		if (oSubProcessTemplateResults instanceof Error) {
-									// 			fCallback(oSubProcessTemplateResults);
-									// 		}
+											// Call the processTemplate directly and build out all the children
+											_priv.processTemplate(oSubTemplate, (oSubProcessTemplateResults) => {
 
-									// 		if (oSubProcessTemplateResults) {
+												if (oSubProcessTemplateResults instanceof Error) {
+													fCallback(oSubProcessTemplateResults);
+												}
 
-									// 			console.log(oSubProcessTemplateResults);
+												if (oSubProcessTemplateResults) {
 
-									// 			// // Get the last array element.
-									// 			// let oLastAST = oFinishedAST.length -1;
+													delete oStepResults.oAST[sProcess][sp].sSubTemplate;
 
-									// 			// oFinishedAST[oLastAST].contents = oChildTemplateResults;
-									// 		}
+													oStepResults.oAST[sProcess][sp].contents = oSubProcessTemplateResults;
+												}
 
-									// 	});
+											});
 
-									// }
-
-									for (let sp = 0, spLen = oStepResults.oAST[sProcess].length; sp < spLen; sp++) {
+										}
+									}
+									else if (typeof oStepResults.oAST[sProcess] === "object") {
 
 										let oSubTemplate = Object.assign({}, oTemplate);
 
 										oSubTemplate.bChildRun = true;
-										oSubTemplate.workingCopy = oStepResults.oAST[sProcess][sp].sSubTemplate;
-
-										console.log(oSubTemplate);
+										oSubTemplate.workingCopy = oStepResults.oAST[sProcess].sSubTemplate;
 
 										// Call the processTemplate directly and build out all the children
 										_priv.processTemplate(oSubTemplate, (oSubProcessTemplateResults) => {
-
-											console.log("subprocess");
-											console.log(oSubProcessTemplateResults);
 
 											if (oSubProcessTemplateResults instanceof Error) {
 												fCallback(oSubProcessTemplateResults);
@@ -196,11 +190,9 @@ _priv.processTemplate = (oTemplate, fCallback) => {
 
 											if (oSubProcessTemplateResults) {
 
-												console.log(oSubProcessTemplateResults);
-												console.log("===========");
-												console.log(oStepResults.oAST[sProcess][sp]);
+												delete oStepResults.oAST[sProcess].sSubTemplate;
 
-												oStepResults.oAST[sProcess][sp] = oSubProcessTemplateResults;
+												oStepResults.oAST[sProcess].contents = oSubProcessTemplateResults;
 											}
 
 										});

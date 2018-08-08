@@ -1,7 +1,7 @@
 'use strict';
 
 const HTML_TAGREGEX = /<(?:"[^"]*"['"]*|'[^']*'['"]*|[^'">])+>/g;
-const LOGIC_TAGREGEX = /[{]{2}(?:[\#\.\@\>]?[^\}]+)[}]{2}/g;
+const LOGIC_TAGREGEX = /[{]{2}(?:[\#\.\@\>]?[^\}]+)[}]{2}/;
 const TEXT_REGEX = /.+/;
 
 const findNonTextNodes = (reTemplateResults) => {
@@ -32,11 +32,26 @@ const findNonTextNodes = (reTemplateResults) => {
 	}
 	else if (!reHTMLCheck && reLogicCheck) {
 
+
 		// Get the substring
 		oTextMeta.sContents = sTemplate.slice(reTemplateResults.index, reLogicCheck.index);
 		oTextMeta.sRemaining = sTemplate.slice(reLogicCheck.index);
 	}
 	else {
+
+		// Check which result came first,
+		let reFirstMatching = (reLogicCheck.index < reHTMLCheck.index) ? reLogicCheck : reHTMLCheck;
+
+		console.log("First match:", reFirstMatching);
+
+		if (reFirstMatching.index > 0) {
+
+			oTextMeta.sContents = sTemplate.slice(reTemplateResults.index, reFirstMatching.index);
+			oTextMeta.sRemaining = sTemplate.slice(reFirstMatching.index);
+		}
+		else {
+			// Error!
+		}
 
 	}
 

@@ -22,21 +22,29 @@ export default class plates {
 
 		Runtime.generate(context, function(compiledContext) {
 
-			if (target) {
+			if (compiledContext instanceof Error) {
 
-				// Look for append location
-				var dAppendTarget = document.querySelector(target);
-
-				if (dAppendTarget.nodeType === 1) {
-					dAppendTarget.appendChild(compiledContext);
-				}
+				throw compiledContext;
 			}
 			else {
 
-				return compiledContext;
+				if (target) {
+
+					// Look for append location
+					var dAppendTarget = document.querySelector(target);
+
+					if (dAppendTarget.nodeType === 1) {
+						dAppendTarget.appendChild(compiledContext);
+					}
+				}
+				else {
+
+					return compiledContext;
+				}
+
+				console.log("Runtime /Done!");
 			}
 
-			console.log("Runtime /Done!");
 
 		})
 

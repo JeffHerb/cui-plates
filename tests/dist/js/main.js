@@ -9041,11 +9041,68 @@ define('plates',[],function () { 'use strict';
 	            ]
 	        }
 	    ],
-	    "LOGICBlockIf": [
+	    "LOGICBlockSimpleIf": [
 	        {
-	            "node": "block",
+	            "node": "logic",
+	            "tag": "block",
+	            "method": "if",
 	            "conditionals": [
-	                [
+	                {
+	                    "sMethod": "if",
+	                    "aConditions": [
+	                        "this.isTrue"
+	                    ],
+	                    "contents": [
+	                        {
+	                            "node": "logic",
+	                            "tag": "block",
+	                            "method": "if",
+	                            "conditionals": [
+	                                {
+	                                    "sMethod": "if",
+	                                    "aConditions": [
+	                                        "this.isStrong"
+	                                    ],
+	                                    "contents": [
+	                                        {
+	                                            "node": "elem",
+	                                            "tag": "strong",
+	                                            "attributes": false,
+	                                            "contents": [
+	                                                {
+	                                                    "node": "text",
+	                                                    "text": "Logic was true and strong!"
+	                                                }
+	                                            ]
+	                                        }
+	                                    ]
+	                                }
+	                            ],
+	                            "fallback": {
+	                                "sMethod": "else",
+	                                "aConditions": [],
+	                                "contents": [
+	                                    {
+	                                        "node": "elem",
+	                                        "tag": "p",
+	                                        "attributes": false,
+	                                        "contents": [
+	                                            {
+	                                                "node": "text",
+	                                                "text": "Logic was true, but was not strong"
+	                                            }
+	                                        ]
+	                                    }
+	                                ]
+	                            }
+	                        }
+	                    ]
+	                }
+	            ],
+	            "fallback": {
+	                "sMethod": "else",
+	                "aConditions": [],
+	                "contents": [
 	                    {
 	                        "node": "elem",
 	                        "tag": "p",
@@ -9053,13 +9110,12 @@ define('plates',[],function () { 'use strict';
 	                        "contents": [
 	                            {
 	                                "node": "text",
-	                                "text": "Logic was true"
+	                                "text": "Else Logic was passed!"
 	                            }
 	                        ]
 	                    }
 	                ]
-	            ],
-	            "fallback": false
+	            }
 	        }
 	    ],
 	    "LOGICContext": [
@@ -9174,6 +9230,92 @@ define('plates',[],function () { 'use strict';
 
 	var elem = new Elem();
 
+	class Context {
+
+			find(sContextPath, oContext) {
+
+					let aContextPath = sContextPath.split('.');
+
+					let vCurrentContext = oContext;
+
+					for (let iPath = 0, iLen = aContextPath.length; iPath < iLen; iPath++) {
+
+							// Skip over this if its at the beginning
+							if (iPath === 0 && aContextPath[iPath].trim() === "this") {
+									continue;
+							}
+
+							if (vCurrentContext[aContextPath[iPath]]) {
+
+									vCurrentContext = vCurrentContext[aContextPath[iPath]];
+							} else {
+
+									return false;
+							}
+					}
+
+					return vCurrentContext;
+			}
+
+	}
+
+	var Context$1 = new Context();
+
+	class If {
+
+		constuctor() {}
+
+		parser(oContext, aConditionals, oFallback) {
+
+			// Verify we have conditions to check
+			if (aConditionals.length) {
+
+				let vReturningContext = false;
+
+				// Loop through all of the conditions till we find a true.
+				for (let c = 0, cLen = aConditionals.length; c < cLen; c++) {
+
+					let oConditional = aConditionals[c];
+
+					// Check to see if the conditional blocks are simple or specific
+					if (oConditional.aConditions.length === 1) {
+
+						let sSimpleCondition = oConditional.aConditions[0];
+
+						let vContext = Context$1.find(sSimpleCondition, oContext);
+
+						if (vContext) {
+							vReturningContext = oConditional.contents;
+							break;
+						}
+					} else {
+
+						console.log("More complex conditions");
+					}
+				}
+
+				if (!vReturningContext && oFallback && oFallback.contents) {
+					vReturningContext = oFallback.contents;
+				}
+
+				return vReturningContext;
+			} else {
+
+				return false;
+			}
+		}
+
+	}
+
+	var If$1 = new If();
+
+	// Load all the block level libs
+
+	const oBlockLibs = {
+		"if": If$1.parser
+	};
+
+	// Function is used to handle finding context values from the context object
 	const FIND_CONTEXT = (sContextPath, oContext) => {
 
 		let aContextPath = sContextPath.split('.');
@@ -9201,8 +9343,6 @@ define('plates',[],function () { 'use strict';
 
 	// Function handles all context based results
 	const CONTEXT_PARSER = (oContext, oASTNode, sScope) => {
-
-		console.log(oASTNode);
 
 		// Yank out the context text string since that is what context is looking at.
 		let sContextPath = oASTNode.text;
@@ -9246,6 +9386,30 @@ define('plates',[],function () { 'use strict';
 		return false;
 	};
 
+	const BLOCK_PARSER = (oContext, oASTNode, sScope) => {
+
+		// console.log("oContext", oContext);
+		// console.log("oASTNode", oASTNode);
+		// console.log("sScope", sScope);
+
+		// Check for conditionals and fallbacks
+		let aConditional = oASTNode.conditionals;
+		let oFallback = oASTNode.fallback;
+
+		let oResults = false;
+
+		// Check for and call the correct method parser
+		if (oBlockLibs[oASTNode.method]) {
+
+			oResults = oBlockLibs[oASTNode.method](oContext, aConditional, oFallback);
+		} else {
+
+			console.log(`Unsupported Block level method called: ${oASTNode.method}`);
+		}
+
+		return oResults;
+	};
+
 	class Logic {
 
 		constuctor() {}
@@ -9262,12 +9426,16 @@ define('plates',[],function () { 'use strict';
 					fParseMethod = CONTEXT_PARSER;
 					break;
 
+				case "block":
+					fParseMethod = BLOCK_PARSER;
+					break;
+
 			}
 
 			// Execute the logic parser. Depending on what we are calling and were we are the datatype is varied.
 			logicResults = fParseMethod(oContext, oASTNode, sScope);
 
-			console.log(logicResults);
+			// console.log(logicResults);
 
 			return logicResults;
 		}
@@ -9292,6 +9460,15 @@ define('plates',[],function () { 'use strict';
 
 	const ASTs = templates;
 
+	const isNode$3 = oPotentialNode => {
+
+		if (oPotentialNode instanceof Node || oPotentialNode instanceof EventTarget) {
+			return true;
+		}
+
+		return false;
+	};
+
 	// Helper function that determins the proper AST template and calls the corresponding parser functions
 	const ASTsToDOM = (oContext, aPassedAST, fCallback) => {
 
@@ -9303,69 +9480,91 @@ define('plates',[],function () { 'use strict';
 			aRootASTs = aPassedAST;
 		} else if (oContext && oContext.template) {
 
-			aRootASTs = ASTs[oContext.template].slice();
+			if (ASTs[oContext.template]) {
+
+				aRootASTs = ASTs[oContext.template].slice();
+			} else {
+
+				let error = new Error(`Plates failed to find requested templates: ${oContext.template}`);
+
+				fCallback(error);
+			}
 		}
 
-		let dCollectedDOMFragments = false;
+		if (aRootASTs) {
 
-		(function nextASTNode(aASTs) {
+			let dCollectedDOMFragments = false;
 
-			let oCurrentASTNode = aASTs.shift();
-			let fParser = false;
-			let sScope = 'page';
+			(function nextASTNode(aASTs) {
 
-			switch (oCurrentASTNode.node) {
+				let oCurrentASTNode = aASTs.shift();
+				let fParser = false;
+				let sScope = 'page';
 
-				case "elem":
-					fParser = elem.parse;
-					break;
+				switch (oCurrentASTNode.node) {
 
-				case "text":
-					fParser = text.parse;
-					break;
+					case "elem":
+						fParser = elem.parse;
+						break;
 
-				case "comment":
-					fParser = comment.parse;
-					break;
+					case "text":
+						fParser = text.parse;
+						break;
 
-				case "logic":
-					fParser = logic.parse;
-					break;
+					case "comment":
+						fParser = comment.parse;
+						break;
 
-				default:
+					case "logic":
+						fParser = logic.parse;
+						break;
 
-					break;
+					default:
 
-			}
+						break;
 
-			if (fParser) {
+				}
 
-				let dParserResults = fParser(oContext, oCurrentASTNode, sScope) || false;
+				if (fParser) {
 
-				// What if we need to reparse because we got a sub parse!
+					let vParserResults = fParser(oContext, oCurrentASTNode, sScope) || false;
 
-				if (dParserResults) {
+					if (isNode$3(vParserResults)) {
 
-					if (!dCollectedDOMFragments) {
-						dCollectedDOMFragments = document.createDocumentFragment();
-					}
+						if (!dCollectedDOMFragments) {
+							dCollectedDOMFragments = document.createDocumentFragment();
+						}
 
-					if (oCurrentASTNode.attributes && oCurrentASTNode.attributes.length) {
+						console.log("parse result", vParserResults);
 
-						ATTRIBUTES_PARSER.parse(dParserResults, oContext, oCurrentASTNode);
-					}
+						if (oCurrentASTNode.attributes && oCurrentASTNode.attributes.length) {
 
-					//Check for children
-					if (oCurrentASTNode.contents && oCurrentASTNode.contents.length) {
+							ATTRIBUTES_PARSER.parse(vParserResults, oContext, oCurrentASTNode);
+						}
 
-						// Call a sub ASTsToDOM instance because we have children.
-						ASTsToDOM(oContext, oCurrentASTNode.contents, dChildrenFragements => {
+						//Check for children
+						if (oCurrentASTNode.contents && oCurrentASTNode.contents.length) {
 
-							// Append all the children to the parent
-							dParserResults.appendChild(dChildrenFragements);
+							// Call a sub ASTsToDOM instance because we have children.
+							ASTsToDOM(oContext, oCurrentASTNode.contents, dChildrenFragements => {
 
-							// Append the parent to the collection
-							dCollectedDOMFragments.appendChild(dParserResults);
+								// Append all the children to the parent
+								vParserResults.appendChild(dChildrenFragements);
+
+								// Append the parent to the collection
+								dCollectedDOMFragments.appendChild(vParserResults);
+
+								if (aASTs.length) {
+									nextASTNode(aASTs);
+								} else {
+
+									fCallback(dCollectedDOMFragments);
+								}
+							});
+						} else {
+
+							// No children so just add it to the return.
+							dCollectedDOMFragments.appendChild(vParserResults);
 
 							if (aASTs.length) {
 								nextASTNode(aASTs);
@@ -9373,41 +9572,54 @@ define('plates',[],function () { 'use strict';
 
 								fCallback(dCollectedDOMFragments);
 							}
+						}
+					} else if (Array.isArray(vParserResults)) {
+
+						// Call a sub ASTsToDOM instance because we have children.
+						ASTsToDOM(oContext, vParserResults, vSubChildrenFragements => {
+
+							if (isNode$3(vSubChildrenFragements)) {
+
+								if (!dCollectedDOMFragments) {
+									dCollectedDOMFragments = document.createDocumentFragment();
+								}
+
+								dCollectedDOMFragments.appendChild(vSubChildrenFragements);
+
+								if (aASTs.length) {
+									nextASTNode(aASTs);
+								} else {
+
+									fCallback(dCollectedDOMFragments);
+								}
+							} else {
+
+								console.log("we have a result but dont have a node type.");
+							}
 						});
 					} else {
 
-						// No children so just add it to the return.
-						dCollectedDOMFragments.appendChild(dParserResults);
+						// Check to see if this item has contents, if so we have a problem because contents can not be appended if the last result failed!
+						if (oCurrentASTNode.contents && oCurrentASTNode.contents.length) ; else {
 
-						if (aASTs.length) {
-							nextASTNode(aASTs);
-						} else {
+							// ============ Logging Verbose 
+							// We could add some more verbose logging in the future to indicate when something failed to generate.
+							// ============ Logging Verbose 
 
-							fCallback(dCollectedDOMFragments);
+							if (aASTs.length) {
+								nextASTNode(aASTs);
+							} else {
+
+								fCallback(dCollectedDOMFragments);
+							}
 						}
 					}
 				} else {
 
-					// Check to see if this item has contents, if so we have a problem because contents can not be appended if the last result failed!
-					if (oCurrentASTNode.contents && oCurrentASTNode.contents.length) ; else {
-
-						// ============ Logging Verbose 
-						// We could add some more verbose logging in the future to indicate when something failed to generate.
-						// ============ Logging Verbose 
-
-						if (aASTs.length) {
-							nextASTNode(aASTs);
-						} else {
-
-							fCallback(dCollectedDOMFragments);
-						}
-					}
+					console.log(`Failed to find parser ${oCurrentASTNode.node} in ASTsToDOM`);
 				}
-			} else {
-
-				console.log("Failed to find parser in ASTsToDOM");
-			}
-		})(aRootASTs);
+			})(aRootASTs);
+		}
 	};
 
 	// Generator will loop through a context array and parse them one at a time.
@@ -9422,14 +9634,24 @@ define('plates',[],function () { 'use strict';
 			// Porcess said context
 			ASTsToDOM(oCurrentContext, false, dProcessedContext => {
 
-				// Append results to finished context
-				dFinishedContext.appendChild(dProcessedContext);
+				if (dProcessedContext instanceof Error) {
 
-				if (aContexts.length) {
-					nextContext(aContexts);
+					fCallback(dProcessedContext);
 				} else {
 
-					fCallback(dFinishedContext);
+					// Check to see if we got something
+					if (dProcessedContext) {
+
+						// Append results to finished context
+						dFinishedContext.appendChild(dProcessedContext);
+					}
+
+					if (aContexts.length) {
+						nextContext(aContexts);
+					} else {
+
+						fCallback(dFinishedContext);
+					}
 				}
 			});
 		})(aContext);
@@ -9470,20 +9692,26 @@ define('plates',[],function () { 'use strict';
 
 			Runtime$1.generate(context, function (compiledContext) {
 
-				if (target) {
+				if (compiledContext instanceof Error) {
 
-					// Look for append location
-					var dAppendTarget = document.querySelector(target);
-
-					if (dAppendTarget.nodeType === 1) {
-						dAppendTarget.appendChild(compiledContext);
-					}
+					throw compiledContext;
 				} else {
 
-					return compiledContext;
-				}
+					if (target) {
 
-				console.log("Runtime /Done!");
+						// Look for append location
+						var dAppendTarget = document.querySelector(target);
+
+						if (dAppendTarget.nodeType === 1) {
+							dAppendTarget.appendChild(compiledContext);
+						}
+					} else {
+
+						return compiledContext;
+					}
+
+					console.log("Runtime /Done!");
+				}
 			});
 		}
 	}
