@@ -8,35 +8,6 @@ const oBlockLibs = {
 	"if": If.parser
 };
 
-// Function is used to handle finding context values from the context object
-const FIND_CONTEXT = (sContextPath, oContext) => {
-
-	let aContextPath = sContextPath.split('.');
-
-	let oCurrentContext = oContext;
-
-	for (let iPath = 0, iLen = aContextPath.length; iPath < iLen; iPath++) {
-
-		// Skip over this if its at the beginning
-		if (iPath === 0  && aContextPath[iPath].trim() === "this") {
-			continue;
-		}
-
-		if (oCurrentContext[aContextPath[iPath]]) {
-
-			oCurrentContext = oCurrentContext[aContextPath[iPath]];
-
-		}
-		else {
-
-			return false;
-		}
-
-	}
-
-	return oCurrentContext;
-};
-
 // Function handles all context based results
 const CONTEXT_PARSER = (oContext, oASTNode, sScope) => {
 
@@ -46,7 +17,7 @@ const CONTEXT_PARSER = (oContext, oASTNode, sScope) => {
 	// If there is a context path continue
 	if (sContextPath.length) {
 
-		let contextValue = FIND_CONTEXT(sContextPath, oContext);
+		let contextValue = Context.find(sContextPath, oContext);
 
 		if (contextValue) {
 
@@ -84,10 +55,6 @@ const CONTEXT_PARSER = (oContext, oASTNode, sScope) => {
 };
 
 const BLOCK_PARSER = (oContext, oASTNode, sScope) => {
-
-	// console.log("oContext", oContext);
-	// console.log("oASTNode", oASTNode);
-	// console.log("sScope", sScope);
 
 	// Check for conditionals and fallbacks
 	let aConditional = oASTNode.conditionals;

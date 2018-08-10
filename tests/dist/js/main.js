@@ -9041,6 +9041,272 @@ define('plates',[],function () { 'use strict';
 	            ]
 	        }
 	    ],
+	    "LOGICBLOCKComplexIf": [
+	        {
+	            "node": "elem",
+	            "tag": "div",
+	            "attributes": {
+	                "block": [],
+	                "simple": [
+	                    {
+	                        "oName": {
+	                            "sNode": "static",
+	                            "sName": "class"
+	                        },
+	                        "oValue": {
+	                            "sNode": "static",
+	                            "contents": "test-case"
+	                        }
+	                    }
+	                ]
+	            },
+	            "contents": [
+	                {
+	                    "node": "elem",
+	                    "tag": "p",
+	                    "attributes": false,
+	                    "contents": [
+	                        {
+	                            "node": "text",
+	                            "text": "Tests that `this.isTrue` is equal to boolean true"
+	                        }
+	                    ]
+	                },
+	                {
+	                    "node": "logic",
+	                    "tag": "block",
+	                    "method": "if",
+	                    "conditionals": [
+	                        {
+	                            "sMethod": "if",
+	                            "aConditions": [
+	                                {
+	                                    "type": "complex",
+	                                    "test": {
+	                                        "v1": {
+	                                            "type": "simple",
+	                                            "value": "this.isTrue"
+	                                        },
+	                                        "op": "===",
+	                                        "v2": {
+	                                            "type": "simple",
+	                                            "value": true
+	                                        }
+	                                    }
+	                                }
+	                            ],
+	                            "contents": [
+	                                {
+	                                    "node": "elem",
+	                                    "tag": "p",
+	                                    "attributes": false,
+	                                    "contents": [
+	                                        {
+	                                            "node": "text",
+	                                            "text": "PASSED"
+	                                        }
+	                                    ]
+	                                }
+	                            ]
+	                        }
+	                    ],
+	                    "fallback": {
+	                        "sMethod": "else",
+	                        "aConditions": false,
+	                        "contents": [
+	                            {
+	                                "node": "elem",
+	                                "tag": "p",
+	                                "attributes": false,
+	                                "contents": [
+	                                    {
+	                                        "node": "text",
+	                                        "text": "FAILED"
+	                                    }
+	                                ]
+	                            }
+	                        ]
+	                    }
+	                }
+	            ]
+	        },
+	        {
+	            "node": "elem",
+	            "tag": "div",
+	            "attributes": {
+	                "block": [],
+	                "simple": [
+	                    {
+	                        "oName": {
+	                            "sNode": "static",
+	                            "sName": "class"
+	                        },
+	                        "oValue": {
+	                            "sNode": "static",
+	                            "contents": "test-case"
+	                        }
+	                    }
+	                ]
+	            },
+	            "contents": [
+	                {
+	                    "node": "elem",
+	                    "tag": "p",
+	                    "attributes": false,
+	                    "contents": [
+	                        {
+	                            "node": "text",
+	                            "text": "Tests that `this.isNum1` is equal to the number 1"
+	                        }
+	                    ]
+	                },
+	                {
+	                    "node": "logic",
+	                    "tag": "block",
+	                    "method": "if",
+	                    "conditionals": [
+	                        {
+	                            "sMethod": "if",
+	                            "aConditions": [
+	                                {
+	                                    "type": "complex",
+	                                    "test": {
+	                                        "v1": {
+	                                            "type": "simple",
+	                                            "value": "this.isNum1"
+	                                        },
+	                                        "op": "===",
+	                                        "v2": {
+	                                            "type": "simple",
+	                                            "value": 1
+	                                        }
+	                                    }
+	                                }
+	                            ],
+	                            "contents": [
+	                                {
+	                                    "node": "elem",
+	                                    "tag": "p",
+	                                    "attributes": false,
+	                                    "contents": [
+	                                        {
+	                                            "node": "text",
+	                                            "text": "PASSED"
+	                                        }
+	                                    ]
+	                                }
+	                            ]
+	                        }
+	                    ],
+	                    "fallback": {
+	                        "sMethod": "else",
+	                        "aConditions": false,
+	                        "contents": [
+	                            {
+	                                "node": "elem",
+	                                "tag": "p",
+	                                "attributes": false,
+	                                "contents": [
+	                                    {
+	                                        "node": "text",
+	                                        "text": "FAILED"
+	                                    }
+	                                ]
+	                            }
+	                        ]
+	                    }
+	                }
+	            ]
+	        },
+	        {
+	            "node": "elem",
+	            "tag": "div",
+	            "attributes": {
+	                "block": [],
+	                "simple": [
+	                    {
+	                        "oName": {
+	                            "sNode": "static",
+	                            "sName": "class"
+	                        },
+	                        "oValue": {
+	                            "sNode": "static",
+	                            "contents": "test-case"
+	                        }
+	                    }
+	                ]
+	            },
+	            "contents": [
+	                {
+	                    "node": "elem",
+	                    "tag": "p",
+	                    "attributes": false,
+	                    "contents": [
+	                        {
+	                            "node": "text",
+	                            "text": "Tests that `this.isTest` is equal to the string \"isTest\""
+	                        }
+	                    ]
+	                },
+	                {
+	                    "node": "logic",
+	                    "tag": "block",
+	                    "method": "if",
+	                    "conditionals": [
+	                        {
+	                            "sMethod": "if",
+	                            "aConditions": [
+	                                {
+	                                    "type": "complex",
+	                                    "test": {
+	                                        "v1": {
+	                                            "type": "simple",
+	                                            "value": "this.isTest"
+	                                        },
+	                                        "op": "===",
+	                                        "v2": {
+	                                            "type": "simple",
+	                                            "value": "\"isTest\""
+	                                        }
+	                                    }
+	                                }
+	                            ],
+	                            "contents": [
+	                                {
+	                                    "node": "elem",
+	                                    "tag": "p",
+	                                    "attributes": false,
+	                                    "contents": [
+	                                        {
+	                                            "node": "text",
+	                                            "text": "PASSED"
+	                                        }
+	                                    ]
+	                                }
+	                            ]
+	                        }
+	                    ],
+	                    "fallback": {
+	                        "sMethod": "else",
+	                        "aConditions": false,
+	                        "contents": [
+	                            {
+	                                "node": "elem",
+	                                "tag": "p",
+	                                "attributes": false,
+	                                "contents": [
+	                                    {
+	                                        "node": "text",
+	                                        "text": "FAILED"
+	                                    }
+	                                ]
+	                            }
+	                        ]
+	                    }
+	                }
+	            ]
+	        }
+	    ],
 	    "LOGICBlockSimpleIf": [
 	        {
 	            "node": "logic",
@@ -9050,7 +9316,10 @@ define('plates',[],function () { 'use strict';
 	                {
 	                    "sMethod": "if",
 	                    "aConditions": [
-	                        "this.isTrue"
+	                        {
+	                            "type": "simple",
+	                            "test": "this.isTrue"
+	                        }
 	                    ],
 	                    "contents": [
 	                        {
@@ -9061,7 +9330,10 @@ define('plates',[],function () { 'use strict';
 	                                {
 	                                    "sMethod": "if",
 	                                    "aConditions": [
-	                                        "this.isStrong"
+	                                        {
+	                                            "type": "simple",
+	                                            "test": "this.isStrong"
+	                                        }
 	                                    ],
 	                                    "contents": [
 	                                        {
@@ -9080,7 +9352,7 @@ define('plates',[],function () { 'use strict';
 	                            ],
 	                            "fallback": {
 	                                "sMethod": "else",
-	                                "aConditions": [],
+	                                "aConditions": false,
 	                                "contents": [
 	                                    {
 	                                        "node": "elem",
@@ -9101,7 +9373,7 @@ define('plates',[],function () { 'use strict';
 	            ],
 	            "fallback": {
 	                "sMethod": "else",
-	                "aConditions": [],
+	                "aConditions": false,
 	                "contents": [
 	                    {
 	                        "node": "elem",
@@ -9234,7 +9506,14 @@ define('plates',[],function () { 'use strict';
 
 			find(sContextPath, oContext) {
 
-					let aContextPath = sContextPath.split('.');
+					// Catch for native non string types
+					if (typeof sContextPath !== "string") {
+
+							// This is not a string so we are just going to return it.
+							return sContextPath;
+					}
+
+					let aContextPath = sContextPath.indexOf('.') ? sContextPath.split('.') : [sContextPath];
 
 					let vCurrentContext = oContext;
 
@@ -9261,6 +9540,60 @@ define('plates',[],function () { 'use strict';
 
 	var Context$1 = new Context();
 
+	const SIMPLE_CONDITIONAL = (v1, oContext) => {
+
+		if (typeof v1 === "string") {
+
+			return Context$1.find(v1, oContext);
+		} else if (typeof v1 === "boolean") {
+
+			return v1;
+		}
+
+		return false;
+	};
+
+	const COMPLEX_CONDITIONAL = (oTestConditional, oContext) => {
+
+		let vRawV1 = null;
+		let vRawV2 = null;
+
+		// Get the raw v1 value!
+		if (oTestConditional.v1.type === "simple") {
+
+			vRawV1 = Context$1.find(oTestConditional.v1.value, oContext);
+		} else {
+
+			vRawV1 = COMPLEX_CONDITIONAL(oTestConditional.v1, oContext);
+		}
+
+		if (oTestConditional.v2.type === "simple") {
+
+			vRawV2 = Context$1.find(oTestConditional.v2.value, oContext);
+		} else {
+
+			vRawV2 = COMPLEX_CONDITIONAL(oTestConditional.v2, oContext);
+		}
+
+		console.log(vRawV1, oTestConditional.op, vRawV2);
+
+		switch (oTestConditional.op) {
+
+			case "==":
+
+				return vRawV1 == vRawV2 ? true : false;
+				break;
+
+			case "===":
+
+				return vRawV1 === vRawV2 ? true : false;
+				break;
+
+		}
+
+		return false;
+	};
+
 	class If {
 
 		constuctor() {}
@@ -9273,24 +9606,39 @@ define('plates',[],function () { 'use strict';
 				let vReturningContext = false;
 
 				// Loop through all of the conditions till we find a true.
-				for (let c = 0, cLen = aConditionals.length; c < cLen; c++) {
+				// This is all the block level, not the indivual conditions
+				let bConditionalPass = true;
 
-					let oConditional = aConditionals[c];
+				block: for (let c = 0, cLen = aConditionals.length; c < cLen; c++) {
 
-					// Check to see if the conditional blocks are simple or specific
-					if (oConditional.aConditions.length === 1) {
+					let oConditionalBlock = aConditionals[c];
+					let aTestConditions = oConditionalBlock.aConditions;
 
-						let sSimpleCondition = oConditional.aConditions[0];
+					console.log(aConditionals);
 
-						let vContext = Context$1.find(sSimpleCondition, oContext);
+					// Loops through the individual conditional statements (simple/complex)
+					conditionals: for (let t = 0, tLen = aTestConditions.length; t < tLen; t++) {
 
-						if (vContext) {
-							vReturningContext = oConditional.contents;
-							break;
+						let oTest = aTestConditions[t];
+
+						if (oTest.type === "simple") {
+
+							bConditionalPass = SIMPLE_CONDITIONAL(oTest.test, oContext);
+						} else {
+
+							bConditionalPass = COMPLEX_CONDITIONAL(oTest.test, oContext);
 						}
-					} else {
 
-						console.log("More complex conditions");
+						// Check if we can continue
+						if (!bConditionalPass) {
+							break block;
+						}
+					}
+
+					if (bConditionalPass) {
+
+						vReturningContext = oConditionalBlock.contents;
+						break;
 					}
 				}
 
@@ -9315,32 +9663,6 @@ define('plates',[],function () { 'use strict';
 		"if": If$1.parser
 	};
 
-	// Function is used to handle finding context values from the context object
-	const FIND_CONTEXT = (sContextPath, oContext) => {
-
-		let aContextPath = sContextPath.split('.');
-
-		let oCurrentContext = oContext;
-
-		for (let iPath = 0, iLen = aContextPath.length; iPath < iLen; iPath++) {
-
-			// Skip over this if its at the beginning
-			if (iPath === 0 && aContextPath[iPath].trim() === "this") {
-				continue;
-			}
-
-			if (oCurrentContext[aContextPath[iPath]]) {
-
-				oCurrentContext = oCurrentContext[aContextPath[iPath]];
-			} else {
-
-				return false;
-			}
-		}
-
-		return oCurrentContext;
-	};
-
 	// Function handles all context based results
 	const CONTEXT_PARSER = (oContext, oASTNode, sScope) => {
 
@@ -9350,7 +9672,7 @@ define('plates',[],function () { 'use strict';
 		// If there is a context path continue
 		if (sContextPath.length) {
 
-			let contextValue = FIND_CONTEXT(sContextPath, oContext);
+			let contextValue = Context$1.find(sContextPath, oContext);
 
 			if (contextValue) {
 
@@ -9387,10 +9709,6 @@ define('plates',[],function () { 'use strict';
 	};
 
 	const BLOCK_PARSER = (oContext, oASTNode, sScope) => {
-
-		// console.log("oContext", oContext);
-		// console.log("oASTNode", oASTNode);
-		// console.log("sScope", sScope);
 
 		// Check for conditionals and fallbacks
 		let aConditional = oASTNode.conditionals;
@@ -9529,13 +9847,12 @@ define('plates',[],function () { 'use strict';
 
 					let vParserResults = fParser(oContext, oCurrentASTNode, sScope) || false;
 
+					// Check for actual node types, as this means we have appendable results.
 					if (isNode$3(vParserResults)) {
 
 						if (!dCollectedDOMFragments) {
 							dCollectedDOMFragments = document.createDocumentFragment();
 						}
-
-						console.log("parse result", vParserResults);
 
 						if (oCurrentASTNode.attributes && oCurrentASTNode.attributes.length) {
 
@@ -9573,47 +9890,51 @@ define('plates',[],function () { 'use strict';
 								fCallback(dCollectedDOMFragments);
 							}
 						}
-					} else if (Array.isArray(vParserResults)) {
+					}
+					// Chekc for an array of objects as this will mean we have a sub ast (from logic templates)
+					else if (Array.isArray(vParserResults)) {
 
-						// Call a sub ASTsToDOM instance because we have children.
-						ASTsToDOM(oContext, vParserResults, vSubChildrenFragements => {
+							// Call a sub ASTsToDOM instance because we have children.
+							ASTsToDOM(oContext, vParserResults, vSubChildrenFragements => {
 
-							if (isNode$3(vSubChildrenFragements)) {
+								if (isNode$3(vSubChildrenFragements)) {
 
-								if (!dCollectedDOMFragments) {
-									dCollectedDOMFragments = document.createDocumentFragment();
-								}
+									if (!dCollectedDOMFragments) {
+										dCollectedDOMFragments = document.createDocumentFragment();
+									}
 
-								dCollectedDOMFragments.appendChild(vSubChildrenFragements);
+									dCollectedDOMFragments.appendChild(vSubChildrenFragements);
 
-								if (aASTs.length) {
-									nextASTNode(aASTs);
+									if (aASTs.length) {
+										nextASTNode(aASTs);
+									} else {
+
+										fCallback(dCollectedDOMFragments);
+									}
 								} else {
 
-									fCallback(dCollectedDOMFragments);
+									console.log("we have a result but dont have a node type.");
 								}
-							} else {
-
-								console.log("we have a result but dont have a node type.");
-							}
-						});
-					} else {
-
-						// Check to see if this item has contents, if so we have a problem because contents can not be appended if the last result failed!
-						if (oCurrentASTNode.contents && oCurrentASTNode.contents.length) ; else {
-
-							// ============ Logging Verbose 
-							// We could add some more verbose logging in the future to indicate when something failed to generate.
-							// ============ Logging Verbose 
-
-							if (aASTs.length) {
-								nextASTNode(aASTs);
-							} else {
-
-								fCallback(dCollectedDOMFragments);
-							}
+							});
 						}
-					}
+						// Catch everything else, most likely invalid or failure
+						else {
+
+								// Check to see if this item has contents, if so we have a problem because contents can not be appended if the last result failed!
+								if (oCurrentASTNode.contents && oCurrentASTNode.contents.length) ; else {
+
+									// ============ Logging Verbose 
+									// We could add some more verbose logging in the future to indicate when something failed to generate.
+									// ============ Logging Verbose 
+
+									if (aASTs.length) {
+										nextASTNode(aASTs);
+									} else {
+
+										fCallback(dCollectedDOMFragments);
+									}
+								}
+							}
 				} else {
 
 					console.log(`Failed to find parser ${oCurrentASTNode.node} in ASTsToDOM`);

@@ -2,7 +2,14 @@ class Context {
 
 	find(sContextPath, oContext) {
 
-		let aContextPath = sContextPath.split('.');
+		// Catch for native non string types
+		if (typeof sContextPath !== "string") {
+
+			// This is not a string so we are just going to return it.
+			return sContextPath;
+		}
+
+		let aContextPath = (sContextPath.indexOf('.')) ? sContextPath.split('.') : [ sContextPath ];
 
 		let vCurrentContext = oContext;
 

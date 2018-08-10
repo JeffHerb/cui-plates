@@ -86,13 +86,12 @@ const ASTsToDOM = (oContext, aPassedAST, fCallback) => {
 
 				let vParserResults = fParser(oContext, oCurrentASTNode, sScope) ||  false;
 
+				// Check for actual node types, as this means we have appendable results.
 				if (isNode(vParserResults)) {
 
 					if (!dCollectedDOMFragments) {
 						dCollectedDOMFragments = document.createDocumentFragment();
 					}
-
-					console.log("parse result", vParserResults);
 
 					if (oCurrentASTNode.attributes && oCurrentASTNode.attributes.length) {
 
@@ -137,6 +136,7 @@ const ASTsToDOM = (oContext, aPassedAST, fCallback) => {
 					}
 
 				}
+				// Chekc for an array of objects as this will mean we have a sub ast (from logic templates)
 				else if (Array.isArray(vParserResults)) {
 
 					// Call a sub ASTsToDOM instance because we have children.
@@ -167,6 +167,7 @@ const ASTsToDOM = (oContext, aPassedAST, fCallback) => {
 					});
 
 				}
+				// Catch everything else, most likely invalid or failure
 				else {
 
 					// Check to see if this item has contents, if so we have a problem because contents can not be appended if the last result failed!

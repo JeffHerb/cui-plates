@@ -10,6 +10,8 @@ const LOGIC_TAG_CONTENTS_REGEX = /\((?:(.*?))\)|(?:[a-zA-Z0-9\.\=\!\<\>\&\|\"\']
 const LOGIC_TAG_BLOCK_DESIGNATOR = /(?:\{{2}[\/|\#](?:if|switch|each)(?:[a-zA-Z0-9\.\ \=\!\&\|\"\'\(\)]*)\}{2})/g;
 const LOGIC_TAG_BLOCK_SEPERATOR = /(?:\{{2}(?:case|default|elseif|else)(?:[a-zA-Z0-9\.\ \=\!\&\|\"\'\(\)]*)\}{2})/g;
 
+const LOGIC_TAG_CONDTIONAL_WRAPPED = /\(([^()]+)\)/;
+
 const LOGIC_BLOCK_TAGS_META = {
 	'each': {
 		seperators: false,
@@ -23,6 +25,131 @@ const LOGIC_BLOCK_TAGS_META = {
 		seperators: ['case', 'default'],
 		finalFallback: 'default'
 	}
+};
+
+const LOGIC_SUPPORT_OPERATORS = ['==', '!=', '<=', '>=', '===', '!=='];
+
+const COMPILE_CONDITIONALS = (aConditionals) => {
+
+	const CLEANUP_DATA_TYPE = (value) => {
+
+		// Handle Numbers
+		if (!isNaN(value)) {
+			return parseInt(value);
+		}
+
+		if ((typeof value === "string") && (value === "true")) {
+			return true;
+		}
+
+		if ((typeof value === "string") && (value === "false")) {
+			return false;
+		}
+
+		return value;
+	}
+
+	let aConditionalsObjSet = [];
+
+	if (!aConditionals.length) {
+		return false;
+	}
+
+	if (aConditionals.length === 1) {
+
+		aConditionalsObjSet.push(
+			{
+				"type": "simple",
+				"test": aConditionals[0]
+			}
+		);
+		
+	}
+	else if ((aConditionals.length % 3) === 0) {
+
+		(function nextConditonalSet(aAllConditionals) {
+
+			// Get the next three properties
+			let aNextSet = aConditionals.slice(0, 3);
+
+			// Rmeove them from the old array
+			aConditionals = aConditionals.slice(3);
+
+			let oComplexConditonal = {
+				"type": "complex",
+				"test": {				
+					"v1": false,
+					"op": false,
+					"v2": false
+				}
+			};
+
+			let error = false;
+
+			// Loop through and look at each part!
+			for (let ci = 0, ciLen = 3; ci < ciLen; ci++) {
+
+				if (ci === 0 || ci === 2) {
+
+					let reConditionalWrapTest = LOGIC_TAG_CONDTIONAL_WRAPPED.exec(aNextSet[ci]);
+
+					// Check if null if so we have a context or static value
+					if (!reConditionalWrapTest) {
+
+						oComplexConditonal.test[((ci === 0) ? "v1" : "v2")] = {
+							"type": "simple",
+							"value": CLEANUP_DATA_TYPE(aNextSet[ci])
+						}
+					}
+					else {
+
+						oComplexConditonal.test[((ci === 0) ? "v1" : "v2")] = {
+							"type": "conditional",
+							"value": {}
+						}
+
+					}
+
+				}
+				else {
+
+					if (LOGIC_SUPPORT_OPERATORS.indexOf(aNextSet[ci]) !== -1) {
+
+						oComplexConditonal.test.op = aNextSet[ci];
+
+					}
+					else {
+
+						error = new Error (`Invalid conditional operator specified ${aNextSet[ci]} in |template.path|.`);
+
+						break; 
+					}
+
+				}
+
+			}
+
+			if (error) {
+
+				return error;
+			}
+			else {
+
+				aConditionalsObjSet.push(oComplexConditonal);
+			}
+
+			if (aAllConditionals.length) {
+				nextConditonalSet(aAllConditionals);
+			}
+			else {
+				return aConditionalsObjSet;
+			}
+
+		})(aConditionals.concat());
+
+	}
+
+	return aConditionalsObjSet;
 };
 
 const LOGIC_BLOCK_TAGS = Object.keys(LOGIC_BLOCK_TAGS_META);
@@ -130,7 +257,6 @@ const FIND_LOGIC_BLOCK = (reTemplateResults, gracefulFail) => {
 		}
 
 	}
-
 };
 
 const LOGIC_TAGS = {
@@ -249,8 +375,6 @@ const LOGIC_TAGS = {
 			// See if we can get the logic information for this section
 			let oLogicSectionData = FIND_LOGIC_BLOCK(reTemplateResults);
 
-			//console.log(oLogicSectionData);
-
 			if (oLogicSectionData instanceof Error) {
 				return oLogicSection;
 			}
@@ -271,11 +395,17 @@ const LOGIC_TAGS = {
 
 				// Create a regular expression only looking for the conditional sperators that matter to this tag
 				let reConditionalSeperators = new RegExp(`(?:\{{2}(?:${LOGIC_BLOCK_TAGS_META[oLogicSectionData.oSectionMeta.sMethod].seperators.join('|')})(?:[a-zA-Z0-9\.\ \=\!\&\|\"\'\(\)]*)\}{2})`, 'g');
+				
+				let aCurrentCondtionals = oLogicSectionData.oSectionMeta.oOpening.sTag.match(LOGIC_TAG_CONTENTS_REGEX);
 
 				let sCurrentWorkingSubTemplate = oLogicSectionData.sBlockContents;
-				let aCurrentCondtionals = oLogicSectionData.oSectionMeta.oOpening.sTag.match(LOGIC_TAG_CONTENTS_REGEX);
 				let sCurrentConditionalMethod = aCurrentCondtionals.shift();
 				let iLastConditionalBlockStartInd = 0;
+				let vCompiledConditonals = COMPILE_CONDITIONALS(aCurrentCondtionals);
+
+				if (vCompiledConditonals instanceof Error) {
+					return vCompiledConditonals;
+				}
 
 				let sRootMethod = sCurrentConditionalMethod;
 
@@ -297,7 +427,6 @@ const LOGIC_TAGS = {
 					// If we found the 
 					if (reNextConditionalTag) {
 
-						//console.log(reNextConditionalTag);
 						let iNextConditionalIndex = reNextConditionalTag.index;
 
 						// Slice the substring and look for a similar opening logic tag!
@@ -316,11 +445,9 @@ const LOGIC_TAGS = {
 
 							let oSubLogicSectionData = FIND_LOGIC_BLOCK(reFirstSubLogicTag, true);
 
-							// console.log(iNextConditionalIndex, (reFirstSubLogicTag.index + oSubLogicSectionData.oSectionMeta.oClosing.iEnd));
-
 							if (iNextConditionalIndex > (reFirstSubLogicTag.index + oSubLogicSectionData.oSectionMeta.oClosing.iEnd)) {
 
-								oSubAST = fCreateSuboAST(sCurrentConditionalMethod, aCurrentCondtionals, sPossibleSubTemplate);
+								oSubAST = fCreateSuboAST(sCurrentConditionalMethod, vCompiledConditonals, sPossibleSubTemplate);
 
 								// check to see if this is a fallback item or a regular conditional
 								if (LOGIC_BLOCK_TAGS_META[sRootMethod].finalFallback === sCurrentConditionalMethod) {
@@ -332,10 +459,18 @@ const LOGIC_TAGS = {
 									oAST.conditionals.push(oSubAST);
 								}
 
+								let aCurrentCondtionals = reNextConditionalTag[0].match(LOGIC_TAG_CONTENTS_REGEX);
+
 								// Update all of our references for the next
 								sCurrentWorkingSubTemplate = sCurrentWorkingSubTemplate.slice(reNextConditionalTag.index + reNextConditionalTag[0].length);
-								aCurrentCondtionals = reNextConditionalTag[0].match(LOGIC_TAG_CONTENTS_REGEX);
 								sCurrentConditionalMethod = aCurrentCondtionals.shift();
+								vCompiledConditonals = COMPILE_CONDITIONALS(aCurrentCondtionals);
+								
+								if (vCompiledConditonals instanceof Error) {
+									return vCompiledConditonals;
+								}
+
+								// Update the conditional index pointer
 								iLastConditionalBlockStartInd = reNextConditionalTag.index + reNextConditionalTag[0].length;
 
 							}
@@ -347,7 +482,7 @@ const LOGIC_TAGS = {
 						}
 						else {
 
-							oSubAST = fCreateSuboAST(sCurrentConditionalMethod, aCurrentCondtionals, sPossibleSubTemplate);
+							oSubAST = fCreateSuboAST(sCurrentConditionalMethod, vCompiledConditonals, sPossibleSubTemplate);
 
 							// check to see if this is a fallback item or a regular conditional
 							if (LOGIC_BLOCK_TAGS_META[sRootMethod].finalFallback === sCurrentConditionalMethod) {
@@ -359,17 +494,25 @@ const LOGIC_TAGS = {
 								oAST.conditionals.push(oSubAST);
 							}
 
+							let aCurrentCondtionals = reNextConditionalTag[0].match(LOGIC_TAG_CONTENTS_REGEX);
+
 							// Update all of our references for the next
 							sCurrentWorkingSubTemplate = sCurrentWorkingSubTemplate.slice(reNextConditionalTag.index + reNextConditionalTag[0].length);
-							aCurrentCondtionals = reNextConditionalTag[0].match(LOGIC_TAG_CONTENTS_REGEX);
 							sCurrentConditionalMethod = aCurrentCondtionals.shift();
+							vCompiledConditonals = COMPILE_CONDITIONALS(aCurrentCondtionals);
+
+							if (vCompiledConditonals instanceof Error) {
+								return vCompiledConditonals;
+							}
+
+							// Update the conditional index pointer
 							iLastConditionalBlockStartInd = reNextConditionalTag.index + reNextConditionalTag[0].length;
 						}
 
 					}
 					else {
 
-						oSubAST = fCreateSuboAST(sCurrentConditionalMethod, aCurrentCondtionals, sCurrentWorkingSubTemplate);
+						oSubAST = fCreateSuboAST(sCurrentConditionalMethod, vCompiledConditonals, sCurrentWorkingSubTemplate);
 
 						// check to see if this is a fallback item or a regular conditional
 						if (LOGIC_BLOCK_TAGS_META[sRootMethod].finalFallback === sCurrentConditionalMethod) {
@@ -387,11 +530,7 @@ const LOGIC_TAGS = {
 
 				}
 
-				//console.log(oAST);
-
-
 				oEndResult.oAST = oAST;
-
 			}
 
 			// If there are remaning siblings, add them to the end result for the rest of the parser.
@@ -466,15 +605,6 @@ var LogicParser = function _logic_parser() {
 	const check = (sTemplate) => {
 
 		let reLogic = LOGIC_TAGREGEX.exec(sTemplate);
-
-		if (reLogic) {
-
-			console.log(sTemplate.match(reLogic));
-
-		}
-
-
-		//console.log(reLogic);
 
 		if (reLogic) {
 
