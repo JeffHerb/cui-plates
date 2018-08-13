@@ -2,63 +2,111 @@ import Context from '../utils/context';
 
 const SIMPLE_CONDITIONAL = (v1, oContext) => {
 
-	if (typeof v1 === "string") {
+	let v1Value = false;
 
-		return Context.find(v1, oContext);
+	if (v1.type === "reference") {
+
+		v1Value = Context.find(v1.test, oContext);
 
 	}
-	else if (typeof v1 === "boolean") {
+	else {
 
-		return v1;
+		v1Value = v1.test;
 	}
 
-	return false;
+	// Check the simple value data types
+	// Just return booleans
+	if (typeof v1Value === "boolean") {
+
+		return v1Value;
+	}
+	// If number, anything bigger than 0 is true
+	else if (!isNaN(v1Value)) {
+
+		if (v1Value <= 0) {
+
+			return false;
+		}
+		else {
+
+			return true;
+		}
+
+	}
+	// If string, anything with length is true
+	else {
+
+		if (v1Value.length) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
 };
 
 const COMPLEX_CONDITIONAL = (oTestConditional, oContext) => {
 
-	let vRawV1 = null;
-	let vRawV2 = null;
+	const EXTRACT_VALUE = (oCondition) => {
 
-	// Get the raw v1 value!
-	if (oTestConditional.v1.type === "simple") {
+		if (oCondition.type === "static") {
 
-		vRawV1 = Context.find(oTestConditional.v1.value, oContext);
+			return oCondition.value;	
+		}
+		else if (oCondition.type === "reference") {
+
+			return Context.find(oCondition.value, oContext);
+		}
+		else {
+
+			return COMPLEX_CONDITIONAL(oCondition, oContext);
+		}
 
 	}
-	else {
 
-		vRawV1 = COMPLEX_CONDITIONAL(oTestConditional.v1, oContext);
-	}
+	let vRawV1 = EXTRACT_VALUE(oTestConditional.v1);
+	let vRawV2 = EXTRACT_VALUE(oTestConditional.v2);;
 
-	if (oTestConditional.v2.type === "simple") {
-
-		vRawV2 = Context.find(oTestConditional.v2.value, oContext);
-	}
-	else {
-
-		vRawV2 = COMPLEX_CONDITIONAL(oTestConditional.v2, oContext);
-	}
-
-	console.log(vRawV1, oTestConditional.op, vRawV2);
+	console.log(vRawV1, vRawV2);
 
 	switch (oTestConditional.op) {
 
 		case "==":
 
 			return (vRawV1 == vRawV2) ? true : false;
-			break;
 
 		case "===":
 
 			return (vRawV1 === vRawV2) ? true : false;			
-			break;
+
+		case "!=":
+
+			return (vRawV1 != vRawV2) ? true : false;
+
+		case "!==":
+
+			return (vRawV1 != vRawV2) ? true : false;
+
+		case "<":
+
+			return (vRawV1 < vRawV2) ? true : false;
+
+		case "<=":
+
+			return (vRawV1 <= vRawV2) ? true : false;
+
+		case ">":
+
+			return (vRawV1 > vRawV2) ? true : false;
+
+		case ">=":
+
+			return (vRawV1 >= vRawV2) ? true : false;
 
 	}
 
 	return false;
-
-}
+};
 
 class If {
 
@@ -83,17 +131,15 @@ class If {
 				let oConditionalBlock = aConditionals[c];
 				let aTestConditions = oConditionalBlock.aConditions;
 
-				console.log(aConditionals);
-
 				// Loops through the individual conditional statements (simple/complex)
 				conditionals:
 				for (let t = 0, tLen = aTestConditions.length; t < tLen; t++) {
 
 					let oTest = aTestConditions[t];
 
-					if (oTest.type === "simple") {
+					if (oTest.type === "static" || oTest.type === "reference") {
 
-						bConditionalPass = SIMPLE_CONDITIONAL(oTest.test, oContext);
+						bConditionalPass = SIMPLE_CONDITIONAL(oTest, oContext);
 					}
 					else {
 
@@ -128,7 +174,6 @@ class If {
 		}
 
 	}
-
-}
+};
 
 export default new If();

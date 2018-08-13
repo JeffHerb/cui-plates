@@ -9084,12 +9084,12 @@ define('plates',[],function () { 'use strict';
 	                                    "type": "complex",
 	                                    "test": {
 	                                        "v1": {
-	                                            "type": "simple",
+	                                            "type": "reference",
 	                                            "value": "this.isTrue"
 	                                        },
 	                                        "op": "===",
 	                                        "v2": {
-	                                            "type": "simple",
+	                                            "type": "static",
 	                                            "value": true
 	                                        }
 	                                    }
@@ -9103,7 +9103,7 @@ define('plates',[],function () { 'use strict';
 	                                    "contents": [
 	                                        {
 	                                            "node": "text",
-	                                            "text": "PASSED"
+	                                            "text": "Test: PASSED"
 	                                        }
 	                                    ]
 	                                }
@@ -9121,12 +9121,44 @@ define('plates',[],function () { 'use strict';
 	                                "contents": [
 	                                    {
 	                                        "node": "text",
-	                                        "text": "FAILED"
+	                                        "text": "Test: FAILED"
 	                                    }
 	                                ]
 	                            }
 	                        ]
 	                    }
+	                },
+	                {
+	                    "node": "elem",
+	                    "tag": "div",
+	                    "attributes": {
+	                        "block": [],
+	                        "simple": [
+	                            {
+	                                "oName": {
+	                                    "sNode": "static",
+	                                    "sName": "class"
+	                                },
+	                                "oValue": {
+	                                    "sNode": "static",
+	                                    "contents": "expected"
+	                                }
+	                            }
+	                        ]
+	                    },
+	                    "contents": [
+	                        {
+	                            "node": "elem",
+	                            "tag": "pre",
+	                            "attributes": false,
+	                            "contents": [
+	                                {
+	                                    "node": "text",
+	                                    "text": "Expected: PASSED"
+	                                }
+	                            ]
+	                        }
+	                    ]
 	                }
 	            ]
 	        },
@@ -9172,12 +9204,12 @@ define('plates',[],function () { 'use strict';
 	                                    "type": "complex",
 	                                    "test": {
 	                                        "v1": {
-	                                            "type": "simple",
+	                                            "type": "reference",
 	                                            "value": "this.isNum1"
 	                                        },
 	                                        "op": "===",
 	                                        "v2": {
-	                                            "type": "simple",
+	                                            "type": "static",
 	                                            "value": 1
 	                                        }
 	                                    }
@@ -9191,7 +9223,7 @@ define('plates',[],function () { 'use strict';
 	                                    "contents": [
 	                                        {
 	                                            "node": "text",
-	                                            "text": "PASSED"
+	                                            "text": "Test: PASSED"
 	                                        }
 	                                    ]
 	                                }
@@ -9209,12 +9241,44 @@ define('plates',[],function () { 'use strict';
 	                                "contents": [
 	                                    {
 	                                        "node": "text",
-	                                        "text": "FAILED"
+	                                        "text": "Test: FAILED"
 	                                    }
 	                                ]
 	                            }
 	                        ]
 	                    }
+	                },
+	                {
+	                    "node": "elem",
+	                    "tag": "div",
+	                    "attributes": {
+	                        "block": [],
+	                        "simple": [
+	                            {
+	                                "oName": {
+	                                    "sNode": "static",
+	                                    "sName": "class"
+	                                },
+	                                "oValue": {
+	                                    "sNode": "static",
+	                                    "contents": "expected"
+	                                }
+	                            }
+	                        ]
+	                    },
+	                    "contents": [
+	                        {
+	                            "node": "elem",
+	                            "tag": "pre",
+	                            "attributes": false,
+	                            "contents": [
+	                                {
+	                                    "node": "text",
+	                                    "text": "Expected: PASSED"
+	                                }
+	                            ]
+	                        }
+	                    ]
 	                }
 	            ]
 	        },
@@ -9260,13 +9324,13 @@ define('plates',[],function () { 'use strict';
 	                                    "type": "complex",
 	                                    "test": {
 	                                        "v1": {
-	                                            "type": "simple",
+	                                            "type": "reference",
 	                                            "value": "this.isTest"
 	                                        },
 	                                        "op": "===",
 	                                        "v2": {
-	                                            "type": "simple",
-	                                            "value": "\"isTest\""
+	                                            "type": "static",
+	                                            "value": "isTest"
 	                                        }
 	                                    }
 	                                }
@@ -9279,7 +9343,7 @@ define('plates',[],function () { 'use strict';
 	                                    "contents": [
 	                                        {
 	                                            "node": "text",
-	                                            "text": "PASSED"
+	                                            "text": "Test: PASSED"
 	                                        }
 	                                    ]
 	                                }
@@ -9297,12 +9361,530 @@ define('plates',[],function () { 'use strict';
 	                                "contents": [
 	                                    {
 	                                        "node": "text",
-	                                        "text": "FAILED"
+	                                        "text": "Test: FAILED"
 	                                    }
 	                                ]
 	                            }
 	                        ]
 	                    }
+	                },
+	                {
+	                    "node": "elem",
+	                    "tag": "div",
+	                    "attributes": {
+	                        "block": [],
+	                        "simple": [
+	                            {
+	                                "oName": {
+	                                    "sNode": "static",
+	                                    "sName": "class"
+	                                },
+	                                "oValue": {
+	                                    "sNode": "static",
+	                                    "contents": "expected"
+	                                }
+	                            }
+	                        ]
+	                    },
+	                    "contents": [
+	                        {
+	                            "node": "elem",
+	                            "tag": "pre",
+	                            "attributes": false,
+	                            "contents": [
+	                                {
+	                                    "node": "text",
+	                                    "text": "Expected: PASSED"
+	                                }
+	                            ]
+	                        }
+	                    ]
+	                }
+	            ]
+	        },
+	        {
+	            "node": "elem",
+	            "tag": "hr",
+	            "attributes": false,
+	            "contents": false
+	        },
+	        {
+	            "node": "elem",
+	            "tag": "div",
+	            "attributes": {
+	                "block": [],
+	                "simple": [
+	                    {
+	                        "oName": {
+	                            "sNode": "static",
+	                            "sName": "class"
+	                        },
+	                        "oValue": {
+	                            "sNode": "static",
+	                            "contents": "test-case"
+	                        }
+	                    }
+	                ]
+	            },
+	            "contents": [
+	                {
+	                    "node": "elem",
+	                    "tag": "p",
+	                    "attributes": false,
+	                    "contents": [
+	                        {
+	                            "node": "text",
+	                            "text": "Tests that `this.isNum1` is greater then (>) 0"
+	                        }
+	                    ]
+	                },
+	                {
+	                    "node": "logic",
+	                    "tag": "block",
+	                    "method": "if",
+	                    "conditionals": [
+	                        {
+	                            "sMethod": "if",
+	                            "aConditions": [
+	                                {
+	                                    "type": "complex",
+	                                    "test": {
+	                                        "v1": {
+	                                            "type": "reference",
+	                                            "value": "this.isNum1"
+	                                        },
+	                                        "op": ">",
+	                                        "v2": {
+	                                            "type": "static",
+	                                            "value": 0
+	                                        }
+	                                    }
+	                                }
+	                            ],
+	                            "contents": [
+	                                {
+	                                    "node": "elem",
+	                                    "tag": "p",
+	                                    "attributes": false,
+	                                    "contents": [
+	                                        {
+	                                            "node": "text",
+	                                            "text": "Test: PASSED"
+	                                        }
+	                                    ]
+	                                }
+	                            ]
+	                        }
+	                    ],
+	                    "fallback": {
+	                        "sMethod": "else",
+	                        "aConditions": false,
+	                        "contents": [
+	                            {
+	                                "node": "elem",
+	                                "tag": "p",
+	                                "attributes": false,
+	                                "contents": [
+	                                    {
+	                                        "node": "text",
+	                                        "text": "Test: FAILED"
+	                                    }
+	                                ]
+	                            }
+	                        ]
+	                    }
+	                },
+	                {
+	                    "node": "elem",
+	                    "tag": "div",
+	                    "attributes": {
+	                        "block": [],
+	                        "simple": [
+	                            {
+	                                "oName": {
+	                                    "sNode": "static",
+	                                    "sName": "class"
+	                                },
+	                                "oValue": {
+	                                    "sNode": "static",
+	                                    "contents": "expected"
+	                                }
+	                            }
+	                        ]
+	                    },
+	                    "contents": [
+	                        {
+	                            "node": "elem",
+	                            "tag": "pre",
+	                            "attributes": false,
+	                            "contents": [
+	                                {
+	                                    "node": "text",
+	                                    "text": "Expected: PASSED"
+	                                }
+	                            ]
+	                        }
+	                    ]
+	                }
+	            ]
+	        },
+	        {
+	            "node": "elem",
+	            "tag": "div",
+	            "attributes": {
+	                "block": [],
+	                "simple": [
+	                    {
+	                        "oName": {
+	                            "sNode": "static",
+	                            "sName": "class"
+	                        },
+	                        "oValue": {
+	                            "sNode": "static",
+	                            "contents": "test-case"
+	                        }
+	                    }
+	                ]
+	            },
+	            "contents": [
+	                {
+	                    "node": "elem",
+	                    "tag": "p",
+	                    "attributes": false,
+	                    "contents": [
+	                        {
+	                            "node": "text",
+	                            "text": "Tests that `this.isNum1` is less then (<) 0"
+	                        }
+	                    ]
+	                },
+	                {
+	                    "node": "logic",
+	                    "tag": "block",
+	                    "method": "if",
+	                    "conditionals": [
+	                        {
+	                            "sMethod": "if",
+	                            "aConditions": [
+	                                {
+	                                    "type": "complex",
+	                                    "test": {
+	                                        "v1": {
+	                                            "type": "reference",
+	                                            "value": "this.isNum1"
+	                                        },
+	                                        "op": "<",
+	                                        "v2": {
+	                                            "type": "static",
+	                                            "value": 0
+	                                        }
+	                                    }
+	                                }
+	                            ],
+	                            "contents": [
+	                                {
+	                                    "node": "elem",
+	                                    "tag": "p",
+	                                    "attributes": false,
+	                                    "contents": [
+	                                        {
+	                                            "node": "text",
+	                                            "text": "Test: PASSED"
+	                                        }
+	                                    ]
+	                                }
+	                            ]
+	                        }
+	                    ],
+	                    "fallback": {
+	                        "sMethod": "else",
+	                        "aConditions": false,
+	                        "contents": [
+	                            {
+	                                "node": "elem",
+	                                "tag": "p",
+	                                "attributes": false,
+	                                "contents": [
+	                                    {
+	                                        "node": "text",
+	                                        "text": "Test: FAILED"
+	                                    }
+	                                ]
+	                            }
+	                        ]
+	                    }
+	                },
+	                {
+	                    "node": "elem",
+	                    "tag": "div",
+	                    "attributes": {
+	                        "block": [],
+	                        "simple": [
+	                            {
+	                                "oName": {
+	                                    "sNode": "static",
+	                                    "sName": "class"
+	                                },
+	                                "oValue": {
+	                                    "sNode": "static",
+	                                    "contents": "expected"
+	                                }
+	                            }
+	                        ]
+	                    },
+	                    "contents": [
+	                        {
+	                            "node": "elem",
+	                            "tag": "pre",
+	                            "attributes": false,
+	                            "contents": [
+	                                {
+	                                    "node": "text",
+	                                    "text": "Expected: FAILED"
+	                                }
+	                            ]
+	                        }
+	                    ]
+	                }
+	            ]
+	        },
+	        {
+	            "node": "elem",
+	            "tag": "div",
+	            "attributes": {
+	                "block": [],
+	                "simple": [
+	                    {
+	                        "oName": {
+	                            "sNode": "static",
+	                            "sName": "class"
+	                        },
+	                        "oValue": {
+	                            "sNode": "static",
+	                            "contents": "test-case"
+	                        }
+	                    }
+	                ]
+	            },
+	            "contents": [
+	                {
+	                    "node": "elem",
+	                    "tag": "p",
+	                    "attributes": false,
+	                    "contents": [
+	                        {
+	                            "node": "text",
+	                            "text": "Tests that `this.isNum1` is greater or equal (>=) to 0"
+	                        }
+	                    ]
+	                },
+	                {
+	                    "node": "logic",
+	                    "tag": "block",
+	                    "method": "if",
+	                    "conditionals": [
+	                        {
+	                            "sMethod": "if",
+	                            "aConditions": [
+	                                {
+	                                    "type": "complex",
+	                                    "test": {
+	                                        "v1": {
+	                                            "type": "reference",
+	                                            "value": "this.isNum1"
+	                                        },
+	                                        "op": ">=",
+	                                        "v2": {
+	                                            "type": "static",
+	                                            "value": 0
+	                                        }
+	                                    }
+	                                }
+	                            ],
+	                            "contents": [
+	                                {
+	                                    "node": "elem",
+	                                    "tag": "p",
+	                                    "attributes": false,
+	                                    "contents": [
+	                                        {
+	                                            "node": "text",
+	                                            "text": "Test: PASSED"
+	                                        }
+	                                    ]
+	                                }
+	                            ]
+	                        }
+	                    ],
+	                    "fallback": {
+	                        "sMethod": "else",
+	                        "aConditions": false,
+	                        "contents": [
+	                            {
+	                                "node": "elem",
+	                                "tag": "p",
+	                                "attributes": false,
+	                                "contents": [
+	                                    {
+	                                        "node": "text",
+	                                        "text": "Test: FAILED"
+	                                    }
+	                                ]
+	                            }
+	                        ]
+	                    }
+	                },
+	                {
+	                    "node": "elem",
+	                    "tag": "div",
+	                    "attributes": {
+	                        "block": [],
+	                        "simple": [
+	                            {
+	                                "oName": {
+	                                    "sNode": "static",
+	                                    "sName": "class"
+	                                },
+	                                "oValue": {
+	                                    "sNode": "static",
+	                                    "contents": "expected"
+	                                }
+	                            }
+	                        ]
+	                    },
+	                    "contents": [
+	                        {
+	                            "node": "elem",
+	                            "tag": "pre",
+	                            "attributes": false,
+	                            "contents": [
+	                                {
+	                                    "node": "text",
+	                                    "text": "Expected: PASSED"
+	                                }
+	                            ]
+	                        }
+	                    ]
+	                }
+	            ]
+	        },
+	        {
+	            "node": "elem",
+	            "tag": "div",
+	            "attributes": {
+	                "block": [],
+	                "simple": [
+	                    {
+	                        "oName": {
+	                            "sNode": "static",
+	                            "sName": "class"
+	                        },
+	                        "oValue": {
+	                            "sNode": "static",
+	                            "contents": "test-case"
+	                        }
+	                    }
+	                ]
+	            },
+	            "contents": [
+	                {
+	                    "node": "elem",
+	                    "tag": "p",
+	                    "attributes": false,
+	                    "contents": [
+	                        {
+	                            "node": "text",
+	                            "text": "Tests that `this.isNum1` is less then or equal (<=) to 0"
+	                        }
+	                    ]
+	                },
+	                {
+	                    "node": "logic",
+	                    "tag": "block",
+	                    "method": "if",
+	                    "conditionals": [
+	                        {
+	                            "sMethod": "if",
+	                            "aConditions": [
+	                                {
+	                                    "type": "complex",
+	                                    "test": {
+	                                        "v1": {
+	                                            "type": "reference",
+	                                            "value": "this.isNum1"
+	                                        },
+	                                        "op": "<=",
+	                                        "v2": {
+	                                            "type": "static",
+	                                            "value": 0
+	                                        }
+	                                    }
+	                                }
+	                            ],
+	                            "contents": [
+	                                {
+	                                    "node": "elem",
+	                                    "tag": "p",
+	                                    "attributes": false,
+	                                    "contents": [
+	                                        {
+	                                            "node": "text",
+	                                            "text": "Test: PASSED"
+	                                        }
+	                                    ]
+	                                }
+	                            ]
+	                        }
+	                    ],
+	                    "fallback": {
+	                        "sMethod": "else",
+	                        "aConditions": false,
+	                        "contents": [
+	                            {
+	                                "node": "elem",
+	                                "tag": "p",
+	                                "attributes": false,
+	                                "contents": [
+	                                    {
+	                                        "node": "text",
+	                                        "text": "Test: FAILED"
+	                                    }
+	                                ]
+	                            }
+	                        ]
+	                    }
+	                },
+	                {
+	                    "node": "elem",
+	                    "tag": "div",
+	                    "attributes": {
+	                        "block": [],
+	                        "simple": [
+	                            {
+	                                "oName": {
+	                                    "sNode": "static",
+	                                    "sName": "class"
+	                                },
+	                                "oValue": {
+	                                    "sNode": "static",
+	                                    "contents": "expected"
+	                                }
+	                            }
+	                        ]
+	                    },
+	                    "contents": [
+	                        {
+	                            "node": "elem",
+	                            "tag": "pre",
+	                            "attributes": false,
+	                            "contents": [
+	                                {
+	                                    "node": "text",
+	                                    "text": "Expected: FAILED"
+	                                }
+	                            ]
+	                        }
+	                    ]
 	                }
 	            ]
 	        }
@@ -9317,7 +9899,7 @@ define('plates',[],function () { 'use strict';
 	                    "sMethod": "if",
 	                    "aConditions": [
 	                        {
-	                            "type": "simple",
+	                            "type": "reference",
 	                            "test": "this.isTrue"
 	                        }
 	                    ],
@@ -9331,7 +9913,7 @@ define('plates',[],function () { 'use strict';
 	                                    "sMethod": "if",
 	                                    "aConditions": [
 	                                        {
-	                                            "type": "simple",
+	                                            "type": "reference",
 	                                            "test": "this.isStrong"
 	                                        }
 	                                    ],
@@ -9542,52 +10124,97 @@ define('plates',[],function () { 'use strict';
 
 	const SIMPLE_CONDITIONAL = (v1, oContext) => {
 
-		if (typeof v1 === "string") {
+		let v1Value = false;
 
-			return Context$1.find(v1, oContext);
-		} else if (typeof v1 === "boolean") {
+		if (v1.type === "reference") {
 
-			return v1;
+			v1Value = Context$1.find(v1.test, oContext);
+		} else {
+
+			v1Value = v1.test;
 		}
 
-		return false;
+		// Check the simple value data types
+		// Just return booleans
+		if (typeof v1Value === "boolean") {
+
+			return v1Value;
+		}
+		// If number, anything bigger than 0 is true
+		else if (!isNaN(v1Value)) {
+
+				if (v1Value <= 0) {
+
+					return false;
+				} else {
+
+					return true;
+				}
+			}
+			// If string, anything with length is true
+			else {
+
+					if (v1Value.length) {
+						return true;
+					} else {
+						return false;
+					}
+				}
 	};
 
 	const COMPLEX_CONDITIONAL = (oTestConditional, oContext) => {
 
-		let vRawV1 = null;
-		let vRawV2 = null;
+		const EXTRACT_VALUE = oCondition => {
 
-		// Get the raw v1 value!
-		if (oTestConditional.v1.type === "simple") {
+			if (oCondition.type === "static") {
 
-			vRawV1 = Context$1.find(oTestConditional.v1.value, oContext);
-		} else {
+				return oCondition.value;
+			} else if (oCondition.type === "reference") {
 
-			vRawV1 = COMPLEX_CONDITIONAL(oTestConditional.v1, oContext);
-		}
+				return Context$1.find(oCondition.value, oContext);
+			} else {
 
-		if (oTestConditional.v2.type === "simple") {
+				return COMPLEX_CONDITIONAL(oCondition, oContext);
+			}
+		};
 
-			vRawV2 = Context$1.find(oTestConditional.v2.value, oContext);
-		} else {
-
-			vRawV2 = COMPLEX_CONDITIONAL(oTestConditional.v2, oContext);
-		}
-
-		console.log(vRawV1, oTestConditional.op, vRawV2);
+		let vRawV1 = EXTRACT_VALUE(oTestConditional.v1);
+		let vRawV2 = EXTRACT_VALUE(oTestConditional.v2);
+		console.log(vRawV1, vRawV2);
 
 		switch (oTestConditional.op) {
 
 			case "==":
 
 				return vRawV1 == vRawV2 ? true : false;
-				break;
 
 			case "===":
 
 				return vRawV1 === vRawV2 ? true : false;
-				break;
+
+			case "!=":
+
+				return vRawV1 != vRawV2 ? true : false;
+
+			case "!==":
+
+				return vRawV1 != vRawV2 ? true : false;
+
+			case "<":
+
+				return vRawV1 < vRawV2 ? true : false;
+
+			case "<=":
+
+				return vRawV1 <= vRawV2 ? true : false;
+
+			case ">":
+
+				return vRawV1 > vRawV2 ? true : false;
+
+			case ">=":
+
+				return vRawV1 >= vRawV2 ? true : false;
 
 		}
 
@@ -9614,16 +10241,14 @@ define('plates',[],function () { 'use strict';
 					let oConditionalBlock = aConditionals[c];
 					let aTestConditions = oConditionalBlock.aConditions;
 
-					console.log(aConditionals);
-
 					// Loops through the individual conditional statements (simple/complex)
 					conditionals: for (let t = 0, tLen = aTestConditions.length; t < tLen; t++) {
 
 						let oTest = aTestConditions[t];
 
-						if (oTest.type === "simple") {
+						if (oTest.type === "static" || oTest.type === "reference") {
 
-							bConditionalPass = SIMPLE_CONDITIONAL(oTest.test, oContext);
+							bConditionalPass = SIMPLE_CONDITIONAL(oTest, oContext);
 						} else {
 
 							bConditionalPass = COMPLEX_CONDITIONAL(oTest.test, oContext);
@@ -9652,9 +10277,7 @@ define('plates',[],function () { 'use strict';
 				return false;
 			}
 		}
-
 	}
-
 	var If$1 = new If();
 
 	// Load all the block level libs

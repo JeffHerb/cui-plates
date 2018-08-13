@@ -27,26 +27,60 @@ const LOGIC_BLOCK_TAGS_META = {
 	}
 };
 
-const LOGIC_SUPPORT_OPERATORS = ['==', '!=', '<=', '>=', '===', '!=='];
+const LOGIC_SUPPORT_OPERATORS = ['==', '!=', '<=', '>=', '<', '>', '===', '!=='];
 
 const COMPILE_CONDITIONALS = (aConditionals) => {
 
 	const CLEANUP_DATA_TYPE = (value) => {
 
-		// Handle Numbers
-		if (!isNaN(value)) {
-			return parseInt(value);
-		}
+		if ((typeof value === "string")) {
 
-		if ((typeof value === "string") && (value === "true")) {
-			return true;
-		}
+			// Check for double or single wrapping qoutes as we need to assume it might be a static string
+			if (/^['|"].*['|"]$/.test(value)) {
 
-		if ((typeof value === "string") && (value === "false")) {
-			return false;
-		}
+				return {
+					type: "static",
+					value: value.slice(1, -1)
+				};
 
-		return value;
+			}
+			// The value was not likely wrapped in ""
+			else {
+
+				// Handle Numbers
+				if (!isNaN(value)) {
+
+					return {
+						type: "static",
+						value: parseInt(value)
+					}
+				}
+				// Handle strings that should be booleans
+				else if (value === "true") {
+
+					return {
+						type: "static",
+						value: true
+					}
+				}
+				else if (value === "false") {
+
+					return {
+						type: "static",
+						value: false
+					}
+
+				}
+				// Handles everything else as a potential context string which will evaluate to true or false.
+				else {
+
+					return {
+						type: "reference",
+						value: value
+					}
+				}
+			}
+		}
 	}
 
 	let aConditionalsObjSet = [];
@@ -55,14 +89,32 @@ const COMPILE_CONDITIONALS = (aConditionals) => {
 		return false;
 	}
 
+	// Check to see how many conditionals we have. It should be either a multiple of 3 or a single 1 for simple.
 	if (aConditionals.length === 1) {
 
-		aConditionalsObjSet.push(
-			{
-				"type": "simple",
-				"test": aConditionals[0]
-			}
-		);
+		let oValue = CLEANUP_DATA_TYPE(aConditionals[0]);
+
+		if (oValue.type === "static") {
+
+			aConditionalsObjSet.push(
+				{
+					"type": "static",
+					"test": oValue.value
+				}
+			);
+
+		}
+		else {
+
+			aConditionalsObjSet.push(
+				{
+					"type": "reference",
+					"test": oValue.value
+				}
+			);
+
+		}
+
 		
 	}
 	else if ((aConditionals.length % 3) === 0) {
@@ -70,10 +122,10 @@ const COMPILE_CONDITIONALS = (aConditionals) => {
 		(function nextConditonalSet(aAllConditionals) {
 
 			// Get the next three properties
-			let aNextSet = aConditionals.slice(0, 3);
+			let aNextSet = aAllConditionals.slice(0, 3);
 
 			// Rmeove them from the old array
-			aConditionals = aConditionals.slice(3);
+			aAllConditionals = aAllConditionals.slice(3);
 
 			let oComplexConditonal = {
 				"type": "complex",
@@ -96,9 +148,11 @@ const COMPILE_CONDITIONALS = (aConditionals) => {
 					// Check if null if so we have a context or static value
 					if (!reConditionalWrapTest) {
 
+						let oCleanedValue = CLEANUP_DATA_TYPE(aNextSet[ci]);
+
 						oComplexConditonal.test[((ci === 0) ? "v1" : "v2")] = {
-							"type": "simple",
-							"value": CLEANUP_DATA_TYPE(aNextSet[ci])
+							"type": oCleanedValue.type,
+							"value": oCleanedValue.value
 						}
 					}
 					else {
@@ -377,6 +431,11 @@ const LOGIC_TAGS = {
 
 			if (oLogicSectionData instanceof Error) {
 				return oLogicSection;
+			}
+
+			// Check for remaining content first.
+			if (oLogicSectionData.sRemaining) {
+				oEndResult.sRemaining = oLogicSectionData.sRemaining;
 			}
 
 			// No we need to take a deeper look into the block contents and break the different conditionals apart!

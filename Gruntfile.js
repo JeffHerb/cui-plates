@@ -1,3 +1,5 @@
+const sass = require('node-sass');
+
 module.exports = function(grunt) {
 
   // Project configuration.
@@ -27,6 +29,19 @@ module.exports = function(grunt) {
           },
         ],
       },
+      docs: {
+        files: [
+          // includes files within path and its sub-directories
+          {
+            expand: true,
+            cwd: 'tasks/docs',
+            src: ['*.html'],
+            dest: 'docs/',
+            flatten: true,
+            filter: 'isFile'
+          },
+        ],
+      },
     },
 
     connect: {
@@ -49,7 +64,6 @@ module.exports = function(grunt) {
             },
         },
     },
-
 
     // Generates the proper plates file
     plates: {
@@ -84,35 +98,55 @@ module.exports = function(grunt) {
         },
     },
 
-    watch: {
-        options: {
-            livereload: true,
-            interrupt: true,
-            spawn: false
-        },
-
-        // Task is used with development builds to keep the connect server running.
-        noop: {
-            files: [
-                'README.md',
-            ],
-        },
-
-        plates: {
-          files: [
-            'tasks/**/*.*',
-            'tests/src/js/project.js',
-            'tests/src/templates/**.*'
-          ],
-          tasks: ['plates', 'requirejs', 'copy']
-        },
-
-        tests: {
-          files: [
-            'tests/src/tests/**/*.*'
-          ],
-          tasks: ['copy']
+    sass: {
+      options: {
+        implementation: sass,
+        sourceMap: true
+      },
+      dist: {
+        files: {
+          'docs/css/main.css': 'tasks/docs/scss/main.scss'
         }
+      }
+    },
+
+    watch: {
+      options: {
+          livereload: true,
+          interrupt: true,
+          spawn: false
+      },
+
+      // Task is used with development builds to keep the connect server running.
+      noop: {
+          files: [
+              'README.md',
+          ],
+      },
+
+      plates: {
+        files: [
+          'tasks/**/*.*',
+          'tests/src/js/project.js',
+          'tests/src/templates/**.*'
+        ],
+        tasks: ['plates', 'requirejs', 'copy']
+      },
+
+      tests: {
+        files: [
+          'tests/src/tests/**/*.*'
+        ],
+        tasks: ['copy']
+      },
+
+      docs: {
+        files: [
+          'tasks/docs/**/*.html',
+          'tasks/docs/**/*.scss',
+        ],
+        tasks: ['sass','copy:docs']
+      }
     },
 
   });
@@ -126,6 +160,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-connect');
   grunt.loadNpmTasks('grunt-contrib-requirejs');
   grunt.loadNpmTasks('grunt-contrib-watch');
+  grunt.loadNpmTasks('grunt-sass');
 
   // Default task(s).
   grunt.registerTask('default', 'build');
@@ -138,6 +173,7 @@ module.exports = function(grunt) {
           'plates',
           'requirejs',
           'copy',
+          'sass',
           'connect',
           'watch'
       ]);
