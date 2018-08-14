@@ -6,25 +6,129 @@
 	</head>
 	<body>
 		<article>
-			<section>
+			<section id="intro">
 				<h1>Plates</h1>
 				<p>
 					Plate is a modern age Javascript Client-side templating language. Plate is heavily based on Handlebars and Mustache, with the end template being converted into AST that are turned directly into DOM rather than large JavaScript function that output strings that the browser then needs to translate into actual DOM elements.
 				</p>
 				<p>
-					Much like Handlebars, developers build out templates that use a standard context object as its root data source. A simple example would appear like:
+					Much like Handlebars, developers build out templates using the standard "{" "}" notation. Those templates are then compiled into AST via the plates task when the project is built. The finished AST is included with the plates runtime. 
 				</p>
-				<div class="row">
-					<div class="column-half">
-						<code>
-							&lt;p&gt;
-								{{ this.DynamicText }}
-							&lt;/p&gt;
-						</code>
+				<div class="row-grid-2">
+					<div class="column">
+						<div class="code-block">
+							<header>Template</header>
+							<div class="source">
+								<code>&lt;p&gt;</code>
+								<code class="indent">
+									{{ this.message }}
+								</code>
+								<code>&lt;/p&gt;</code>
+							</div>
+						</div>
+						<p>
+							The main benefit of this AST approach over the traditional handlebars function are then end templates are in a human readable format for ease of debugging.
+						</p>
 					</div>
-					<div class="column-half">
+					<div class="column">
+						<div class="code-block">
+							<header>AST</header>
+							<div class="source">
+								<code>[</code>
+									<div class="indent">
+										<code>{</code>
+											<div class="indent">
+												<code>"node": "elem",</code>
+												<code>"attributes": false,</code>
+												<code>"tag": "p",</code>
+												<code>"content:" [</code>
+													<div class="indent">
+														<code>{</code>
+															<div class="indent">
+																<code>"node": "logic"</code>
+																<code>"tag": "context"</code>
+																<code>"text": "this.message"</code>
+															</div>
+														<code>}</code>
+													</div>
+												<code>]</code>
+											</div>
+										<code>}</code>
+									</div>
+								<code>]</code>
+							</div>
+						</div>
 					</div>
 				</div>
+				<p>
+					Once loaded in the browser, developers can generate templates on the fly as well and pass in data object which allow plates template to be dynamic in nature.
+				</p>
+			</section>
+			<section id="logic-tags">
+				<h2>Logic Tags</h2>
+				<p> By default Plates supports the following types of logic: </p>
+				<ul>
+					<li><a href="logic-context">Contextual</a></li>
+					<li>
+						<a href="logic-block">Block</a><br>
+						<ul>
+							<li>if</li>
+							<li>switch</li>
+						</ul>
+					</li>
+				</ul>
+				<section id="logic-context">
+				</section>
+				<section id="logic-block">
+					<h3>Blocks</h3>
+					<p>
+						Block logic is your basic method to contextually including or excluding sections based on the provided data object. All block level conditionals start with <span class="inline-code"><code>{{#</code></span>.
+					</p>
+					<section id="logic-block-if">
+						<h4>if</h4>
+						<p>
+							Developers can use if statement in two differnt ways: Simple or basic truthy falsy logic. Or, Complex, which expects allows developers to compare two different values and traditional operators.
+						</p>
+						<h5 id="logic-block-if-simple">Simple</h5>
+						<p>
+							For simple conditionals, developers need only to provide the contextual data path of the source data object
+						</p>
+						<div class="code-block">
+							<header>Example</header>
+							<div class="source">
+								<code>{{#if this.showMessage }}</code>
+								<code class="indent">
+									&lt;p&gt; Important Message! &lt;/p&gt;
+								</code>
+								<code>{{/if}}</code>
+							</div>
+						</div>
+						<h5 id="logic-block-if-complex">Complex</h5>
+						<p>
+							For complex conditional, developers need to provide the two values they want to compare as well as a logical operator method. As with most programming languages the following operators are supported: <span class="inline-code"><code>==</code></span>, <span class="inline-code"><code>===</code></span>, <span class="inline-code"><code>!=</code></span>, <span class="inline-code"><code>!==</code></span>, <span class="inline-code"><code>&lt;</code></span>, <span class="inline-code"><code>&lt;=</code></span>, <span class="inline-code"><code>&gt;</code></span>, and <span class="inline-code"><code>&gt;=</code></span>
+						</p>
+						<p>
+							Conditional values can be either static or contextual paths to the provided data object. In our example below show a simple example:
+						</p>
+						<div class="code-block">
+							<header>Example</header>
+							<div class="source">
+								<code>{{#if this.showMessage === true }}</code>
+								<code class="indent">
+									&lt;p&gt; Important Message! &lt;/p&gt;
+								</code>
+								<code>{{/if}}</code>
+							</div>
+						</div>
+						<p>
+							Notice, that the "this.showMessage" and "true" in the example above are not wrapped in double quotes. Because this.showMessage is a contextual path, it should never be wrapped in quotes. True is not wrapped in quotes either because we want to test to see if the this.showMessage is strictly equal to the boolean of true. By default Plates will convert value down to there native data types before converting values. If a conditional needs to be evaluated as a string, wrap it in quotes.
+						</p>
+
+					</section>
+					<section id="logic-block-switch">
+						<h4>switch</h4>
+					</section>
+				</section>
 			</section>
 		</article>
 	</body>

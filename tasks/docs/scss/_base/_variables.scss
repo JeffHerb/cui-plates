@@ -1,4 +1,30 @@
 $white: #FFF;
 $black: #000;
 
-$textColor: #333;
+// Primary
+$primary: #0277bd;
+$primaryLight: #58a5f0;
+$primaryDark: #004c8c;
+
+// Secondary
+$seconday: #004d40;
+$secondayLight: #39796d;
+$secondayDark: #00251a;
+
+// Gray Scale
+$grayVeryLight: #F5F5F5;
+$grayLight: #e0e0e0;
+$gray: #9e9e9e;
+$grayDark: #616161;
+$grayVeryDark: #212121;
+
+// Text
+$textColor: $grayVeryDark;
+
+// Layout
+
+// Screen sizes
+$small: 480px;
+$medium: 756px;
+$large: 960px;
+$xLarge: 1440px;

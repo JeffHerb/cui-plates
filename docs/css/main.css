@@ -398,13 +398,61 @@ blockquote {
     /* 35px / 24px */ } }
 
 h1, h2, h3, h4, h5, h6, p, ol, ul, li span {
-  color: #333; }
+  color: #212121; }
 
-code {
+code,
+.inline-code {
   font-family: monospace; }
 
-.row-grid-3 {
-  display: grid;
-  grid-template-columns: 30% 30% 30%; }
+.inline-code {
+  background-color: #e0e0e0;
+  padding: 0 0.25em; }
+
+article {
+  margin: 0 1em; }
+  @media (min-width: 960px) {
+    article {
+      margin: 0 2em; } }
+
+.code-block {
+  background-color: #e0e0e0;
+  border-left: 3px solid #000;
+  margin: 0 1em;
+  padding: 1em;
+  position: relative; }
+  .code-block > header {
+    background-color: #000;
+    color: #FFF;
+    display: inline-block;
+    font-size: 14px;
+    left: 0;
+    position: absolute;
+    padding: 0.25em 0.5em;
+    top: 0; }
+  .code-block > .source {
+    display: inline-block;
+    margin-top: 1.25em;
+    width: 100%; }
+  .code-block code {
+    display: block; }
+
+.indent {
+  margin-left: 1em; }
+
+.row-grid-3 > div {
+  margin-bottom: 1em; }
+
+@media (min-width: 756px) {
+  .row-grid-3 {
+    display: grid;
+    grid-template-columns: 30% 30% 30%; } }
+
+.row-grid-2 > div {
+  margin-bottom: 1em; }
+
+@media (min-width: 756px) {
+  .row-grid-2 {
+    display: grid;
+    grid-template-columns: 50% 50%; } }
 
 /*# sourceMappingURL=main.css.map */

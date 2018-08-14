@@ -429,6 +429,8 @@ const LOGIC_TAGS = {
 			// See if we can get the logic information for this section
 			let oLogicSectionData = FIND_LOGIC_BLOCK(reTemplateResults);
 
+			console.log(oLogicSectionData);
+
 			if (oLogicSectionData instanceof Error) {
 				return oLogicSection;
 			}
@@ -440,6 +442,8 @@ const LOGIC_TAGS = {
 
 			// No we need to take a deeper look into the block contents and break the different conditionals apart!
 			if (oLogicSectionData.sBlockContents.length) {
+
+				console.log("We have sBlockContents");
 
 				// Small function used to create the subAST object
 				let fCreateSuboAST = (sMethod, aConditionals, sSubTemplate) => {
@@ -483,13 +487,23 @@ const LOGIC_TAGS = {
 					// Find the next condtional block seperator tag, {{else}} 
 					let reNextConditionalTag = reConditionalSeperators.exec(oLogicSectionData.sBlockContents);
 
+					console.log(reNextConditionalTag);
+
 					// If we found the 
 					if (reNextConditionalTag) {
+
+						if (reNextConditionalTag.index === 0) {
+							continue;
+						}
+
+						console.log("We found a next conditional");
 
 						let iNextConditionalIndex = reNextConditionalTag.index;
 
 						// Slice the substring and look for a similar opening logic tag!
 						let sPossibleSubTemplate = sCurrentWorkingSubTemplate.slice(iLastConditionalBlockStartInd, reNextConditionalTag.index);
+
+						console.log(sPossibleSubTemplate);
 
 						// Create and on the fly reg ex for detecting same logic sub tag.
 						let reLogicCheck = new RegExp(`(?:\{{2}[\/|\#](?:${sCurrentConditionalMethod})(?:[a-zA-Z0-9\.\ \=\!\&\|\"\'\(\)]*)\}{2})`,'g');

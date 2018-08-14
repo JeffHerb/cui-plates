@@ -1,6 +1,25 @@
 .row-grid-3 {
-	
-	display: grid;
 
-	grid-template-columns: 30% 30% 30%;
+	& > div {
+		margin-bottom: 1em;
+	}
+
+	@media (min-width: $medium) {
+	
+		display: grid;
+		grid-template-columns: 30% 30% 30%;
+	}
+}
+
+.row-grid-2 {
+
+	& > div {
+		margin-bottom: 1em;
+	}
+
+	@media (min-width: $medium) {
+	
+		display: grid;
+		grid-template-columns: 50% 50%;
+	}
 }

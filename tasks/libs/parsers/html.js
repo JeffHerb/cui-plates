@@ -118,6 +118,8 @@ const HTMLBlock = (reTemplateResults) => {
 
 			}
 
+			console.log(oHTMLSection);
+
 		}
 		else {
 

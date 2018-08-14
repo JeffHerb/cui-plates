@@ -131,6 +131,12 @@ h1, h2, h3, h4, h5, h6, p, ol, ul, li span {
 	color: $textColor;
 }
 
-code {
+code,
+.inline-code {
 	font-family: monospace;
+}
+
+.inline-code {
+	background-color: $grayLight;
+	padding: 0 0.25em;
 }
