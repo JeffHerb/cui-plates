@@ -42,8 +42,6 @@ const findNonTextNodes = (reTemplateResults) => {
 		// Check which result came first,
 		let reFirstMatching = (reLogicCheck.index < reHTMLCheck.index) ? reLogicCheck : reHTMLCheck;
 
-		console.log("First match:", reFirstMatching);
-
 		if (reFirstMatching.index > 0) {
 
 			oTextMeta.sContents = sTemplate.slice(reTemplateResults.index, reFirstMatching.index);

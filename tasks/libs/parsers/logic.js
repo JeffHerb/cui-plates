@@ -1,5 +1,14 @@
 'use strict';
 
+// Load logical Builtins
+//const If 	 = require('./builtins/if');
+const Switch = require('./builtins/switch');
+
+const LOGIC_BLOCK_PARSERS = {
+//	"if": If.parser,
+	"switch": Switch.parser
+};
+
 // Global Detector
 const LOGIC_TAGREGEX = /[{]{2}(?:[\#\.\@\>]?[^\}]+)[}]{2}/;
 
@@ -8,205 +17,9 @@ const LOGIC_TAG_CONTENTS_REGEX = /\((?:(.*?))\)|(?:[a-zA-Z0-9\.\=\!\<\>\&\|\"\']
 
 // Block level regular expressions
 const LOGIC_TAG_BLOCK_DESIGNATOR = /(?:\{{2}[\/|\#](?:if|switch|each)(?:[a-zA-Z0-9\.\ \=\!\&\|\"\'\(\)]*)\}{2})/g;
-const LOGIC_TAG_BLOCK_SEPERATOR = /(?:\{{2}(?:case|default|elseif|else)(?:[a-zA-Z0-9\.\ \=\!\&\|\"\'\(\)]*)\}{2})/g;
+//const LOGIC_TAG_BLOCK_SEPERATOR = /(?:\{{2}(?:case|default|elseif|else)(?:[a-zA-Z0-9\.\ \=\!\&\|\"\'\(\)]*)\}{2})/g;
 
 const LOGIC_TAG_CONDTIONAL_WRAPPED = /\(([^()]+)\)/;
-
-const LOGIC_BLOCK_TAGS_META = {
-	'each': {
-		seperators: false,
-		finalFallback: false
-	},
-	'if': {
-		seperators: ['elseif', 'else'],
-		finalFallback: 'else'
-	},
-	'switch': {
-		seperators: ['case', 'default'],
-		finalFallback: 'default'
-	}
-};
-
-const LOGIC_SUPPORT_OPERATORS = ['==', '!=', '<=', '>=', '<', '>', '===', '!=='];
-
-const COMPILE_CONDITIONALS = (aConditionals) => {
-
-	const CLEANUP_DATA_TYPE = (value) => {
-
-		if ((typeof value === "string")) {
-
-			// Check for double or single wrapping qoutes as we need to assume it might be a static string
-			if (/^['|"].*['|"]$/.test(value)) {
-
-				return {
-					type: "static",
-					value: value.slice(1, -1)
-				};
-
-			}
-			// The value was not likely wrapped in ""
-			else {
-
-				// Handle Numbers
-				if (!isNaN(value)) {
-
-					return {
-						type: "static",
-						value: parseInt(value)
-					}
-				}
-				// Handle strings that should be booleans
-				else if (value === "true") {
-
-					return {
-						type: "static",
-						value: true
-					}
-				}
-				else if (value === "false") {
-
-					return {
-						type: "static",
-						value: false
-					}
-
-				}
-				// Handles everything else as a potential context string which will evaluate to true or false.
-				else {
-
-					return {
-						type: "reference",
-						value: value
-					}
-				}
-			}
-		}
-	}
-
-	let aConditionalsObjSet = [];
-
-	if (!aConditionals.length) {
-		return false;
-	}
-
-	// Check to see how many conditionals we have. It should be either a multiple of 3 or a single 1 for simple.
-	if (aConditionals.length === 1) {
-
-		let oValue = CLEANUP_DATA_TYPE(aConditionals[0]);
-
-		if (oValue.type === "static") {
-
-			aConditionalsObjSet.push(
-				{
-					"type": "static",
-					"test": oValue.value
-				}
-			);
-
-		}
-		else {
-
-			aConditionalsObjSet.push(
-				{
-					"type": "reference",
-					"test": oValue.value
-				}
-			);
-
-		}
-
-		
-	}
-	else if ((aConditionals.length % 3) === 0) {
-
-		(function nextConditonalSet(aAllConditionals) {
-
-			// Get the next three properties
-			let aNextSet = aAllConditionals.slice(0, 3);
-
-			// Rmeove them from the old array
-			aAllConditionals = aAllConditionals.slice(3);
-
-			let oComplexConditonal = {
-				"type": "complex",
-				"test": {				
-					"v1": false,
-					"op": false,
-					"v2": false
-				}
-			};
-
-			let error = false;
-
-			// Loop through and look at each part!
-			for (let ci = 0, ciLen = 3; ci < ciLen; ci++) {
-
-				if (ci === 0 || ci === 2) {
-
-					let reConditionalWrapTest = LOGIC_TAG_CONDTIONAL_WRAPPED.exec(aNextSet[ci]);
-
-					// Check if null if so we have a context or static value
-					if (!reConditionalWrapTest) {
-
-						let oCleanedValue = CLEANUP_DATA_TYPE(aNextSet[ci]);
-
-						oComplexConditonal.test[((ci === 0) ? "v1" : "v2")] = {
-							"type": oCleanedValue.type,
-							"value": oCleanedValue.value
-						}
-					}
-					else {
-
-						oComplexConditonal.test[((ci === 0) ? "v1" : "v2")] = {
-							"type": "conditional",
-							"value": {}
-						}
-
-					}
-
-				}
-				else {
-
-					if (LOGIC_SUPPORT_OPERATORS.indexOf(aNextSet[ci]) !== -1) {
-
-						oComplexConditonal.test.op = aNextSet[ci];
-
-					}
-					else {
-
-						error = new Error (`Invalid conditional operator specified ${aNextSet[ci]} in |template.path|.`);
-
-						break; 
-					}
-
-				}
-
-			}
-
-			if (error) {
-
-				return error;
-			}
-			else {
-
-				aConditionalsObjSet.push(oComplexConditonal);
-			}
-
-			if (aAllConditionals.length) {
-				nextConditonalSet(aAllConditionals);
-			}
-			else {
-				return aConditionalsObjSet;
-			}
-
-		})(aConditionals.concat());
-
-	}
-
-	return aConditionalsObjSet;
-};
-
-const LOGIC_BLOCK_TAGS = Object.keys(LOGIC_BLOCK_TAGS_META);
 
 // This function is sperate from the root block logic tag parser for resusability
 const FIND_LOGIC_BLOCK = (reTemplateResults, gracefulFail) => {
@@ -415,201 +228,65 @@ const LOGIC_TAGS = {
 				node: "logic",
 				tag: "block",
 				method: false,
-				conditionals: [],
+				conditionals: false,
 				fallback: false
 			};
 
 			let oEndResult = {
 				oAST: false,
-				aSubProcess: ['conditionals', 'fallback'],
-				sChildren: false,
+				aSubProcess: false, // Individual block parsers will provide any sub process object keys
 				sRemaining: false
 			};
 
 			// See if we can get the logic information for this section
-			let oLogicSectionData = FIND_LOGIC_BLOCK(reTemplateResults);
+			let oLogicSection = FIND_LOGIC_BLOCK(reTemplateResults);
 
-			console.log(oLogicSectionData);
-
-			if (oLogicSectionData instanceof Error) {
-				return oLogicSection;
+			if (oLogicSection.sRemaining && oLogicSection.sRemaining.length) {
+				oEndResult.sRemaining = oLogicSection.sRemaining;
 			}
 
-			// Check for remaining content first.
-			if (oLogicSectionData.sRemaining) {
-				oEndResult.sRemaining = oLogicSectionData.sRemaining;
+			// Check to see if we have a parser for this type of logic method
+			if (LOGIC_BLOCK_PARSERS[oLogicSection.oSectionMeta.sMethod]) {
+
+				// Call the specific block sub parser under built in as differnt blocks logic can change accordingly yielding spefici AST objects
+				let oCompiledAST = LOGIC_BLOCK_PARSERS[oLogicSection.oSectionMeta.sMethod](oLogicSection);
+
+				if (oCompiledAST instanceof Error) {
+					return oCompiledAST;
+				}
+				else {
+
+					console.log(oCompiledAST);
+
+					// Save off the method
+					oAST.method = oCompiledAST.oAST.sMethod;
+
+					if (oCompiledAST.oAST.oGlobalConditional) {
+						oAST.globalConditional = oCompiledAST.oAST.oGlobalConditional;
+					}
+
+					if (oCompiledAST.aSubProcess && oCompiledAST.aSubProcess.length) {
+						oEndResult.aSubProcess = oCompiledAST.aSubProcess;
+					}
+
+					// Save off the conditionals
+					oAST.conditionals = oCompiledAST.oAST.aConditionals;
+
+					oAST.fallback = oCompiledAST.oAST.oFallback;
+
+					console.log(oAST);
+
+					oEndResult.oAST = oAST;
+				}
+
 			}
+			else {
 
-			// No we need to take a deeper look into the block contents and break the different conditionals apart!
-			if (oLogicSectionData.sBlockContents.length) {
+				let error = new Error(`|template.path| contains an unknown block method: ${oLogicSection.oSectionMeta.sMethod}`);
 
-				console.log("We have sBlockContents");
+				return error;
 
-				// Small function used to create the subAST object
-				let fCreateSuboAST = (sMethod, aConditionals, sSubTemplate) => {
-
-					return {
-						sMethod: sMethod,
-						aConditions: aConditionals,
-						sSubTemplate: sSubTemplate,
-					};
-
-				}
-
-				// Create a regular expression only looking for the conditional sperators that matter to this tag
-				let reConditionalSeperators = new RegExp(`(?:\{{2}(?:${LOGIC_BLOCK_TAGS_META[oLogicSectionData.oSectionMeta.sMethod].seperators.join('|')})(?:[a-zA-Z0-9\.\ \=\!\&\|\"\'\(\)]*)\}{2})`, 'g');
-				
-				let aCurrentCondtionals = oLogicSectionData.oSectionMeta.oOpening.sTag.match(LOGIC_TAG_CONTENTS_REGEX);
-
-				let sCurrentWorkingSubTemplate = oLogicSectionData.sBlockContents;
-				let sCurrentConditionalMethod = aCurrentCondtionals.shift();
-				let iLastConditionalBlockStartInd = 0;
-				let vCompiledConditonals = COMPILE_CONDITIONALS(aCurrentCondtionals);
-
-				if (vCompiledConditonals instanceof Error) {
-					return vCompiledConditonals;
-				}
-
-				let sRootMethod = sCurrentConditionalMethod;
-
-				oAST.method = sRootMethod;
-
-				// Test to see if we have other matching logic blocks
-				while (true) {
-
-					let oSubAST = false;
-
-					// break if the current sub template has no length
-					if (!sCurrentWorkingSubTemplate.length) {
-						break;
-					}
-
-					// Find the next condtional block seperator tag, {{else}} 
-					let reNextConditionalTag = reConditionalSeperators.exec(oLogicSectionData.sBlockContents);
-
-					console.log(reNextConditionalTag);
-
-					// If we found the 
-					if (reNextConditionalTag) {
-
-						if (reNextConditionalTag.index === 0) {
-							continue;
-						}
-
-						console.log("We found a next conditional");
-
-						let iNextConditionalIndex = reNextConditionalTag.index;
-
-						// Slice the substring and look for a similar opening logic tag!
-						let sPossibleSubTemplate = sCurrentWorkingSubTemplate.slice(iLastConditionalBlockStartInd, reNextConditionalTag.index);
-
-						console.log(sPossibleSubTemplate);
-
-						// Create and on the fly reg ex for detecting same logic sub tag.
-						let reLogicCheck = new RegExp(`(?:\{{2}[\/|\#](?:${sCurrentConditionalMethod})(?:[a-zA-Z0-9\.\ \=\!\&\|\"\'\(\)]*)\}{2})`,'g');
-
-						let aLogicCheckMatches = sPossibleSubTemplate.match(reLogicCheck);
-
-						// Check if we found any matching tags!
-						if (aLogicCheckMatches) {
-
-							// Find the first sub logic tag
-							let reFirstSubLogicTag = reLogicCheck.exec(sCurrentWorkingSubTemplate);
-
-							let oSubLogicSectionData = FIND_LOGIC_BLOCK(reFirstSubLogicTag, true);
-
-							if (iNextConditionalIndex > (reFirstSubLogicTag.index + oSubLogicSectionData.oSectionMeta.oClosing.iEnd)) {
-
-								oSubAST = fCreateSuboAST(sCurrentConditionalMethod, vCompiledConditonals, sPossibleSubTemplate);
-
-								// check to see if this is a fallback item or a regular conditional
-								if (LOGIC_BLOCK_TAGS_META[sRootMethod].finalFallback === sCurrentConditionalMethod) {
-									
-									oAST.fallback = oSubAST;
-								}
-								else {
-
-									oAST.conditionals.push(oSubAST);
-								}
-
-								let aCurrentCondtionals = reNextConditionalTag[0].match(LOGIC_TAG_CONTENTS_REGEX);
-
-								// Update all of our references for the next
-								sCurrentWorkingSubTemplate = sCurrentWorkingSubTemplate.slice(reNextConditionalTag.index + reNextConditionalTag[0].length);
-								sCurrentConditionalMethod = aCurrentCondtionals.shift();
-								vCompiledConditonals = COMPILE_CONDITIONALS(aCurrentCondtionals);
-								
-								if (vCompiledConditonals instanceof Error) {
-									return vCompiledConditonals;
-								}
-
-								// Update the conditional index pointer
-								iLastConditionalBlockStartInd = reNextConditionalTag.index + reNextConditionalTag[0].length;
-
-							}
-							else {	
-								/// This conditional is like part of a sub conditional so we need to move to the next occurance
-								continue;
-							}
-
-						}
-						else {
-
-							oSubAST = fCreateSuboAST(sCurrentConditionalMethod, vCompiledConditonals, sPossibleSubTemplate);
-
-							// check to see if this is a fallback item or a regular conditional
-							if (LOGIC_BLOCK_TAGS_META[sRootMethod].finalFallback === sCurrentConditionalMethod) {
-								
-								oAST.fallback = oSubAST;
-							}
-							else {
-
-								oAST.conditionals.push(oSubAST);
-							}
-
-							let aCurrentCondtionals = reNextConditionalTag[0].match(LOGIC_TAG_CONTENTS_REGEX);
-
-							// Update all of our references for the next
-							sCurrentWorkingSubTemplate = sCurrentWorkingSubTemplate.slice(reNextConditionalTag.index + reNextConditionalTag[0].length);
-							sCurrentConditionalMethod = aCurrentCondtionals.shift();
-							vCompiledConditonals = COMPILE_CONDITIONALS(aCurrentCondtionals);
-
-							if (vCompiledConditonals instanceof Error) {
-								return vCompiledConditonals;
-							}
-
-							// Update the conditional index pointer
-							iLastConditionalBlockStartInd = reNextConditionalTag.index + reNextConditionalTag[0].length;
-						}
-
-					}
-					else {
-
-						oSubAST = fCreateSuboAST(sCurrentConditionalMethod, vCompiledConditonals, sCurrentWorkingSubTemplate);
-
-						// check to see if this is a fallback item or a regular conditional
-						if (LOGIC_BLOCK_TAGS_META[sRootMethod].finalFallback === sCurrentConditionalMethod) {
-							
-							oAST.fallback = oSubAST;
-						}
-						else {
-
-							oAST.conditionals.push(oSubAST);
-						}
-
-
-						break;
-					}
-
-				}
-
-				oEndResult.oAST = oAST;
 			}
-
-			// If there are remaning siblings, add them to the end result for the rest of the parser.
-			// if (oLogicSectionData.sRemaining.legnth) {
-			// 	oEndResult.sRemaining = oLogicSectionData.sRemaining;
-			// }
 
 			return oEndResult;
 
@@ -648,6 +325,14 @@ var LogicParser = function _logic_parser() {
 			if (LOGIC_TAG_OPENINGS[i] === sOpeningTag) {
 				fLogicProcessor = LOGIC_TAGS[LOGIC_TAG_OPENINGS[i]].fProcess;
 				break;
+			}
+
+		}
+
+		if (!fLogicProcessor && sOpeningTag.length === 3) {
+
+			if (sOpeningTag.slice(0,2) === "{{") {
+				fLogicProcessor = LOGIC_TAGS['{{'].fProcess;
 			}
 
 		}

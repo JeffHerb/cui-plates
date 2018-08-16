@@ -118,7 +118,7 @@ const HTMLBlock = (reTemplateResults) => {
 
 			}
 
-			console.log(oHTMLSection);
+			//console.log(oHTMLSection);
 
 		}
 		else {

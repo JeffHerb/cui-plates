@@ -58,8 +58,6 @@ _priv.processTemplate = (oTemplate, fCallback) => {
 
 		}
 
-		//console.log(possibleSteps);
-
 		if (possibleSteps.length) {
 
 			if (possibleSteps.length === 1) {
@@ -145,6 +143,8 @@ _priv.processTemplate = (oTemplate, fCallback) => {
 
 							for (let sProcess of oStepResults.aSubProcess) {
 
+								console.log(sProcess);
+
 								if (oStepResults.oAST[sProcess]) {
 
 									if (Array.isArray(oStepResults.oAST[sProcess])) {
@@ -154,7 +154,7 @@ _priv.processTemplate = (oTemplate, fCallback) => {
 											let oSubTemplate = Object.assign({}, oTemplate);
 
 											oSubTemplate.bChildRun = true;
-											oSubTemplate.workingCopy = oStepResults.oAST[sProcess][sp].sSubTemplate;
+											oSubTemplate.workingCopy = oStepResults.oAST[sProcess][sp].contents;
 
 											// Call the processTemplate directly and build out all the children
 											_priv.processTemplate(oSubTemplate, (oSubProcessTemplateResults) => {
@@ -164,8 +164,6 @@ _priv.processTemplate = (oTemplate, fCallback) => {
 												}
 
 												if (oSubProcessTemplateResults) {
-
-													delete oStepResults.oAST[sProcess][sp].sSubTemplate;
 
 													oStepResults.oAST[sProcess][sp].contents = oSubProcessTemplateResults;
 												}

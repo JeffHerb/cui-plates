@@ -1,10 +1,12 @@
 <div class="message-block">
 	{{#switch this.messageType}}
-		{{case "info"}}
-			<p class="info">{{this.message}}</p>
+		{{case "error"}}
+			<p class="error">{{this.message}}</p>
 		{{case "warning"}}
 			<p class="warning">{{this.message}}</p>
 		{{case "success"}}
-			<p class="error">{{this.message}}</p>
+			<p class="success">{{this.message}}</p>
+		{{default}}
+			<p class="info">{{this.message}}</p>
 	{{/switch}}
 </div>

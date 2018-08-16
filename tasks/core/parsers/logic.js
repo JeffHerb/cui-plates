@@ -1,11 +1,13 @@
 // Load all the block level libs
 import If from '../builtins/if';
+import Switch from '../builtins/switch';
 
 // Load global utility libs
 import Context from '../utils/context';
 
 const oBlockLibs = {
-	"if": If.parser
+	"if": If.parser,
+	"switch": Switch.parser
 };
 
 // Function handles all context based results
@@ -56,16 +58,12 @@ const CONTEXT_PARSER = (oContext, oASTNode, sScope) => {
 
 const BLOCK_PARSER = (oContext, oASTNode, sScope) => {
 
-	// Check for conditionals and fallbacks
-	let aConditional = oASTNode.conditionals;
-	let oFallback = oASTNode.fallback;
-
 	let oResults = false;
 
 	// Check for and call the correct method parser
 	if (oBlockLibs[oASTNode.method]) {
 
-		oResults = oBlockLibs[oASTNode.method](oContext, aConditional, oFallback);
+		oResults = oBlockLibs[oASTNode.method](oContext, oASTNode);
 	}
 	else {
 
