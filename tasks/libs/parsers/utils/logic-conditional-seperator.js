@@ -5,6 +5,8 @@ var LogicConditionalSeperator = function _logic_attributes() {
 
 	const parser = (aConditionalSeperators, sFallbackSepeorator, sRootMethod, sSourceTemplate) => {
 
+		console.log(aConditionalSeperators, sFallbackSepeorator, sRootMethod, sSourceTemplate);
+
 		// Create a regular expression that will find all the current method conditional seperators
 		let reConditionalSeperator = new RegExp(`(?:\{{2}(?:${aConditionalSeperators.join('|')})(?:[a-zA-Z0-9\.\ \=\!\&\|\"\'\(\)]*)\}{2})`,'g');
 
@@ -22,10 +24,15 @@ var LogicConditionalSeperator = function _logic_attributes() {
 			let oFallbackCondition = false;
 			let iSkipSection = false;
 
+			console.log();
+			console.log();
+
 			while(true) {
 
 				// Execute a lookup to find the next conditional sperator
 				let reNextConditional = reConditionalSeperator.exec(sSourceTemplate);
+
+				console.log(reNextConditional);
 
 				let sBeforeConditional = false;
 				let sLastCondtionalTagParsed = false;
@@ -37,6 +44,7 @@ var LogicConditionalSeperator = function _logic_attributes() {
 				// Check to see if we found a condtional!
 				if (reNextConditional) {
 
+					
 					if (iLastConditionalIndex === 0 && reNextConditional.index === 0) {		
 
 						// Just save off the index and the conditional because there is nothing to return
@@ -46,18 +54,30 @@ var LogicConditionalSeperator = function _logic_attributes() {
 					}
 					else {
 
+						// Check to see if we have a lastCondtional yet, if we dont and the index is still at 0 then the conditional block has direct children (ex if)
+						if (sLastConditionalTag === false) {
+							sLastConditionalTag = sRootMethod;
+						}
+
 						// Double check to make sure we are not inside of the skip range.
-						if (reNextConditional.index < iSkipSection) {
+						if (reNextConditional.index <= iSkipSection) {
 							continue;
+						}
+						else {
+							iSkipSection = false;
 						}
 
 						// Get all the text up to this matching condtional (it belongs to the previous one)
 						sBeforeConditional = sSourceTemplate.slice(iLastConditionalIndex, reNextConditional.index);
 
+						console.log(sBeforeConditional);
+
 						// Check string for possible matching child logic block
 						let reSubBlockCheck = LogicBlock.check(sBeforeConditional, sRootMethod);
 
 						if (reSubBlockCheck) {
+
+							console.log("Sub found!");
 
 							let sRemainingConditional = sSourceTemplate.slice(iLastConditionalIndex);
 
@@ -70,8 +90,9 @@ var LogicConditionalSeperator = function _logic_attributes() {
 								return oSubLogicBlockSection;		
 							}
 
-							iSkipSection =  iLastConditionalIndex + (reSubBlockCheck.index + oSubLogicBlockSection.oSectionMeta.iTotalBlockLength);
+							iSkipSection = iLastConditionalIndex + (reSubBlockCheck.index + oSubLogicBlockSection.oSectionMeta.iTotalBlockLength);
 
+							console.log(iSkipSection);
 							continue;
 						}
 
@@ -107,7 +128,6 @@ var LogicConditionalSeperator = function _logic_attributes() {
 
 				}
 				else {
-
 
 					// Get all the text up to this matching condtional (it belongs to the previous one)
 					sBeforeConditional = sSourceTemplate.slice(iLastConditionalIndex);

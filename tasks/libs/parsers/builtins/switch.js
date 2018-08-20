@@ -26,7 +26,7 @@ var Switch = function _switch_parser() {
 			oCompliedAST.oGlobalConditional = LogicConditionals.parser([ aSourceTagAttributes[1] ])[0];
 
 			// Now we need to find all of the conditionals.
-			let aConditionalsBreakdown = LogicConditionalSeperator.parser(aConditionals, sFallback, "swtich", oLogicSection.sBlockContents);
+			let aConditionalsBreakdown = LogicConditionalSeperator.parser(aConditionals, sFallback, oCompliedAST.sMethod, oLogicSection.sBlockContents);
 
 			if (aConditionalsBreakdown instanceof Error) {
 				return aConditionalsBreakdown;

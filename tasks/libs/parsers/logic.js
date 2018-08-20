@@ -3,11 +3,11 @@
 const LOGIC_BLOCK = require('./utils/logic-block');
 
 // Load logical Builtins
-//const If 	 = require('./builtins/if');
+const If 	 = require('./builtins/if');
 const Switch = require('./builtins/switch');
 
 const LOGIC_BLOCK_PARSERS = {
-//	"if": If.parser,
+	"if": If.parser,
 	"switch": Switch.parser
 };
 
