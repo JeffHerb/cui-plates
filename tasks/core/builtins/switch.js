@@ -33,11 +33,8 @@ class Switch {
 
 		}
 
-		console.log(oSwitchContent);
-		console.log(oASTNode);
-
 		if (!oSwitchContent && oASTNode.fallback) {
-			oSwitchContent = oASTNode.fallback;
+			oSwitchContent = oASTNode.fallback.contents;
 		}
 
 		if (oSwitchContent) {

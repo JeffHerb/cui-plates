@@ -1,4 +1,5 @@
 const LogicAttributes   = require('../utils/logic-attributes');
+const LogicBlock 		= require('./logic-block');
 
 var LogicConditionalSeperator = function _logic_attributes() {
 
@@ -26,7 +27,6 @@ var LogicConditionalSeperator = function _logic_attributes() {
 				let reNextConditional = reConditionalSeperator.exec(sSourceTemplate);
 
 				let sBeforeConditional = false;
-				let sAfterConditional = false;
 				let sLastCondtionalTagParsed = false;
 
 				if (sLastConditionalTag) {
@@ -48,8 +48,40 @@ var LogicConditionalSeperator = function _logic_attributes() {
 						// Get all the text up to this matching condtional (it belongs to the previous one)
 						sBeforeConditional = sSourceTemplate.slice(iLastConditionalIndex, reNextConditional.index);
 
-						// Get the rest just in case
-						sAfterConditional = sSourceTemplate.slice(reNextConditional.index + reNextConditional[0].length);
+						// Check string for possible matching child logic block
+						let reSubBlockCheck = LogicBlock.check(sBeforeConditional, "switch");
+
+						if (reSubBlockCheck) {
+
+							// Get the remaining text because now we need to 
+							let sRemainingBlock = sSourceTemplate.slice(iLastConditionalIndex);
+
+							// Replace the input with the most up-todate version
+							reSubBlockCheck.input = sRemainingBlock;
+
+							let iRemainingBlockLength = sRemainingBlock.length;
+
+							let iSubBlockStart = reSubBlockCheck.index;
+
+							let oSubLogicSection = LogicBlock.find(reSubBlockCheck)
+
+							let iTotalBlockSpan = iSubBlockStart + oSubLogicSection.oSectionMeta.oClosing.iEnd + oSubLogicSection.oSectionMeta.oClosing.sTag.length;
+							let iTotalBlockSpan2 = oSubLogicSection.oSectionMeta.iContentLength + oSubLogicSection.oSectionMeta.oOpening.iStart;
+
+							console.log("Sub Block found!");
+							console.log();
+							console.log("sRemaining", sRemainingBlock);
+							console.log("sRemaining length", sRemainingBlock.length);
+							console.log("Section length", oSubLogicSection.oSectionMeta.iContentLength);
+							console.log("Total Secton length", oSubLogicSection.oSectionMeta.iTotalBlockLength);
+
+							console.log("Total SubBlock Span", iTotalBlockSpan);
+							console.log("Total SubBlock Span 2", iTotalBlockSpan2);
+
+							continue;
+
+							continue;
+						}
 
 						if (sLastCondtionalTagParsed === sFallbackSepeorator) {
 
@@ -87,6 +119,13 @@ var LogicConditionalSeperator = function _logic_attributes() {
 
 					// Get all the text up to this matching condtional (it belongs to the previous one)
 					sBeforeConditional = sSourceTemplate.slice(iLastConditionalIndex);
+
+					// Check string for possible matching child logic block
+					let bSubBlockCheck = LogicBlock.check(sBeforeConditional, "switch");
+
+					if (bSubBlockCheck) {
+						console.log("Sub Block found at end!");
+					}
 
 					if (sBeforeConditional.length) {
 

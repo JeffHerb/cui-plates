@@ -143,8 +143,6 @@ _priv.processTemplate = (oTemplate, fCallback) => {
 
 							for (let sProcess of oStepResults.aSubProcess) {
 
-								console.log(sProcess);
-
 								if (oStepResults.oAST[sProcess]) {
 
 									if (Array.isArray(oStepResults.oAST[sProcess])) {
@@ -177,7 +175,7 @@ _priv.processTemplate = (oTemplate, fCallback) => {
 										let oSubTemplate = Object.assign({}, oTemplate);
 
 										oSubTemplate.bChildRun = true;
-										oSubTemplate.workingCopy = oStepResults.oAST[sProcess].sSubTemplate;
+										oSubTemplate.workingCopy = oStepResults.oAST[sProcess].contents;
 
 										// Call the processTemplate directly and build out all the children
 										_priv.processTemplate(oSubTemplate, (oSubProcessTemplateResults) => {
@@ -298,9 +296,6 @@ var parseTemplate = function _parse_template() {
 						reject(error);
 					}
 					else {
-
-						//console.log("Finished template");
-						//console.log(oTemplateResults);
 
 						resolve(oTemplateResults);
 					}

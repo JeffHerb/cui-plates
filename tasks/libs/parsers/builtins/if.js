@@ -1,8 +1,8 @@
 var If = function _if_parser() {
 
 	// This is the parser for this type of template contents.
-	const parser = () => {
-		console.log("If parser");
+	const parser = (oLogicSection) => {
+		console.log("oLogicSection");
 	};
 
 	return {
