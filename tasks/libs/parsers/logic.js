@@ -139,8 +139,6 @@ const LOGIC_TAGS = {
 				oEndResult.sRemaining = oLogicSection.sRemaining;
 			}
 
-			//console.log(oLogicSection)
-
 			// Check to see if we have a parser for this type of logic method
 			if (LOGIC_BLOCK_PARSERS[oLogicSection.oSectionMeta.sMethod]) {
 

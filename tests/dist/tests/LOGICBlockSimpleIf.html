@@ -14,18 +14,15 @@
 
 				var pageContext = [
 					{
-						"template": "LOGICBLOCKSwitchSimple",
-						"message": "Switch template generated correctly!",
-						"messageFailed": "Something went horribily horribly wrong!",
-						"error": true,
-						"system": false,
-						"framework": false,
-						"developer": true, 
-						"messageType": "fail"
+						"template": "LOGICBlockSimpleIf",
+						"isTrue": true,
+						"isStrong": true 
 					}
 				];
 
 				project.plates.render(pageContext, '#append-target');
+
+				//project.plates.renderer.append(pageContext);
 
 			});
 		</script>
