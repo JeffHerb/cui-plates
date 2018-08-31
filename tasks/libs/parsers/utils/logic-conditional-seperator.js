@@ -45,7 +45,9 @@ var LogicConditionalSeperator = function _logic_attributes() {
 				if (reNextConditional) {
 
 					
-					if (iLastConditionalIndex === 0 && reNextConditional.index === 0) {		
+					if (iLastConditionalIndex === 0 && reNextConditional.index === 0) {
+
+						console.log("0, 0");
 
 						// Just save off the index and the conditional because there is nothing to return
 						sLastConditionalTag = reNextConditional[0];
@@ -60,7 +62,7 @@ var LogicConditionalSeperator = function _logic_attributes() {
 						}
 
 						// Double check to make sure we are not inside of the skip range.
-						if (reNextConditional.index <= iSkipSection) {
+						if (reNextConditional.index < iSkipSection) {
 							continue;
 						}
 						else {
@@ -90,10 +92,18 @@ var LogicConditionalSeperator = function _logic_attributes() {
 								return oSubLogicBlockSection;		
 							}
 
-							iSkipSection = iLastConditionalIndex + (reSubBlockCheck.index + oSubLogicBlockSection.oSectionMeta.iTotalBlockLength);
+							let iNewSkipSection = iLastConditionalIndex + (reSubBlockCheck.index + oSubLogicBlockSection.oSectionMeta.iTotalBlockLength);
 
-							console.log(iSkipSection);
-							continue;
+							if (iSkipSection) {
+
+								if (iNewSkipSection > reSubBlockCheck.index) {
+									continue;
+								}
+
+							}
+							else {
+								continue;
+							}
 						}
 
 						if (sLastCondtionalTagParsed === sFallbackSepeorator) {
@@ -128,6 +138,20 @@ var LogicConditionalSeperator = function _logic_attributes() {
 
 				}
 				else {
+
+					// if (iSkipSection) {
+					// 	console.log("Skip section is active, but found last conditional!");
+
+					// 	if (iLastConditionalIndex < iSkipSection) {
+
+					// 		// Pull out the last section up to the "known end"
+					// 		let sSkippedSection = sSourceTemplate.slice(iLastConditionalIndex, iSkipSection);
+
+					// 		console.log("skipped Section");
+
+					// 	}
+
+					// }
 
 					// Get all the text up to this matching condtional (it belongs to the previous one)
 					sBeforeConditional = sSourceTemplate.slice(iLastConditionalIndex);
