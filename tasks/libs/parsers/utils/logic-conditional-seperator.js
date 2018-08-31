@@ -10,202 +10,97 @@ var LogicConditionalSeperator = function _logic_attributes() {
 		// Create a regular expression that will find all the current method conditional seperators
 		let reConditionalSeperator = new RegExp(`(?:\{{2}(?:${aConditionalSeperators.join('|')})(?:[a-zA-Z0-9\.\ \=\!\&\|\"\'\(\)]*)\}{2})`,'g');
 
-		// Create a regular expresion for matching duplicate sub logic block declerations.
+		// Call the conditional matcher to see if we find any
 		let aConditionalSeperatorsMatch = sSourceTemplate.match(reConditionalSeperator);
 
 		if (aConditionalSeperatorsMatch.length) {
 
-			//let sCurrentBlockTemplate = sSourceTemplate;
-			let iLastConditionalIndex = 0;
-			let sLastConditionalTag = false;
-			let bRootConditionalContents = false;
+			let sLastConditional = false;
+			let iLastConditionalIndex = false;
 
-			let aConditionals = [];
-			let oFallbackCondition = false;
-			let iSkipSection = false;
+			let iSkipBlock = false;
 
-			console.log();
-			console.log();
-
+			// Since we have a conditonal match we need to loop through them an break them apart.
 			while(true) {
 
-				// Execute a lookup to find the next conditional sperator
-				let reNextConditional = reConditionalSeperator.exec(sSourceTemplate);
+				let sCurrentConditionalSegment = false;
+				let reConditional = reConditionalSeperator.exec(sSourceTemplate);
 
-				console.log(reNextConditional);
+				// Check to see if we can find the next conditional
+				if (reConditional) {
 
-				let sBeforeConditional = false;
-				let sLastCondtionalTagParsed = false;
+					// Check to see if im in the middle of a i skip block
+					if (iSkipBlock) {
 
-				if (sLastConditionalTag) {
-					sLastCondtionalTagParsed = LogicAttributes.parser(sLastConditionalTag)[0];
-				}
+					}
 
-				// Check to see if we found a condtional!
-				if (reNextConditional) {
+					// Since we have a conditional let check to see were the conditional starts, since some items conditional start at 0
+					if (reConditional.index === 0 && iLastConditionalIndex === 0) {
 
-					
-					if (iLastConditionalIndex === 0 && reNextConditional.index === 0) {
+						// Since we have and opening conditions (most like a switch like block) we need to fource the next loop
+						console.log(reConditional)
 
-						console.log("0, 0");
-
-						// Just save off the index and the conditional because there is nothing to return
-						sLastConditionalTag = reNextConditional[0];
-						iLastConditionalIndex += sLastConditionalTag.length;
 						continue;
+					}
+
+					// Pull whatever text we can from the string to the current index
+					sCurrentConditionalSegment = sSourceTemplate.slice(iLastConditionalIndex, reConditional.index);
+
+					// Now we need to check this block to verify we have everything we could need
+					let reSubBlockCheck = LogicBlock.check(sCurrentConditionalSegment, sRootMethod);
+
+					if (reSubBlockCheck) {
+
+						// Update the regular expression to have all of the source template up to the last starting index
+						reSubBlockCheck.input = sSourceTemplate.slice(iLastConditionalIndex);
+
+						// Run the block finder to get all the metadata
+						let oSubLogicBlockSection = LogicBlock.find(reSubBlockCheck);
+
+						if (oSubLogicBlockSection instanceof Error) {
+							return oSubLogicBlockSection;		
+						}
+
+						console.log(oSubLogicBlockSection);
 					}
 					else {
 
-						// Check to see if we have a lastCondtional yet, if we dont and the index is still at 0 then the conditional block has direct children (ex if)
-						if (sLastConditionalTag === false) {
-							sLastConditionalTag = sRootMethod;
-						}
-
-						// Double check to make sure we are not inside of the skip range.
-						if (reNextConditional.index < iSkipSection) {
-							continue;
-						}
-						else {
-							iSkipSection = false;
-						}
-
-						// Get all the text up to this matching condtional (it belongs to the previous one)
-						sBeforeConditional = sSourceTemplate.slice(iLastConditionalIndex, reNextConditional.index);
-
-						console.log(sBeforeConditional);
-
-						// Check string for possible matching child logic block
-						let reSubBlockCheck = LogicBlock.check(sBeforeConditional, sRootMethod);
-
-						if (reSubBlockCheck) {
-
-							console.log("Sub found!");
-
-							let sRemainingConditional = sSourceTemplate.slice(iLastConditionalIndex);
-
-							// Update the input to include everything yet to be seperated
-							reSubBlockCheck.input = sRemainingConditional;
-
-							let oSubLogicBlockSection = LogicBlock.find(reSubBlockCheck);
-
-							if (oSubLogicBlockSection instanceof Error) {
-								return oSubLogicBlockSection;		
-							}
-
-							let iNewSkipSection = iLastConditionalIndex + (reSubBlockCheck.index + oSubLogicBlockSection.oSectionMeta.iTotalBlockLength);
-
-							if (iSkipSection) {
-
-								if (iNewSkipSection > reSubBlockCheck.index) {
-									continue;
-								}
-
-							}
-							else {
-								continue;
-							}
-						}
-
-						if (sLastCondtionalTagParsed === sFallbackSepeorator) {
-
-							if (!oFallbackCondition) {
-
-								oFallbackCondition = {
-									"contents": sBeforeConditional
-								}
-							}
-							else {
-
-								let error = new Error(`|template.path| containing two fallback conditionals ${sFallbackSepeorator} in the same logic block. This is not allowed.`)
-
-								return error;
-							}
-
-						}
-						else {
-
-							aConditionals.push({
-								"conditional": sLastConditionalTag,
-								"contents": sBeforeConditional
-							});
-						}
-
-						sLastConditionalTag = reNextConditional[0];
-						iLastConditionalIndex = reNextConditional.index + sLastConditionalTag.length;
-
+						// There was no sub logic blocks to worry about so, let just save off what we have into conditiona
+						console.log("no sub blocks to worry about!");
 					}
-
 
 				}
 				else {
 
-					// if (iSkipSection) {
-					// 	console.log("Skip section is active, but found last conditional!");
-
-					// 	if (iLastConditionalIndex < iSkipSection) {
-
-					// 		// Pull out the last section up to the "known end"
-					// 		let sSkippedSection = sSourceTemplate.slice(iLastConditionalIndex, iSkipSection);
-
-					// 		console.log("skipped Section");
-
-					// 	}
-
-					// }
-
-					// Get all the text up to this matching condtional (it belongs to the previous one)
-					sBeforeConditional = sSourceTemplate.slice(iLastConditionalIndex);
-
-					if (sBeforeConditional.length) {
-
-						if (sLastCondtionalTagParsed === sFallbackSepeorator) {
-
-							if (!oFallbackCondition) {
-
-								oFallbackCondition = {
-									"contents": sBeforeConditional
-								}
-							}
-							else {
-
-								let error = new Error(`|template.path| containing two fallback conditionals ${sFallbackSepeorator} in the same logic block. This is not allowed.`)
-
-								return error;
-							}
-
-						}
-						else {
-
-							aConditionals.push({
-								"conditional": sLastConditionalTag,
-								"contents": sBeforeConditional
-							});
-						}
+					// Check to see if we are in an active skip block!
+					if (iSkipBlock) {
 
 					}
 
+					// Pull the remaining parts of the template
+					sCurrentConditionalSegment = sSourceTemplate.slice(iLastConditionalIndex);
+
+
+					console.log("No conditional");
+
 					break;
 				}
-
-
 
 			}
 
 			if (aConditionals.length) {
 
-				return {
-					aConditionals: aConditionals,
-					oFallbackCondition: oFallbackCondition
-				};
+
+
+				// return {
+				// 	aConditionals: aConditionals,
+				// 	oFallbackCondition: oFallbackCondition
+				// };
 			}
 			
 		}
-		else {
-
-			return false;
-		}
-
 		
+		return false;
 	};
 
 	return {
