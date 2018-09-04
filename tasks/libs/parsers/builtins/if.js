@@ -22,13 +22,15 @@ var If = function _if_parser() {
 
 		let aSourceTagAttributes = LogicAttributes.parser(oLogicSection.oSectionMeta.oOpening.sTag);
 
+		console.log(aSourceTagAttributes);
+
 		if (aSourceTagAttributes.length > 1) {
 
 			aSourceTagAttributes.shift();
 
 			let aMainConditions = aSourceTagAttributes.concat();
 
-			let aConditionalsBreakdown = LogicConditionalSeperator.parser(aConditionals, sFallback, oComplicedAST.sMethod, oLogicSection.sBlockContents);
+			let aConditionalsBreakdown = LogicConditionalSeperator.parser(aConditionals, sFallback, aSourceTagAttributes, oLogicSection.sBlockContents);
 
 			console.log(aConditionalsBreakdown);
 
