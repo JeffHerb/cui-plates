@@ -22,6 +22,10 @@ var LogicBlock = function _logic_block (reTemplateResults, gracefulFail) {
 				iStart: false,
 				iEnd: false
 			},
+			oSegment: {
+				iStart: false,
+				iEnd: false
+			},
 			iContentLength: false,
 			iTotalBlockLength: false
 		};
@@ -32,6 +36,9 @@ var LogicBlock = function _logic_block (reTemplateResults, gracefulFail) {
 		oLogicSection.oOpening.sTag = reTemplateResults[0];
 		oLogicSection.oOpening.iStart = reTemplateResults.index;
 		oLogicSection.oOpening.iEnd = reTemplateResults.index + oLogicSection.oOpening.sTag.length;
+
+		// Save off the start index
+		oLogicSection.oSegment.iStart = reTemplateResults.index;
 
 		// Break the opening conditional page into pieces
 		let aConditionalOpeningParts = oLogicSection.oOpening.sTag.match(LOGIC_TAG_CONTENTS_REGEX);
@@ -93,7 +100,8 @@ var LogicBlock = function _logic_block (reTemplateResults, gracefulFail) {
 			oLogicSection.iContentLength = sBlockContents.length;
 			oLogicSection.iTotalBlockLength = sBlockContents.length + (oLogicSection.oOpening.sTag.length) + (oLogicSection.oClosing.sTag.length);
 
-
+			// Save off the end index
+			oLogicSection.oSegment.iEnd = oLogicSection.oSegment.iStart + oLogicSection.iTotalBlockLength;
 
 			// Return the section results
 			return {

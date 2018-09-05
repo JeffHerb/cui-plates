@@ -5,21 +5,6 @@ var LogicConditionalSeperator = function _logic_attributes() {
 
 	const parser = (aConditionalSeperators, sFallbackSepeorator, aRootTagAttributes, sSourceTemplate) => {
 
-		function updateLastCurrentNextTag() {
-
-			// Move current to last placeholders
-			aLastTagAttributes = aCurrentTagAttributes.concat();
-			sLastTagMethod = sCurrentTagMethod;
-
-			// Move next conditional too current
-			aCurrentTagAttributes = aNextTagAttributes.concat();
-			sCurrentTagMethod = sNextTagMethod;
-
-			// Null out the next tag arguments
-			aNextTagAttributes = false;
-			sNextTagMethod = false;
-		}
-
 		// Save off the root method
 		let sRootMethod = aRootTagAttributes.shift();
 
@@ -32,23 +17,38 @@ var LogicConditionalSeperator = function _logic_attributes() {
 		// Check to see if we found any matching condtional tags
 		if (aConditionalSeperatorsMatch.length) {
 
-			var iLastConditionalIndex = 0;
+			let iLastConditionalIndex = 0;
 
 			// Place to store the broken up last (current) and next conditional tag
-			var aLastTagAttributes = false;
-			var sLastTagMethod = false;
+			let aLastTagAttributes = false;
+			let sLastTagMethod = false;
 
-			var aCurrentTagAttributes = aRootTagAttributes;
+			let aCurrentTagAttributes = aRootTagAttributes;
 			var sCurrentTagMethod = sRootMethod;
 
-			var aNextTagAttributes = false;
-			var sNextTagMethod = false;
+			let aNextTagAttributes = false;
+			let sNextTagMethod = false;
 
-			var iSkipBlock = false;
+			let iSkipBlock = false;
 
 			// Place to store final condtional segments
-			var aCondtionalSegments = [];
-			var oFallbackSegment = false;
+			let aCondtionalSegments = [];
+			let oFallbackSegment = false;
+
+			function updateLastCurrentNextTag() {
+
+				// Move current to last placeholders
+				aLastTagAttributes = aCurrentTagAttributes.concat();
+				sLastTagMethod = sCurrentTagMethod;
+
+				// Move next conditional too current
+				aCurrentTagAttributes = aNextTagAttributes.concat();
+				sCurrentTagMethod = sNextTagMethod;
+
+				// Null out the next tag arguments
+				aNextTagAttributes = false;
+				sNextTagMethod = false;
+			}
 
 			// Since we have a conditonal match we need to loop through them an break them apart.
 			while(true) {
@@ -64,7 +64,7 @@ var LogicConditionalSeperator = function _logic_attributes() {
 
 					// Take the conditional tag that we found and break it appear and save it into the next conditional variables
 					aNextTagAttributes = LogicAttributes.parser(reConditional[0]);
-					sNextTagMethod = aNextTagAttributes[0];
+					sNextTagMethod = aNextTagAttributes.shift();
 
 					// Check to see if im in the middle of a i skip block
 					if (iSkipBlock) {
@@ -86,10 +86,10 @@ var LogicConditionalSeperator = function _logic_attributes() {
 					}
 
 					// Pull whatever text we can from the string to the current index
-					sCurrentConditionalSegment = sSourceTemplate.slice(iLastConditionalIndex, reConditional[0].index);
+					sCurrentConditionalSegment = sSourceTemplate.slice(iLastConditionalIndex, reConditional.index);
 
 					// Now scrap the conditional segment looking for similar conditionals
-					let reSubBlockCheck = LogicBlock.check(sCurrentConditionalSegment, sRootMethod);
+					let reSubBlockCheck = LogicBlock.check(sCurrentConditionalSegment, sCurrentTagMethod);
 
 					// Check to see if the sub block check yeilded any results
 					if (reSubBlockCheck) {
@@ -104,29 +104,57 @@ var LogicConditionalSeperator = function _logic_attributes() {
 							return oSubLogicBlockSection;		
 						}
 
-						console.log(oSubLogicBlockSection);
+						// Check to see if the sublogic block is ends after current index
+						if (reConditional.index < oSubLogicBlockSection.oSectionMeta.oSegment.iEnd) {
+
+							iSkipBlock = oSubLogicBlockSection.oSectionMeta.oSegment.iEnd;
+							continue;
+						}
+						else {
+
+							// Remove skip block if its in effect
+							if (iSkipBlock) {
+								iSkipBlock = false;
+							}
+
+							if (sCurrentTagMethod === sFallbackSepeorator) {
+								
+								oFallbackSegment = {
+									"contents": sCurrentConditionalSegment
+								};
+							}
+							else {
+
+								aCondtionalSegments.push({
+									"conditional": aCurrentTagAttributes,
+									"method": sCurrentTagMethod,
+									"contents": sCurrentConditionalSegment
+								});
+							}
+
+						}
 					}
 					else {
 
-						// There was no sub logic blocks to worry about so, let just save off what we have into conditiona
-						let oConditionalSegment = {
-							"conditional": aCurrentTagAttributes,
-							"method": sCurrentTagMethod,
-							"contents": sCurrentConditionalSegment
-						}
-
 						if (sCurrentTagMethod === sFallbackSepeorator) {
-							oFallbackSegment = oConditionalSegment;
+							
+							oFallbackSegment = {
+								"contents": sCurrentConditionalSegment
+							};
 						}
 						else {
-							aCondtionalSegments.push(oConditionalSegment);
+
+							aCondtionalSegments.push({
+								"conditional": aCurrentTagAttributes,
+								"method": sCurrentTagMethod,
+								"contents": sCurrentConditionalSegment
+							});
 						}
 
 						// Update the last, current, next
-						updateLastCurrentNextTag();
+						updateLastCurrentNextTag();							
 
-						console.log(reConditional);
-
+						// Update the last condtional index
 						iLastConditionalIndex += (reConditional.index + reConditional[0].length);
 					}
 
@@ -141,13 +169,24 @@ var LogicConditionalSeperator = function _logic_attributes() {
 					// Pull the remaining parts of the template
 					sCurrentConditionalSegment = sSourceTemplate.slice(iLastConditionalIndex);
 
+
 					if (sCurrentConditionalSegment.length) {
 
-						console.log(sCurrentConditionalSegment);
+						if (sCurrentTagMethod === sFallbackSepeorator) {
+							oFallbackSegment = {
+								"contents": sCurrentConditionalSegment
+							};
+						}
+						else {
+
+							aCondtionalSegments.push({
+								"conditional": aCurrentTagAttributes,
+								"method": sCurrentTagMethod,
+								"contents": sCurrentConditionalSegment
+							});
+						}
 
 					}
-
-					console.log("No conditional");
 
 					break;
 				}
@@ -156,12 +195,11 @@ var LogicConditionalSeperator = function _logic_attributes() {
 
 			if (aCondtionalSegments.length) {
 
-
-
-				// return {
-				// 	aConditionals: aConditionals,
-				// 	oFallbackCondition: oFallbackCondition
-				// };
+				return {
+					aConditionals: aCondtionalSegments,
+					oFallbackCondition: oFallbackSegment
+				};
+				
 			}
 			
 		}

@@ -10,29 +10,46 @@ var If = function _if_parser() {
 	// This is the parser for this type of template contents.
 	const parser = (oLogicSection) => {
 
-		let oComplicedAST = {
+		let oCompliedAST = {
 			sMethod: "if",
 			aConditionals: false,
 			oFallback: false
 		};
 
-		console.log("In if block parser");
-
-		console.log(oLogicSection);
-
 		let aSourceTagAttributes = LogicAttributes.parser(oLogicSection.oSectionMeta.oOpening.sTag);
-
-		console.log(aSourceTagAttributes);
 
 		if (aSourceTagAttributes.length > 1) {
 
-			aSourceTagAttributes.shift();
+			let oConditionalBreakdown = LogicConditionalSeperator.parser(aConditionals, sFallback, aSourceTagAttributes, oLogicSection.sBlockContents);
 
-			let aMainConditions = aSourceTagAttributes.concat();
+			if (oConditionalBreakdown instanceof Error) {
+				return oConditionalBreakdown;
+			}
 
-			let aConditionalsBreakdown = LogicConditionalSeperator.parser(aConditionals, sFallback, aSourceTagAttributes, oLogicSection.sBlockContents);
+			if (oConditionalBreakdown && oConditionalBreakdown.aConditionals && oConditionalBreakdown.aConditionals.length) {
 
-			console.log(aConditionalsBreakdown);
+				for (let condition of oConditionalBreakdown.aConditionals) {
+
+					let oConditional = LogicConditionals.parser(condition.conditional);
+
+					condition.conditional = oConditional;
+				}
+
+				// Save off the parsed conditionals
+				oCompliedAST.aConditionals = oConditionalBreakdown.aConditionals;
+
+				oCompliedAST.oFallback = oConditionalBreakdown.oFallbackCondition;
+
+				return {
+					oAST: oCompliedAST,
+					aSubProcess: ['conditionals', 'fallback']
+				}
+			}
+			else {
+
+				// Switch returned no conditionals! This is not possible!
+				return false;
+			}
 
 		}
 		else {
