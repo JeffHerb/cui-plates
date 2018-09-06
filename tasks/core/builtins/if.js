@@ -1,111 +1,68 @@
 import Context from '../utils/context';
 
-const SIMPLE_CONDITIONAL = (v1, oContext) => {
+const complexIfEvaluation = function _complex_if_evaluation(oTextCondtionals, oContext) {
 
-	let v1Value = false;
+	let v1 = false;
+	let v2 = false;
 
-	if (v1.type === "reference") {
-
-		v1Value = Context.find(v1.test, oContext);
-
+	if (oTextCondtionals.v1.type === "reference") {
+		v1 = Context.find(oTextCondtionals.v1.value, oContext);
 	}
 	else {
-
-		v1Value = v1.test;
+		v1 = oTextCondtionals.v1.value;
 	}
 
-	// Check the simple value data types
-	// Just return booleans
-	if (typeof v1Value === "boolean") {
-
-		return v1Value;
+	if (oTextCondtionals.v2.type === "reference") {
+		v2 = Context.find(oTextCondtionals.v2.value, oContext);
 	}
-	// If number, anything bigger than 0 is true
-	else if (!isNaN(v1Value)) {
-
-		if (v1Value <= 0) {
-
-			return false;
-		}
-		else {
-
-			return true;
-		}
-
-	}
-	// If string, anything with length is true
 	else {
-
-		if (v1Value.length) {
-			return true;
-		}
-		else {
-			return false;
-		}
-	}
-};
-
-const COMPLEX_CONDITIONAL = (oTestConditional, oContext) => {
-
-	const EXTRACT_VALUE = (oCondition) => {
-
-		if (oCondition.type === "static") {
-
-			return oCondition.value;	
-		}
-		else if (oCondition.type === "reference") {
-
-			return Context.find(oCondition.value, oContext);
-		}
-		else {
-
-			return COMPLEX_CONDITIONAL(oCondition, oContext);
-		}
-
+		v2 = oTextCondtionals.v2.value;
 	}
 
-	let vRawV1 = EXTRACT_VALUE(oTestConditional.v1);
-	let vRawV2 = EXTRACT_VALUE(oTestConditional.v2);;
-
-	console.log(vRawV1, vRawV2);
-
-	switch (oTestConditional.op) {
+	switch (oTextCondtionals.op) {
 
 		case "==":
 
-			return (vRawV1 == vRawV2) ? true : false;
-
-		case "===":
-
-			return (vRawV1 === vRawV2) ? true : false;			
+			return (v1 == v2) ? true : false;
+			break;
 
 		case "!=":
 
-			return (vRawV1 != vRawV2) ? true : false;
+			return (v1 != v2) ? true : false;
+			break;
+
+		case "===":
+
+			return (v1 === v2) ? true : false;
+			break;
 
 		case "!==":
 
-			return (vRawV1 != vRawV2) ? true : false;
+			return (v1 !== v2) ? true : false;
+			break;
 
 		case "<":
 
-			return (vRawV1 < vRawV2) ? true : false;
+			return (v1 < v2) ? true : false;
+			break;
 
 		case "<=":
 
-			return (vRawV1 <= vRawV2) ? true : false;
+			return (v1 <= v2) ? true : false;
+			break;
 
 		case ">":
 
-			return (vRawV1 > vRawV2) ? true : false;
+			return (v1 < v2) ? true : false;
+			break;
 
 		case ">=":
 
-			return (vRawV1 >= vRawV2) ? true : false;
+			return (v1 <= v2) ? true : false;
+			break;
 
 	}
 
-	return false;
 };
 
 class If {
@@ -114,65 +71,71 @@ class If {
 
 	}
 
-	parser(oContext, aConditionals, oFallback) {
+	parser(oContext, oConditionals, sScope) {
 
-		// Verify we have conditions to check
-		if (aConditionals.length) {
+		let aEndConditionalContents = false;
 
-			let vReturningContext = false;
+		console.log(oConditionals);
 
-			// Loop through all of the conditions till we find a true.
-			// This is all the block level, not the indivual conditions
-			let bConditionalPass = true;
+		allCondtionals:
+		for (let ocb = 0, ocbLen = oConditionals.conditionals.length; ocb < ocbLen; ocb++) {
 
-			block:
-			for (let c = 0, cLen = aConditionals.length; c < cLen; c++) {
+			let aCurrentConditionals = oConditionals.conditionals[ocb].conditional;
 
-				let oConditionalBlock = aConditionals[c];
-				let aTestConditions = oConditionalBlock.aConditions;
+			for (let oConditional of aCurrentConditionals) {
 
-				// Loops through the individual conditional statements (simple/complex)
-				conditionals:
-				for (let t = 0, tLen = aTestConditions.length; t < tLen; t++) {
+				// Check to see if we have a simple or complex conditional test
+				if (oConditional.type === "simple") {
 
-					let oTest = aTestConditions[t];
+					if (oConditional.test.type === "reference") {
 
-					if (oTest.type === "static" || oTest.type === "reference") {
+						if (Context.find(oConditional.test.value, oContext)) {
 
-						bConditionalPass = SIMPLE_CONDITIONAL(oTest, oContext);
+							aEndConditionalContents = oConditionals.conditionals[ocb].contents;
+							break allCondtionals;
+						}
+
 					}
-					else {
+					else if (oConditional.test.type === "simple") {
 
-						bConditionalPass = COMPLEX_CONDITIONAL(oTest.test, oContext);
-					}
+						if (oConditional.test.value) {
+							aEndConditionalContents = oConditionals.conditionals[ocb].contents;
+							break allCondtionals;
+						}
 
-					// Check if we can continue
-					if (!bConditionalPass) {
-						break block;
 					}
 
 				}
+				else {
 
-				if (bConditionalPass) {
+					let bComplexResult = complexIfEvaluation(oConditional.test, oContext);
 
-					vReturningContext = oConditionalBlock.contents;
-					break;
+					if (bComplexResult) {
+
+						aEndConditionalContents = oConditionals.conditionals[ocb].contents;
+					}
+
+					break allCondtionals;
 				}
-
 			}
 
-			if (!vReturningContext && oFallback && oFallback.contents) {
-				vReturningContext = oFallback.contents;
+			// Check to see if conditional contents were found and break
+			if (aEndConditionalContents) {
+				break;
 			}
 
-			return vReturningContext;
-
-		}
-		else {
-
-			return false;
 		}
 
+		// Test to see if we got contents, if we do return them!
+		if (aEndConditionalContents) {
+			return aEndConditionalContents;
+		}
+		// Since end condtional was not set, check for fallback and return that if it exists
+		else if (oConditionals.fallback) {
+			return oConditionals.fallback.contents;
+		}
+
+		return false;
 	}
 };
 

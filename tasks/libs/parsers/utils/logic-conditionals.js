@@ -1,3 +1,5 @@
+const LOGIC_SUPPORT_OPERATORS = ['==', '!=', '===', '!==', '<', '<=', '>', '>='];
+
 var LogicConditionals = function _logic_attributes() {
 
 	const parser = (aConditionals) => {
@@ -8,6 +10,8 @@ var LogicConditionals = function _logic_attributes() {
 
 				// Check for double or single wrapping qoutes as we need to assume it might be a static string
 				if (/^['|"].*['|"]$/.test(value)) {
+
+					console.log("wrapped string");
 
 					return {
 						type: "static",
@@ -65,27 +69,15 @@ var LogicConditionals = function _logic_attributes() {
 
 			let oValue = CLEANUP_DATA_TYPE(aConditionals[0]);
 
-			if (oValue.type === "static") {
-
-				aConditionalsObjSet.push(
-					{
-						"type": "static",
-						"test": oValue.value
+			aConditionalsObjSet.push(
+				{
+					"type": "simple",
+					"test": {						
+						"type": oValue.type,
+						"value": oValue.value
 					}
-				);
-
-			}
-			else {
-
-				aConditionalsObjSet.push(
-					{
-						"type": "reference",
-						"test": oValue.value
-					}
-				);
-
-			}
-
+				}
+			);
 			
 		}
 		else if ((aConditionals.length % 3) === 0) {
@@ -114,7 +106,9 @@ var LogicConditionals = function _logic_attributes() {
 
 					if (ci === 0 || ci === 2) {
 
-						let reConditionalWrapTest = LOGIC_TAG_CONDTIONAL_WRAPPED.exec(aNextSet[ci]);
+						console.log(aNextSet[ci]);
+
+						let reConditionalWrapTest = false; //LOGIC_TAG_CONDTIONAL_WRAPPED.exec(aNextSet[ci]);
 
 						// Check if null if so we have a context or static value
 						if (!reConditionalWrapTest) {

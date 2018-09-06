@@ -24,7 +24,7 @@ var LogicConditionalSeperator = function _logic_attributes() {
 			let sLastTagMethod = false;
 
 			let aCurrentTagAttributes = aRootTagAttributes;
-			var sCurrentTagMethod = sRootMethod;
+			let sCurrentTagMethod = sRootMethod;
 
 			let aNextTagAttributes = false;
 			let sNextTagMethod = false;
@@ -128,13 +128,19 @@ var LogicConditionalSeperator = function _logic_attributes() {
 								aCondtionalSegments.push({
 									"conditional": aCurrentTagAttributes,
 									"method": sCurrentTagMethod,
-									"contents": sCurrentConditionalSegment
+									"contents": sCurrentConditionalSegment,
 								});
 							}
 
+							// Update the last, current, next
+							updateLastCurrentNextTag();
+
+							iLastConditionalIndex += (reConditional.index + reConditional[0].length);
 						}
 					}
 					else {
+
+						console.log("sCurrent", sCurrentTagMethod);
 
 						if (sCurrentTagMethod === sFallbackSepeorator) {
 							
@@ -147,7 +153,7 @@ var LogicConditionalSeperator = function _logic_attributes() {
 							aCondtionalSegments.push({
 								"conditional": aCurrentTagAttributes,
 								"method": sCurrentTagMethod,
-								"contents": sCurrentConditionalSegment
+								"contents": sCurrentConditionalSegment,
 							});
 						}
 
@@ -169,7 +175,6 @@ var LogicConditionalSeperator = function _logic_attributes() {
 					// Pull the remaining parts of the template
 					sCurrentConditionalSegment = sSourceTemplate.slice(iLastConditionalIndex);
 
-
 					if (sCurrentConditionalSegment.length) {
 
 						if (sCurrentTagMethod === sFallbackSepeorator) {
@@ -182,7 +187,7 @@ var LogicConditionalSeperator = function _logic_attributes() {
 							aCondtionalSegments.push({
 								"conditional": aCurrentTagAttributes,
 								"method": sCurrentTagMethod,
-								"contents": sCurrentConditionalSegment
+								"contents": sCurrentConditionalSegment,
 							});
 						}
 

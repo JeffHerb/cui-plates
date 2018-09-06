@@ -8810,7 +8810,7 @@ define('plates',[],function () { 'use strict';
 	});
 
 	const templates = {
-	    "LOGICBLOCKIfSimple": [
+	    "LOGICBlockIfComplex": [
 	        {
 	            "node": "logic",
 	            "tag": "block",
@@ -8819,8 +8819,18 @@ define('plates',[],function () { 'use strict';
 	                {
 	                    "conditional": [
 	                        {
-	                            "type": "reference",
-	                            "test": "this.isTrue"
+	                            "type": "complex",
+	                            "test": {
+	                                "v1": {
+	                                    "type": "reference",
+	                                    "value": "this.isTrue"
+	                                },
+	                                "op": "===",
+	                                "v2": {
+	                                    "type": "static",
+	                                    "value": "static"
+	                                }
+	                            }
 	                        }
 	                    ],
 	                    "method": "if",
@@ -8833,8 +8843,11 @@ define('plates',[],function () { 'use strict';
 	                                {
 	                                    "conditional": [
 	                                        {
-	                                            "type": "reference",
-	                                            "test": "this.isStrong"
+	                                            "type": "simple",
+	                                            "test": {
+	                                                "type": "reference",
+	                                                "value": "this.isStrong"
+	                                            }
 	                                        }
 	                                    ],
 	                                    "method": "if",
@@ -8868,82 +8881,110 @@ define('plates',[],function () { 'use strict';
 	                                    }
 	                                ]
 	                            }
-	                        }
-	                    ]
-	                },
-	                {
-	                    "conditional": [
-	                        {
-	                            "type": "reference",
-	                            "test": "this.isTrue"
-	                        }
-	                    ],
-	                    "method": "if",
-	                    "contents": [
-	                        {
-	                            "node": "logic",
-	                            "tag": "block",
-	                            "method": "if",
-	                            "conditionals": [
-	                                {
-	                                    "conditional": [
-	                                        {
-	                                            "type": "reference",
-	                                            "test": "this.isStrong"
-	                                        }
-	                                    ],
-	                                    "method": "if",
-	                                    "contents": [
-	                                        {
-	                                            "node": "elem",
-	                                            "tag": "strong",
-	                                            "attributes": false,
-	                                            "contents": [
-	                                                {
-	                                                    "node": "text",
-	                                                    "text": "Logic was true, but was not strong"
-	                                                }
-	                                            ]
-	                                        }
-	                                    ]
-	                                }
-	                            ],
-	                            "fallback": {
-	                                "contents": [
-	                                    {
-	                                        "node": "elem",
-	                                        "tag": "p",
-	                                        "attributes": false,
-	                                        "contents": [
-	                                            {
-	                                                "node": "text",
-	                                                "text": "Logic was true, but was not strong"
-	                                            }
-	                                        ]
-	                                    }
-	                                ]
-	                            }
-	                        },
-	                        {
-	                            "node": "logic",
-	                            "tag": "context",
-	                            "text": "else"
-	                        },
-	                        {
-	                            "node": "elem",
-	                            "tag": "p",
-	                            "attributes": false,
-	                            "contents": [
-	                                {
-	                                    "node": "text",
-	                                    "text": "Else Logic was passed!"
-	                                }
-	                            ]
 	                        }
 	                    ]
 	                }
 	            ],
-	            "fallback": false
+	            "fallback": {
+	                "contents": [
+	                    {
+	                        "node": "elem",
+	                        "tag": "p",
+	                        "attributes": false,
+	                        "contents": [
+	                            {
+	                                "node": "text",
+	                                "text": "Else Logic was passed!"
+	                            }
+	                        ]
+	                    }
+	                ]
+	            }
+	        }
+	    ],
+	    "LOGICBlockIfSimple": [
+	        {
+	            "node": "logic",
+	            "tag": "block",
+	            "method": "if",
+	            "conditionals": [
+	                {
+	                    "conditional": [
+	                        {
+	                            "type": "simple",
+	                            "test": {
+	                                "type": "reference",
+	                                "value": "this.isTrue"
+	                            }
+	                        }
+	                    ],
+	                    "method": "if",
+	                    "contents": [
+	                        {
+	                            "node": "logic",
+	                            "tag": "block",
+	                            "method": "if",
+	                            "conditionals": [
+	                                {
+	                                    "conditional": [
+	                                        {
+	                                            "type": "simple",
+	                                            "test": {
+	                                                "type": "reference",
+	                                                "value": "this.isStrong"
+	                                            }
+	                                        }
+	                                    ],
+	                                    "method": "if",
+	                                    "contents": [
+	                                        {
+	                                            "node": "elem",
+	                                            "tag": "strong",
+	                                            "attributes": false,
+	                                            "contents": [
+	                                                {
+	                                                    "node": "text",
+	                                                    "text": "Logic was true, but was not strong"
+	                                                }
+	                                            ]
+	                                        }
+	                                    ]
+	                                }
+	                            ],
+	                            "fallback": {
+	                                "contents": [
+	                                    {
+	                                        "node": "elem",
+	                                        "tag": "p",
+	                                        "attributes": false,
+	                                        "contents": [
+	                                            {
+	                                                "node": "text",
+	                                                "text": "Logic was true, but was not strong"
+	                                            }
+	                                        ]
+	                                    }
+	                                ]
+	                            }
+	                        }
+	                    ]
+	                }
+	            ],
+	            "fallback": {
+	                "contents": [
+	                    {
+	                        "node": "elem",
+	                        "tag": "p",
+	                        "attributes": false,
+	                        "contents": [
+	                            {
+	                                "node": "text",
+	                                "text": "Else Logic was passed!"
+	                            }
+	                        ]
+	                    }
+	                ]
+	            }
 	        }
 	    ]
 	};
@@ -9074,160 +9115,130 @@ define('plates',[],function () { 'use strict';
 
 	var Context$1 = new Context();
 
-	const SIMPLE_CONDITIONAL = (v1, oContext) => {
+	const complexIfEvaluation = function _complex_if_evaluation(oTextCondtionals, oContext) {
 
-		let v1Value = false;
+		let v1 = false;
+		let v2 = false;
 
-		if (v1.type === "reference") {
-
-			v1Value = Context$1.find(v1.test, oContext);
+		if (oTextCondtionals.v1.type === "reference") {
+			v1 = Context$1.find(oTextCondtionals.v1.value, oContext);
 		} else {
-
-			v1Value = v1.test;
+			v1 = oTextCondtionals.v1.value;
 		}
 
-		// Check the simple value data types
-		// Just return booleans
-		if (typeof v1Value === "boolean") {
-
-			return v1Value;
+		if (oTextCondtionals.v2.type === "reference") {
+			v2 = Context$1.find(oTextCondtionals.v2.value, oContext);
+		} else {
+			v2 = oTextCondtionals.v2.value;
 		}
-		// If number, anything bigger than 0 is true
-		else if (!isNaN(v1Value)) {
 
-				if (v1Value <= 0) {
-
-					return false;
-				} else {
-
-					return true;
-				}
-			}
-			// If string, anything with length is true
-			else {
-
-					if (v1Value.length) {
-						return true;
-					} else {
-						return false;
-					}
-				}
-	};
-
-	const COMPLEX_CONDITIONAL = (oTestConditional, oContext) => {
-
-		const EXTRACT_VALUE = oCondition => {
-
-			if (oCondition.type === "static") {
-
-				return oCondition.value;
-			} else if (oCondition.type === "reference") {
-
-				return Context$1.find(oCondition.value, oContext);
-			} else {
-
-				return COMPLEX_CONDITIONAL(oCondition, oContext);
-			}
-		};
-
-		let vRawV1 = EXTRACT_VALUE(oTestConditional.v1);
-		let vRawV2 = EXTRACT_VALUE(oTestConditional.v2);
-		console.log(vRawV1, vRawV2);
-
-		switch (oTestConditional.op) {
+		switch (oTextCondtionals.op) {
 
 			case "==":
 
-				return vRawV1 == vRawV2 ? true : false;
-
-			case "===":
-
-				return vRawV1 === vRawV2 ? true : false;
+				return v1 == v2 ? true : false;
+				break;
 
 			case "!=":
 
-				return vRawV1 != vRawV2 ? true : false;
+				return v1 != v2 ? true : false;
+				break;
+
+			case "===":
+
+				return v1 === v2 ? true : false;
+				break;
 
 			case "!==":
 
-				return vRawV1 != vRawV2 ? true : false;
+				return v1 !== v2 ? true : false;
+				break;
 
 			case "<":
 
-				return vRawV1 < vRawV2 ? true : false;
+				return v1 < v2 ? true : false;
+				break;
 
 			case "<=":
 
-				return vRawV1 <= vRawV2 ? true : false;
+				return v1 <= v2 ? true : false;
+				break;
 
 			case ">":
 
-				return vRawV1 > vRawV2 ? true : false;
+				return v1 < v2 ? true : false;
+				break;
 
 			case ">=":
 
-				return vRawV1 >= vRawV2 ? true : false;
+				return v1 <= v2 ? true : false;
+				break;
 
 		}
-
-		return false;
 	};
 
 	class If {
 
 		constuctor() {}
 
-		parser(oContext, aConditionals, oFallback) {
+		parser(oContext, oConditionals, sScope) {
 
-			// Verify we have conditions to check
-			if (aConditionals.length) {
+			let aEndConditionalContents = false;
 
-				let vReturningContext = false;
+			console.log(oConditionals);
 
-				// Loop through all of the conditions till we find a true.
-				// This is all the block level, not the indivual conditions
-				let bConditionalPass = true;
+			allCondtionals: for (let ocb = 0, ocbLen = oConditionals.conditionals.length; ocb < ocbLen; ocb++) {
 
-				block: for (let c = 0, cLen = aConditionals.length; c < cLen; c++) {
+				let aCurrentConditionals = oConditionals.conditionals[ocb].conditional;
 
-					let oConditionalBlock = aConditionals[c];
-					let aTestConditions = oConditionalBlock.aConditions;
+				for (let oConditional of aCurrentConditionals) {
 
-					// Loops through the individual conditional statements (simple/complex)
-					conditionals: for (let t = 0, tLen = aTestConditions.length; t < tLen; t++) {
+					// Check to see if we have a simple or complex conditional test
+					if (oConditional.type === "simple") {
 
-						let oTest = aTestConditions[t];
+						if (oConditional.test.type === "reference") {
 
-						if (oTest.type === "static" || oTest.type === "reference") {
+							if (Context$1.find(oConditional.test.value, oContext)) {
 
-							bConditionalPass = SIMPLE_CONDITIONAL(oTest, oContext);
-						} else {
+								aEndConditionalContents = oConditionals.conditionals[ocb].contents;
+								break allCondtionals;
+							}
+						} else if (oConditional.test.type === "simple") {
 
-							bConditionalPass = COMPLEX_CONDITIONAL(oTest.test, oContext);
+							if (oConditional.test.value) {
+								aEndConditionalContents = oConditionals.conditionals[ocb].contents;
+								break allCondtionals;
+							}
+						}
+					} else {
+
+						let bComplexResult = complexIfEvaluation(oConditional.test, oContext);
+
+						if (bComplexResult) {
+
+							aEndConditionalContents = oConditionals.conditionals[ocb].contents;
 						}
 
-						// Check if we can continue
-						if (!bConditionalPass) {
-							break block;
-						}
-					}
-
-					if (bConditionalPass) {
-
-						vReturningContext = oConditionalBlock.contents;
-						break;
+						break allCondtionals;
 					}
 				}
 
-				if (!vReturningContext && oFallback && oFallback.contents) {
-					vReturningContext = oFallback.contents;
+				// Check to see if conditional contents were found and break
+				if (aEndConditionalContents) {
+					break;
 				}
-
-				return vReturningContext;
-			} else {
-
-				return false;
 			}
+
+			// Test to see if we got contents, if we do return them!
+			if (aEndConditionalContents) {
+				return aEndConditionalContents;
+			}
+			// Since end condtional was not set, check for fallback and return that if it exists
+			else if (oConditionals.fallback) {
+					return oConditionals.fallback.contents;
+				}
+
+			return false;
 		}
 	}
 	var If$1 = new If();
