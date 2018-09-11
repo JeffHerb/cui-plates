@@ -53,12 +53,12 @@ const complexIfEvaluation = function _complex_if_evaluation(oTextCondtionals, oC
 
 		case ">":
 
-			return (v1 < v2) ? true : false;
+			return (v1 > v2) ? true : false;
 			break;
 
 		case ">=":
 
-			return (v1 <= v2) ? true : false;
+			return (v1 >= v2) ? true : false;
 			break;
 
 	}

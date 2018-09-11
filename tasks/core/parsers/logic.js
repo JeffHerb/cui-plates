@@ -30,7 +30,7 @@ const CONTEXT_PARSER = (oContext, oASTNode, sScope) => {
 					// Check scope for action for pages, if they are we need to generate text node element
 					if (sScope === "page") {
 
-						contextValue = document.createTextNode(contextValue);
+						contextValue = " " + contextValue + " ";
 					}
 
 					break;
@@ -43,8 +43,9 @@ const CONTEXT_PARSER = (oContext, oASTNode, sScope) => {
 
 				case "number":
 
+					// convert number to string and add padding.
 					if (sScope === "page") {
-						contextValue = document.createTextNode(contextValue.toString() + " ");
+						contextValue = " " + contextValue.toString() + " ";
 					}
 
 					break;
@@ -54,6 +55,10 @@ const CONTEXT_PARSER = (oContext, oASTNode, sScope) => {
 					console.error("Unknown result type!");
 
 					break;
+			}
+
+			if (contextValue !== false) {
+				contextValue = document.createTextNode(contextValue);
 			}
 
 			return contextValue;
