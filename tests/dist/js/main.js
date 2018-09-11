@@ -9251,7 +9251,275 @@ define('plates',[],function () { 'use strict';
 	            }
 	        }
 	    ],
-	    "LOGICBlockIfSimple": [
+	    "LOGICBlockIfNumericTest": [
+	        {
+	            "node": "elem",
+	            "tag": "h4",
+	            "attributes": false,
+	            "contents": [
+	                {
+	                    "node": "text",
+	                    "text": "Numeric Tests"
+	                }
+	            ]
+	        },
+	        {
+	            "node": "elem",
+	            "tag": "div",
+	            "attributes": {
+	                "block": [],
+	                "simple": [
+	                    {
+	                        "oName": {
+	                            "sNode": "static",
+	                            "sName": "class"
+	                        },
+	                        "oValue": {
+	                            "sNode": "static",
+	                            "contents": "isTen"
+	                        }
+	                    }
+	                ]
+	            },
+	            "contents": [
+	                {
+	                    "node": "logic",
+	                    "tag": "block",
+	                    "method": "if",
+	                    "conditionals": [
+	                        {
+	                            "conditional": [
+	                                {
+	                                    "type": "complex",
+	                                    "test": {
+	                                        "v1": {
+	                                            "type": "reference",
+	                                            "value": "numeric.isTen"
+	                                        },
+	                                        "op": "===",
+	                                        "v2": {
+	                                            "type": "static",
+	                                            "value": 10
+	                                        }
+	                                    }
+	                                }
+	                            ],
+	                            "method": "if",
+	                            "contents": [
+	                                {
+	                                    "node": "elem",
+	                                    "tag": "p",
+	                                    "attributes": false,
+	                                    "contents": [
+	                                        {
+	                                            "node": "logic",
+	                                            "tag": "context",
+	                                            "text": "numeric.isTen"
+	                                        },
+	                                        {
+	                                            "node": "text",
+	                                            "text": "is equal to 10."
+	                                        }
+	                                    ]
+	                                }
+	                            ]
+	                        }
+	                    ],
+	                    "fallback": {
+	                        "contents": [
+	                            {
+	                                "node": "elem",
+	                                "tag": "p",
+	                                "attributes": false,
+	                                "contents": [
+	                                    {
+	                                        "node": "logic",
+	                                        "tag": "context",
+	                                        "text": "numeric.isTen"
+	                                    },
+	                                    {
+	                                        "node": "text",
+	                                        "text": "is not equal to 10."
+	                                    }
+	                                ]
+	                            }
+	                        ]
+	                    }
+	                }
+	            ]
+	        },
+	        {
+	            "node": "elem",
+	            "tag": "div",
+	            "attributes": {
+	                "block": [],
+	                "simple": [
+	                    {
+	                        "oName": {
+	                            "sNode": "static",
+	                            "sName": "class"
+	                        },
+	                        "oValue": {
+	                            "sNode": "static",
+	                            "contents": "lessThanTen"
+	                        }
+	                    }
+	                ]
+	            },
+	            "contents": [
+	                {
+	                    "node": "logic",
+	                    "tag": "block",
+	                    "method": "if",
+	                    "conditionals": [
+	                        {
+	                            "conditional": [
+	                                {
+	                                    "type": "complex",
+	                                    "test": {
+	                                        "v1": {
+	                                            "type": "reference",
+	                                            "value": "numeric.lessThanTen"
+	                                        },
+	                                        "op": "<",
+	                                        "v2": {
+	                                            "type": "static",
+	                                            "value": 10
+	                                        }
+	                                    }
+	                                }
+	                            ],
+	                            "method": "if",
+	                            "contents": [
+	                                {
+	                                    "node": "elem",
+	                                    "tag": "p",
+	                                    "attributes": false,
+	                                    "contents": [
+	                                        {
+	                                            "node": "logic",
+	                                            "tag": "context",
+	                                            "text": "numeric.lessThanTen"
+	                                        },
+	                                        {
+	                                            "node": "text",
+	                                            "text": "is less than 10."
+	                                        }
+	                                    ]
+	                                }
+	                            ]
+	                        }
+	                    ],
+	                    "fallback": {
+	                        "contents": [
+	                            {
+	                                "node": "elem",
+	                                "tag": "p",
+	                                "attributes": false,
+	                                "contents": [
+	                                    {
+	                                        "node": "logic",
+	                                        "tag": "context",
+	                                        "text": "numeric.lessThanTen"
+	                                    },
+	                                    {
+	                                        "node": "text",
+	                                        "text": "is not less than to 10."
+	                                    }
+	                                ]
+	                            }
+	                        ]
+	                    }
+	                }
+	            ]
+	        },
+	        {
+	            "node": "elem",
+	            "tag": "div",
+	            "attributes": {
+	                "block": [],
+	                "simple": [
+	                    {
+	                        "oName": {
+	                            "sNode": "static",
+	                            "sName": "class"
+	                        },
+	                        "oValue": {
+	                            "sNode": "static",
+	                            "contents": "greaterThanTen"
+	                        }
+	                    }
+	                ]
+	            },
+	            "contents": [
+	                {
+	                    "node": "logic",
+	                    "tag": "block",
+	                    "method": "if",
+	                    "conditionals": [
+	                        {
+	                            "conditional": [
+	                                {
+	                                    "type": "complex",
+	                                    "test": {
+	                                        "v1": {
+	                                            "type": "reference",
+	                                            "value": "numeric.greaterThanTen"
+	                                        },
+	                                        "op": "<",
+	                                        "v2": {
+	                                            "type": "static",
+	                                            "value": 10
+	                                        }
+	                                    }
+	                                }
+	                            ],
+	                            "method": "if",
+	                            "contents": [
+	                                {
+	                                    "node": "elem",
+	                                    "tag": "p",
+	                                    "attributes": false,
+	                                    "contents": [
+	                                        {
+	                                            "node": "logic",
+	                                            "tag": "context",
+	                                            "text": "numeric.greaterThanTen"
+	                                        },
+	                                        {
+	                                            "node": "text",
+	                                            "text": "is greater than 10."
+	                                        }
+	                                    ]
+	                                }
+	                            ]
+	                        }
+	                    ],
+	                    "fallback": {
+	                        "contents": [
+	                            {
+	                                "node": "elem",
+	                                "tag": "p",
+	                                "attributes": false,
+	                                "contents": [
+	                                    {
+	                                        "node": "logic",
+	                                        "tag": "context",
+	                                        "text": "numeric.greaterThanTen"
+	                                    },
+	                                    {
+	                                        "node": "text",
+	                                        "text": "is not greater than to 10."
+	                                    }
+	                                ]
+	                            }
+	                        ]
+	                    }
+	                }
+	            ]
+	        }
+	    ],
+	    "LOGICBLOCKIfSimple": [
 	        {
 	            "node": "logic",
 	            "tag": "block",
@@ -9667,6 +9935,14 @@ define('plates',[],function () { 'use strict';
 					case "object":
 
 						console.log("We got an object");
+
+						break;
+
+					case "number":
+
+						if (sScope === "page") {
+							contextValue = document.createTextNode(contextValue.toString() + " ");
+						}
 
 						break;
 

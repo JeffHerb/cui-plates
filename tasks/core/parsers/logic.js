@@ -41,6 +41,14 @@ const CONTEXT_PARSER = (oContext, oASTNode, sScope) => {
 
 					break;
 
+				case "number":
+
+					if (sScope === "page") {
+						contextValue = document.createTextNode(contextValue.toString() + " ");
+					}
+
+					break;
+
 				default:
 
 					console.error("Unknown result type!");
