@@ -140,8 +140,6 @@ var LogicConditionalSeperator = function _logic_attributes() {
 					}
 					else {
 
-						console.log("sCurrent", sCurrentTagMethod);
-
 						if (sCurrentTagMethod === sFallbackSepeorator) {
 							
 							oFallbackSegment = {
@@ -205,6 +203,13 @@ var LogicConditionalSeperator = function _logic_attributes() {
 					oFallbackCondition: oFallbackSegment
 				};
 				
+			}
+			else {
+
+				return {
+					aConditionals: [],
+					oFallbackCondition: false
+				};
 			}
 			
 		}

@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 	<head>
-		<title>Complex HTML Only</title>
+		<title>Simple HTML Only</title>
 	</head>
 	<body> 
 		<p>HTML only test</p>
@@ -13,15 +13,16 @@
 				console.log("Page DOM ready");
 
 				var pageContext = [
-					// Static tests context to hardcoded (in template) true (boolean) value
 					{
-						"template": "LOGICBlockIfComplex",
+						"template": "LOGICBlockIfSimple",
 						"isTrue": true,
-						"isStrong": true
+						"isStrong": true 
 					}
 				];
 
 				project.plates.render(pageContext, '#append-target');
+
+				//project.plates.renderer.append(pageContext);
 
 			});
 		</script>

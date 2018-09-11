@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 	<head>
-		<title>Complex HTML Only</title>
+		<title>Simple HTML Only</title>
 	</head>
 	<body> 
 		<p>HTML only test</p>
@@ -13,11 +13,15 @@
 				console.log("Page DOM ready");
 
 				var pageContext = [
-					// Static tests context to hardcoded (in template) true (boolean) value
 					{
-						"template": "LOGICBlockIfComplex",
-						"isTrue": true,
-						"isStrong": true
+						"template": "LOGICBLOCKSwitchSimple",
+						"message": "Switch template generated correctly!",
+						"messageFailed": "Something went horribily horribly wrong!",
+						"error": true,
+						"system": false,
+						"framework": false,
+						"developer": true, 
+						"messageType": "fail"
 					}
 				];
 

@@ -148,26 +148,24 @@ const LOGIC_TAGS = {
 				if (oCompiledAST instanceof Error) {
 					return oCompiledAST;
 				}
-				else {
 
-					// Save off the method
-					oAST.method = oCompiledAST.oAST.sMethod;
+				// Save off the method
+				oAST.method = oCompiledAST.oAST.sMethod;
 
-					if (oCompiledAST.oAST.oGlobalConditional) {
-						oAST.globalConditional = oCompiledAST.oAST.oGlobalConditional;
-					}
-
-					if (oCompiledAST.aSubProcess && oCompiledAST.aSubProcess.length) {
-						oEndResult.aSubProcess = oCompiledAST.aSubProcess;
-					}
-
-					// Save off the conditionals
-					oAST.conditionals = oCompiledAST.oAST.aConditionals;
-
-					oAST.fallback = oCompiledAST.oAST.oFallback;
-
-					oEndResult.oAST = oAST;
+				if (oCompiledAST.oAST.oGlobalConditional) {
+					oAST.globalConditional = oCompiledAST.oAST.oGlobalConditional;
 				}
+
+				if (oCompiledAST.aSubProcess && oCompiledAST.aSubProcess.length) {
+					oEndResult.aSubProcess = oCompiledAST.aSubProcess;
+				}
+
+				// Save off the conditionals
+				oAST.conditionals = oCompiledAST.oAST.aConditionals;
+
+				oAST.fallback = oCompiledAST.oAST.oFallback;
+
+				oEndResult.oAST = oAST;
 
 			}
 			else {

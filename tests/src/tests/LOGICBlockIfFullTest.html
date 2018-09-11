@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<title>Complex HTML Only</title>
+		<style>
+			table {
+				border-collapse: collapse;
+			}
+			table caption {
+				margin: 0;
+				padding: 0;
+			}
+			table tr td, table tr th {
+				padding: 7px 5px;
+				border: 1px solid #000;
+			}
+		</style>
+	</head>
+	<body> 
+		<p>This page tests the following logical conditioanls</p>
+		<ul>
+			<li>Boolean</li>
+			<li>Numerics</li>
+		</ul>
+		<div id="append-target"></div>
+		<script id="require" src="../js/main.js"></script>
+		<script>
+			require(['project', 'domReady!'], function(project) {
+				
+				console.log("Page DOM ready");
+
+				var pageContext = [
+					// Static tests context to hardcoded (in template) true (boolean) value
+					{
+						"template": "LOGICBlockIfBooleanTest",
+						"trueTable": {						
+							"isTrueTrue": true,
+							"isTrueFalse": false,
+							"isFalseTrue": false,
+							"isFalseFalse": true
+						},
+						"numerics": {
+
+						}
+					}
+				];
+
+				project.plates.render(pageContext, '#append-target');
+
+			});
+		</script>
+	</body>	
+</html>

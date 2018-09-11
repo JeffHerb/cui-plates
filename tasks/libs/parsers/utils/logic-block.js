@@ -141,7 +141,6 @@ var LogicBlock = function _logic_block (reTemplateResults, gracefulFail) {
 
 			return false;
 		}
-
 	};
 
 	return {

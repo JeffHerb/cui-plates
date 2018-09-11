@@ -8810,6 +8810,355 @@ define('plates',[],function () { 'use strict';
 	});
 
 	const templates = {
+	    "LOGICBlockIfBooleanTest": [
+	        {
+	            "node": "elem",
+	            "tag": "table",
+	            "attributes": false,
+	            "contents": [
+	                {
+	                    "node": "elem",
+	                    "tag": "caption",
+	                    "attributes": false,
+	                    "contents": [
+	                        {
+	                            "node": "text",
+	                            "text": "Truth Table"
+	                        }
+	                    ]
+	                },
+	                {
+	                    "node": "elem",
+	                    "tag": "thead",
+	                    "attributes": false,
+	                    "contents": [
+	                        {
+	                            "node": "elem",
+	                            "tag": "tr",
+	                            "attributes": false,
+	                            "contents": [
+	                                {
+	                                    "node": "elem",
+	                                    "tag": "th",
+	                                    "attributes": false,
+	                                    "contents": false
+	                                },
+	                                {
+	                                    "node": "elem",
+	                                    "tag": "th",
+	                                    "attributes": false,
+	                                    "contents": [
+	                                        {
+	                                            "node": "text",
+	                                            "text": "True"
+	                                        }
+	                                    ]
+	                                },
+	                                {
+	                                    "node": "elem",
+	                                    "tag": "th",
+	                                    "attributes": false,
+	                                    "contents": [
+	                                        {
+	                                            "node": "text",
+	                                            "text": "False"
+	                                        }
+	                                    ]
+	                                }
+	                            ]
+	                        }
+	                    ]
+	                },
+	                {
+	                    "node": "elem",
+	                    "tag": "tbody",
+	                    "attributes": false,
+	                    "contents": [
+	                        {
+	                            "node": "elem",
+	                            "tag": "tr",
+	                            "attributes": false,
+	                            "contents": [
+	                                {
+	                                    "node": "elem",
+	                                    "tag": "th",
+	                                    "attributes": false,
+	                                    "contents": [
+	                                        {
+	                                            "node": "text",
+	                                            "text": "True"
+	                                        }
+	                                    ]
+	                                },
+	                                {
+	                                    "node": "elem",
+	                                    "tag": "td",
+	                                    "attributes": false,
+	                                    "contents": [
+	                                        {
+	                                            "node": "logic",
+	                                            "tag": "block",
+	                                            "method": "if",
+	                                            "conditionals": [
+	                                                {
+	                                                    "conditional": [
+	                                                        {
+	                                                            "type": "complex",
+	                                                            "test": {
+	                                                                "v1": {
+	                                                                    "type": "reference",
+	                                                                    "value": "trueTable.isTrueTrue"
+	                                                                },
+	                                                                "op": "===",
+	                                                                "v2": {
+	                                                                    "type": "static",
+	                                                                    "value": true
+	                                                                }
+	                                                            }
+	                                                        }
+	                                                    ],
+	                                                    "method": "if",
+	                                                    "contents": [
+	                                                        {
+	                                                            "node": "elem",
+	                                                            "tag": "span",
+	                                                            "attributes": false,
+	                                                            "contents": [
+	                                                                {
+	                                                                    "node": "text",
+	                                                                    "text": "\\u2714"
+	                                                                }
+	                                                            ]
+	                                                        }
+	                                                    ]
+	                                                }
+	                                            ],
+	                                            "fallback": {
+	                                                "contents": [
+	                                                    {
+	                                                        "node": "elem",
+	                                                        "tag": "span",
+	                                                        "attributes": false,
+	                                                        "contents": [
+	                                                            {
+	                                                                "node": "text",
+	                                                                "text": "\\u2718"
+	                                                            }
+	                                                        ]
+	                                                    }
+	                                                ]
+	                                            }
+	                                        }
+	                                    ]
+	                                },
+	                                {
+	                                    "node": "elem",
+	                                    "tag": "td",
+	                                    "attributes": false,
+	                                    "contents": [
+	                                        {
+	                                            "node": "logic",
+	                                            "tag": "block",
+	                                            "method": "if",
+	                                            "conditionals": [
+	                                                {
+	                                                    "conditional": [
+	                                                        {
+	                                                            "type": "complex",
+	                                                            "test": {
+	                                                                "v1": {
+	                                                                    "type": "reference",
+	                                                                    "value": "trueTable.isTrueFalse"
+	                                                                },
+	                                                                "op": "===",
+	                                                                "v2": {
+	                                                                    "type": "static",
+	                                                                    "value": true
+	                                                                }
+	                                                            }
+	                                                        }
+	                                                    ],
+	                                                    "method": "if",
+	                                                    "contents": [
+	                                                        {
+	                                                            "node": "elem",
+	                                                            "tag": "span",
+	                                                            "attributes": false,
+	                                                            "contents": [
+	                                                                {
+	                                                                    "node": "text",
+	                                                                    "text": "\\u2714"
+	                                                                }
+	                                                            ]
+	                                                        }
+	                                                    ]
+	                                                }
+	                                            ],
+	                                            "fallback": {
+	                                                "contents": [
+	                                                    {
+	                                                        "node": "elem",
+	                                                        "tag": "span",
+	                                                        "attributes": false,
+	                                                        "contents": [
+	                                                            {
+	                                                                "node": "text",
+	                                                                "text": "\\u2718"
+	                                                            }
+	                                                        ]
+	                                                    }
+	                                                ]
+	                                            }
+	                                        }
+	                                    ]
+	                                }
+	                            ]
+	                        },
+	                        {
+	                            "node": "elem",
+	                            "tag": "tr",
+	                            "attributes": false,
+	                            "contents": [
+	                                {
+	                                    "node": "elem",
+	                                    "tag": "th",
+	                                    "attributes": false,
+	                                    "contents": [
+	                                        {
+	                                            "node": "text",
+	                                            "text": "False"
+	                                        }
+	                                    ]
+	                                },
+	                                {
+	                                    "node": "elem",
+	                                    "tag": "td",
+	                                    "attributes": false,
+	                                    "contents": [
+	                                        {
+	                                            "node": "logic",
+	                                            "tag": "block",
+	                                            "method": "if",
+	                                            "conditionals": [
+	                                                {
+	                                                    "conditional": [
+	                                                        {
+	                                                            "type": "complex",
+	                                                            "test": {
+	                                                                "v1": {
+	                                                                    "type": "reference",
+	                                                                    "value": "trueTable.isFalseTrue"
+	                                                                },
+	                                                                "op": "===",
+	                                                                "v2": {
+	                                                                    "type": "static",
+	                                                                    "value": true
+	                                                                }
+	                                                            }
+	                                                        }
+	                                                    ],
+	                                                    "method": "if",
+	                                                    "contents": [
+	                                                        {
+	                                                            "node": "elem",
+	                                                            "tag": "span",
+	                                                            "attributes": false,
+	                                                            "contents": [
+	                                                                {
+	                                                                    "node": "text",
+	                                                                    "text": "\\u2714"
+	                                                                }
+	                                                            ]
+	                                                        }
+	                                                    ]
+	                                                }
+	                                            ],
+	                                            "fallback": {
+	                                                "contents": [
+	                                                    {
+	                                                        "node": "elem",
+	                                                        "tag": "span",
+	                                                        "attributes": false,
+	                                                        "contents": [
+	                                                            {
+	                                                                "node": "text",
+	                                                                "text": "\\u2718"
+	                                                            }
+	                                                        ]
+	                                                    }
+	                                                ]
+	                                            }
+	                                        }
+	                                    ]
+	                                },
+	                                {
+	                                    "node": "elem",
+	                                    "tag": "td",
+	                                    "attributes": false,
+	                                    "contents": [
+	                                        {
+	                                            "node": "logic",
+	                                            "tag": "block",
+	                                            "method": "if",
+	                                            "conditionals": [
+	                                                {
+	                                                    "conditional": [
+	                                                        {
+	                                                            "type": "complex",
+	                                                            "test": {
+	                                                                "v1": {
+	                                                                    "type": "reference",
+	                                                                    "value": "trueTable.isFalseFalse"
+	                                                                },
+	                                                                "op": "===",
+	                                                                "v2": {
+	                                                                    "type": "static",
+	                                                                    "value": true
+	                                                                }
+	                                                            }
+	                                                        }
+	                                                    ],
+	                                                    "method": "if",
+	                                                    "contents": [
+	                                                        {
+	                                                            "node": "elem",
+	                                                            "tag": "span",
+	                                                            "attributes": false,
+	                                                            "contents": [
+	                                                                {
+	                                                                    "node": "text",
+	                                                                    "text": "\\u2714"
+	                                                                }
+	                                                            ]
+	                                                        }
+	                                                    ]
+	                                                }
+	                                            ],
+	                                            "fallback": {
+	                                                "contents": [
+	                                                    {
+	                                                        "node": "elem",
+	                                                        "tag": "span",
+	                                                        "attributes": false,
+	                                                        "contents": [
+	                                                            {
+	                                                                "node": "text",
+	                                                                "text": "\\u2718"
+	                                                            }
+	                                                        ]
+	                                                    }
+	                                                ]
+	                                            }
+	                                        }
+	                                    ]
+	                                }
+	                            ]
+	                        }
+	                    ]
+	                }
+	            ]
+	        }
+	    ],
 	    "LOGICBlockIfComplex": [
 	        {
 	            "node": "logic",
@@ -8828,7 +9177,7 @@ define('plates',[],function () { 'use strict';
 	                                "op": "===",
 	                                "v2": {
 	                                    "type": "static",
-	                                    "value": "static"
+	                                    "value": true
 	                                }
 	                            }
 	                        }
@@ -8859,7 +9208,7 @@ define('plates',[],function () { 'use strict';
 	                                            "contents": [
 	                                                {
 	                                                    "node": "text",
-	                                                    "text": "Logic was true, but was not strong"
+	                                                    "text": "Logic was true and was strong"
 	                                                }
 	                                            ]
 	                                        }
@@ -8944,7 +9293,7 @@ define('plates',[],function () { 'use strict';
 	                                            "contents": [
 	                                                {
 	                                                    "node": "text",
-	                                                    "text": "Logic was true, but was not strong"
+	                                                    "text": "Logic was true and was strong"
 	                                                }
 	                                            ]
 	                                        }
@@ -9185,8 +9534,6 @@ define('plates',[],function () { 'use strict';
 
 			let aEndConditionalContents = false;
 
-			console.log(oConditionals);
-
 			allCondtionals: for (let ocb = 0, ocbLen = oConditionals.conditionals.length; ocb < ocbLen; ocb++) {
 
 				let aCurrentConditionals = oConditionals.conditionals[ocb].conditional;
@@ -9387,11 +9734,21 @@ define('plates',[],function () { 'use strict';
 
 	var logic = new Logic();
 
+	const reUniCodeTest = /\\u([\d\w]{4})/gi;
+
 	class Text {
 
 		constuctor() {}
 
 		parse(oContext, oASTNode) {
+
+			// Check for unicode characters and if any are found, convert them into strings that javascript can handle.
+			if (reUniCodeTest.test(oASTNode.text)) {
+
+				oASTNode.text = oASTNode.text.replace(reUniCodeTest, function (match, grp) {
+					return String.fromCharCode(parseInt(grp, 16));
+				});
+			}
 
 			// This is simple so just put the text into the text node and return the whole node.
 			return document.createTextNode(oASTNode.text);

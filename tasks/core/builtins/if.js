@@ -75,8 +75,6 @@ class If {
 
 		let aEndConditionalContents = false;
 
-		console.log(oConditionals);
-
 		allCondtionals:
 		for (let ocb = 0, ocbLen = oConditionals.conditionals.length; ocb < ocbLen; ocb++) {
 

@@ -11,8 +11,6 @@ var LogicConditionals = function _logic_attributes() {
 				// Check for double or single wrapping qoutes as we need to assume it might be a static string
 				if (/^['|"].*['|"]$/.test(value)) {
 
-					console.log("wrapped string");
-
 					return {
 						type: "static",
 						value: value.slice(1, -1)
@@ -105,8 +103,6 @@ var LogicConditionals = function _logic_attributes() {
 				for (let ci = 0, ciLen = 3; ci < ciLen; ci++) {
 
 					if (ci === 0 || ci === 2) {
-
-						console.log(aNextSet[ci]);
 
 						let reConditionalWrapTest = false; //LOGIC_TAG_CONDTIONAL_WRAPPED.exec(aNextSet[ci]);
 
