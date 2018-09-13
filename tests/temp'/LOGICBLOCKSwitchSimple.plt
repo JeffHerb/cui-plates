@@ -22,7 +22,5 @@
 
 			{{/switch}}
 
-			<p> after catch !</p>
-
 	{{/switch}}
 </div>
