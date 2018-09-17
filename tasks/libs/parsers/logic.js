@@ -14,10 +14,6 @@ const LOGIC_BLOCK_PARSERS = {
 // Global Detector
 const LOGIC_TAGREGEX = /[{]{2}(?:[\#\.\@\>]?[^\}]+)[}]{2}/;
 
-// Block level regular expressions
-//const LOGIC_TAG_BLOCK_DESIGNATOR = /(?:\{{2}[\/|\#](?:if|switch|each)(?:[a-zA-Z0-9\.\ \=\!\&\|\"\'\(\)]*)\}{2})/g;
-//const LOGIC_TAG_BLOCK_SEPERATOR = /(?:\{{2}(?:case|default|elseif|else)(?:[a-zA-Z0-9\.\ \=\!\&\|\"\'\(\)]*)\}{2})/g;
-
 const LOGIC_TAG_CONDTIONAL_WRAPPED = /\(([^()]+)\)/;
 
 const LOGIC_TAGS = {

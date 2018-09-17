@@ -53,6 +53,15 @@ var LogicConditionalSeperator = function _logic_attributes() {
 			// Since we have a conditonal match we need to loop through them an break them apart.
 			while(true) {
 
+				// console.log("===============================");
+				// console.log("Last:");
+				// console.log("aLastTagAttributes", aLastTagAttributes);
+				// console.log("sLastTagMethod", sLastTagMethod);
+				// console.log("Current:");
+				// console.log("aCurrentTagAttributes", aCurrentTagAttributes);
+				// console.log("sCurrentTagMethod", sCurrentTagMethod);
+				// console.log("===============================");
+
 				// Place to store the segment text between the last conditional index and the current found conditional
 				let sCurrentConditionalSegment = false;
 
@@ -81,7 +90,7 @@ var LogicConditionalSeperator = function _logic_attributes() {
 						// Update the last, current, next
 						updateLastCurrentNextTag();
 
-						iLastConditionalIndex += reConditional.length;
+						iLastConditionalIndex += reConditional[0].length;
 						continue;
 					}
 
@@ -89,7 +98,7 @@ var LogicConditionalSeperator = function _logic_attributes() {
 					sCurrentConditionalSegment = sSourceTemplate.slice(iLastConditionalIndex, reConditional.index);
 
 					// Now scrap the conditional segment looking for similar conditionals
-					let reSubBlockCheck = LogicBlock.check(sCurrentConditionalSegment, sCurrentTagMethod);
+					let reSubBlockCheck = LogicBlock.check(sCurrentConditionalSegment, sRootMethod);
 
 					// Check to see if the sub block check yeilded any results
 					if (reSubBlockCheck) {
@@ -100,6 +109,8 @@ var LogicConditionalSeperator = function _logic_attributes() {
 						// Run the block finder to get all the metadata
 						let oSubLogicBlockSection = LogicBlock.find(reSubBlockCheck);
 
+						//console.log(oSubLogicBlockSection);
+
 						if (oSubLogicBlockSection instanceof Error) {
 							return oSubLogicBlockSection;		
 						}
@@ -107,7 +118,8 @@ var LogicConditionalSeperator = function _logic_attributes() {
 						// Check to see if the sublogic block is ends after current index
 						if (reConditional.index < oSubLogicBlockSection.oSectionMeta.oSegment.iEnd) {
 
-							iSkipBlock = oSubLogicBlockSection.oSectionMeta.oSegment.iEnd;
+							iSkipBlock = iLastConditionalIndex + oSubLogicBlockSection.oSectionMeta.oSegment.iEnd;
+
 							continue;
 						}
 						else {
@@ -135,7 +147,8 @@ var LogicConditionalSeperator = function _logic_attributes() {
 							// Update the last, current, next
 							updateLastCurrentNextTag();
 
-							iLastConditionalIndex += (reConditional.index + reConditional[0].length);
+							//iLastConditionalIndex += (reConditional.index + reConditional[0].length);
+							iLastConditionalIndex = iLastConditionalIndex + sCurrentConditionalSegment.length + reConditional[0].length;
 						}
 					}
 					else {
@@ -159,7 +172,7 @@ var LogicConditionalSeperator = function _logic_attributes() {
 						updateLastCurrentNextTag();							
 
 						// Update the last condtional index
-						iLastConditionalIndex += (reConditional.index + reConditional[0].length);
+						iLastConditionalIndex = iLastConditionalIndex + sCurrentConditionalSegment.length + reConditional[0].length;
 					}
 
 				}
@@ -167,6 +180,7 @@ var LogicConditionalSeperator = function _logic_attributes() {
 
 					// Check to see if we are in an active skip block!
 					if (iSkipBlock) {
+
 						iSkipBlock = false;
 					}
 

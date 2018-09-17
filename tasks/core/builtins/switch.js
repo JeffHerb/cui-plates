@@ -8,37 +8,50 @@ class Switch {
 
 	parser(oContext, oASTNode) {
 
-		// Since we have a switch we need to determine the actual context value we are trying to match
-		let vActualContextValue = Context.find(oASTNode.globalConditional.test, oContext);
-		let oSwitchContent = false;
-		let vConditionalValue = false;
+		let oGlobalConditional = oASTNode.globalConditional[0];
+		let vGlobalSwitchValue = null;
 
-		// Now we need to loop through all of the conditional values until we get a match or reach the end
-		for (let c = 0, cLen = oASTNode.conditionals.length; c < cLen; c++) {
+		let aCondtionalContents = false;
 
-			let oConditional = oASTNode.conditionals[c].conditional[0];
+		// Check and resolve the global switch value
+		if (oGlobalConditional.test.type === "reference") {
 
-			if (oConditional.type === "static") {
-				vConditionalValue = oConditional.test;
-			}
-			else if (oConditional.type === "reference") {
-				vConditionalValue = Context.find(oConditional.test, oContext);
-			}
-
-			if (vActualContextValue === vConditionalValue) {
-
-				oSwitchContent = oASTNode.conditionals[c].contents;
-				break;
-			}
-
+			vGlobalSwitchValue = Context.find(oGlobalConditional.test.value, oContext);
+		}
+		else {
+			vGlobalSwitchValue = oGlobalConditional.test.value;
 		}
 
-		if (!oSwitchContent && oASTNode.fallback) {
-			oSwitchContent = oASTNode.fallback.contents;
+		// Loop through every conditional set to see if we can find a match, if so save of the contents.
+		for (let ocb = 0, ocbLen = oASTNode.conditionals.length; ocb < ocbLen; ocb++) {
+
+			let oConditional = oASTNode.conditionals[ocb];
+
+			let oConditionalTest = oASTNode.conditionals[ocb].conditional[0].test;
+
+			if (oConditionalTest.type === "static") {
+
+				if (oConditionalTest.value === vGlobalSwitchValue) {
+
+					return oASTNode.conditionals[ocb].contents;
+				}
+
+			}
+			else if (oConditionalTest.type === "reference") {
+
+				let vCondtionalValue = Context.find(oConditionalTest.value, oContext);
+
+				if (vCondtionalValue === vGlobalSwitchValue) {
+
+					return oASTNode.conditionals[ocb].contents;
+				}
+
+			}
 		}
 
-		if (oSwitchContent) {
-			return oSwitchContent;
+		// Check to see if we dont have a conditonal result yet, if we dont test for a fallback conditional set.
+		if (!aCondtionalContents && oASTNode.fallback && oASTNode.fallback.contents && oASTNode.fallback.contents.length) {
+			return oASTNode.fallback.contents;
 		}
 
 		return false;

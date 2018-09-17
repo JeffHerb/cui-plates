@@ -9,12 +9,14 @@
 		<script id="require" src="../js/main.js"></script>
 		<script>
 			require(['project', 'domReady!'], function(project) {
+				
 				console.log("Page DOM ready");
 
 				var pageContext = [
 					{
-						"template": "LOGICContext",
-						"additionalContext": "additional logical context string"
+						"template": "LOGICBlockIfSimple",
+						"isTrue": true,
+						"isStrong": true 
 					}
 				];
 

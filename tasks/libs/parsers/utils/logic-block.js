@@ -129,7 +129,7 @@ var LogicBlock = function _logic_block (reTemplateResults, gracefulFail) {
 
 	const check = (sContents, sBlockTag) => {
 
-		const reCheckTag = new RegExp(`(?:\{{2}[\/|\#](?:${sBlockTag})(?:[a-zA-Z0-9\.\ \=\!\&\|\"\'\(\)]*)\}{2})`, 'g');
+		const reCheckTag = new RegExp(`(?:\{{2}[\#](?:${sBlockTag})(?:[a-zA-Z0-9\.\ \=\!\&\|\"\'\(\)]*)\}{2})`, 'g');
 
 		let aMatches = sContents.match(reCheckTag);
 

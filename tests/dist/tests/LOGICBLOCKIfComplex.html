@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 	<head>
-		<title>Simple HTML Only</title>
+		<title>Complex HTML Only</title>
 	</head>
 	<body> 
 		<p>HTML only test</p>
@@ -9,18 +9,19 @@
 		<script id="require" src="../js/main.js"></script>
 		<script>
 			require(['project', 'domReady!'], function(project) {
+				
 				console.log("Page DOM ready");
 
 				var pageContext = [
+					// Static tests context to hardcoded (in template) true (boolean) value
 					{
-						"template": "LOGICContext",
-						"additionalContext": "additional logical context string"
+						"template": "LOGICBlockIfComplex",
+						"isTrue": true,
+						"isStrong": true
 					}
 				];
 
 				project.plates.render(pageContext, '#append-target');
-
-				//project.plates.renderer.append(pageContext);
 
 			});
 		</script>

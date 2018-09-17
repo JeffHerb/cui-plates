@@ -22,40 +22,30 @@ var Switch = function _switch_parser() {
 
 		if (aSourceTagAttributes.length === 2) {
 
-			// Start by handling the source tag for the switch block
-			oCompliedAST.oGlobalConditional = LogicConditionals.parser([ aSourceTagAttributes[1] ])[0];
+			let aGlobalConditional = [ aSourceTagAttributes[1] ];
 
-			// Now we need to find all of the conditionals.
-			let aConditionalsBreakdown = LogicConditionalSeperator.parser(aConditionals, sFallback, oCompliedAST.sMethod, oLogicSection.sBlockContents);
+			// Seperate all of the case and default tags
+			let oConditionalBreakdown = LogicConditionalSeperator.parser(aConditionals, sFallback, aSourceTagAttributes, oLogicSection.sBlockContents);
 
-			if (aConditionalsBreakdown instanceof Error) {
-				return aConditionalsBreakdown;
+			oCompliedAST.oGlobalConditional = LogicConditionals.parser(aGlobalConditional);
+
+			if (oConditionalBreakdown instanceof Error) {
+				return oConditionalBreakdown;
 			}
 
-			if (aConditionalsBreakdown) {
+			if (oConditionalBreakdown && oConditionalBreakdown.aConditionals && oConditionalBreakdown.aConditionals.length) {
 
-				for (let condition of aConditionalsBreakdown.aConditionals) {
+				for (let condition of oConditionalBreakdown.aConditionals) {
 
-					let aSwitchConditions = LogicAttributes.parser(condition.conditional);
+					let oConditional = LogicConditionals.parser(condition.conditional);
 
-					if (aSwitchConditions.length === 2) {
-
-						let oCaseCondtional = LogicConditionals.parser([ aSwitchConditions[1] ]);
-
-						condition.conditional = oCaseCondtional;
-					}
-					else {
-
-						let error = new Error(`|template.path| switch case conditional has a conditional block that contains too many or no conditional comparisions. Switch conditions should be a single static value or contextual reference. Switch ${oLogicSection.oSectionMeta.oOpening.sTag} and condition block ${condition.conditional}`);
-
-						return error;
-					}
+					condition.conditional = oConditional;
 				}
 
 				// Save off the parsed conditionals
-				oCompliedAST.aConditionals = aConditionalsBreakdown.aConditionals;
+				oCompliedAST.aConditionals = oConditionalBreakdown.aConditionals;
 
-				oCompliedAST.oFallback = aConditionalsBreakdown.oFallbackCondition;
+				oCompliedAST.oFallback = oConditionalBreakdown.oFallbackCondition;
 
 				return {
 					oAST: oCompliedAST,
@@ -64,8 +54,11 @@ var Switch = function _switch_parser() {
 			}
 			else {
 
-				// Switch returned no conditionals! This is not possible!
-				return false;
+				return {
+					oAST: oCompliedAST,
+					aSubProcess: false
+				}
+
 			}
 
 		}

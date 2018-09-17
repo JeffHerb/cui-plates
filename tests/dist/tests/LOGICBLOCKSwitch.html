@@ -9,18 +9,23 @@
 		<script id="require" src="../js/main.js"></script>
 		<script>
 			require(['project', 'domReady!'], function(project) {
+				
 				console.log("Page DOM ready");
 
 				var pageContext = [
 					{
-						"template": "LOGICContext",
-						"additionalContext": "additional logical context string"
+						"template": "LOGICBLOCKSwitchSimple",
+						"message": "Switch template generated correctly!",
+						"messageFailed": "Something went horribily horribly wrong!",
+						"error": true,
+						"system": false,
+						"framework": false,
+						"developer": true, 
+						"messageType": "fail"
 					}
 				];
 
 				project.plates.render(pageContext, '#append-target');
-
-				//project.plates.renderer.append(pageContext);
 
 			});
 		</script>
