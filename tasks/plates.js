@@ -183,6 +183,26 @@ module.exports = function(grunt) {
 				let templateFilePaths = [];
 				let helperFilePaths = [];
 
+				// If helpers are defined loop through and generate all of those file paths as well
+				if (options.helpers && options.helpers.src && options.helpers.src.length) {
+
+					// Loop through and get all the template files
+					for (let helpPath of options.helpers.src) {
+
+						let correctPath = "";
+
+						if (helpPath.charAt(0) === "/" || helpPath.charAt(0) === "\\") {
+							correctPath = helpPath.slice(1);
+						}
+						else {
+
+							correctPath = helpPath;
+						}
+
+					}
+				}
+
+
 				// Loop through and get all the template files
 				for (let tempPath of options.templates.src) {
 
@@ -203,146 +223,125 @@ module.exports = function(grunt) {
 					}
 				}
 
-				// If helpers are defined loop through and generate all of those file paths as well
-				if (options.helpers && options.helpers.src && options.helpers.src.length) {
+				if (templateFilePaths.length) {
 
-					// Loop through and get all the template files
-					for (let helpPath of options.helpers.src) {
+					// Loop through all the template files in a series
+					(function nextTemplate(templateFilePaths) {
 
-						let correctPath = "";
+						let templatePath = templateFilePaths.shift();
 
-						if (helpPath.charAt(0) === "/" || helpPath.charAt(0) === "\\") {
-							correctPath = helpPath.slice(1);
-						}
-						else {
+						if (templatePath) {
 
-							correctPath = helpPath;
-						}
-					
-						let files = Glob.sync(correctPath);
+							let templateObj = {
+								path: templatePath,
+								name: templatePath.slice(templatePath.lastIndexOf('/') + 1).replace('.plt', ''),
+								raw: false,
+								ast: false
+							};
 
-						if (files.length) {
-							helperFilePaths = helperFilePaths.concat(files);
-						}
+							// Preform the read (file) template promise
+							readTemplate(templatePath)
+								.then((rawTemplateFile) => {
 
-					}
-				}
+									if (rawTemplateFile.trim().length) {
 
+										templateObj.raw = rawTemplateFile;
 
-				// Loop through all the template files in a series
-				(function nextTemplate(templateFilePaths) {
+										// Now we need to process the file
+										ParseTemplate.parse(templateObj)
+											.then((templateAST) => {
 
-					let templatePath = templateFilePaths.shift();
+												templateObj.ast = templateAST;
 
-					if (templatePath) {
+												// WE have finished the AST for this template, add it to the list
+												if (!templateASTs[templateObj.name]) {
+													templateASTs[templateObj.name] = templateObj.ast
+												}
+												else {
 
-						let templateObj = {
-							path: templatePath,
-							name: templatePath.slice(templatePath.lastIndexOf('/') + 1).replace('.plt', ''),
-							raw: false,
-							ast: false
-						};
+													console.log("WE HAVE A TEMPLATE NAMING CONFLICT!!!!");
+												}
 
-						// Preform the read (file) template promise
-						readTemplate(templatePath)
-							.then((rawTemplateFile) => {
+												if (templateFilePaths.length) {
 
-								if (rawTemplateFile.trim().length) {
+													nextTemplate(templateFilePaths);
+												}
+												else {
 
-									templateObj.raw = rawTemplateFile;
+													writePlates(rollupEntry, rollupOptions, templateASTs, {})
+														.then((code) => {
 
-									// Now we need to process the file
-									ParseTemplate.parse(templateObj)
-										.then((templateAST) => {
+															grunt.file.write(finalDest, code);
 
-											templateObj.ast = templateAST;
+															done();
+														})
+														.catch((error) => {
 
-											// WE have finished the AST for this template, add it to the list
-											if (!templateASTs[templateObj.name]) {
-												templateASTs[templateObj.name] = templateObj.ast
-											}
-											else {
+															console.log(error);
+														})
+												}
 
-												console.log("WE HAVE A TEMPLATE NAMING CONFLICT!!!!");
-											}
-
-											if (templateFilePaths.length) {
-
-												nextTemplate(templateFilePaths);
-											}
-											else {
-
-												writePlates(rollupEntry, rollupOptions, templateASTs, {})
-													.then((code) => {
-
-														grunt.file.write(finalDest, code);
-
-														done();
-													})
-													.catch((error) => {
-
-														console.log(error);
-													})
-											}
-
-										})
-										.catch((error) => {
-
-											console.log("Error reading template");
-
-											console.log(error);
-										});
-
-								}
-								else {
-
-									console.log(`Template: ${templatePath} is being skipped as it is empty.`);
-
-									if (templateFilePaths.length) {
-
-										nextTemplate(templateFilePaths);
-									}
-									else {
-
-										writePlates(rollupEntry, rollupOptions, templateASTs, {})
-											.then((code) => {
-
-												grunt.file.write(finalDest, code);
-
-												done();
 											})
 											.catch((error) => {
 
+												console.log("Error reading template");
+
 												console.log(error);
-											})
+											});
+
 									}
-								}
+									else {
 
-							})
-							.catch((error) => {
+										console.log(`Template: ${templatePath} is being skipped as it is empty.`);
 
-								console.error(`Error when working on: ${templateObj.name}`)
+										if (templateFilePaths.length) {
 
-								console.error(error);
-							});
+											nextTemplate(templateFilePaths);
+										}
+										else {
 
-					}
-					else {
+											writePlates(rollupEntry, rollupOptions, templateASTs, {})
+												.then((code) => {
 
-						if (templateFilePaths.length) {
+													grunt.file.write(finalDest, code);
 
-							nextTemplate(templateFilePaths);
+													done();
+												})
+												.catch((error) => {
+
+													console.log(error);
+												})
+										}
+									}
+
+								})
+								.catch((error) => {
+
+									console.error(`Error when working on: ${templateObj.name}`)
+
+									console.error(error);
+								});
+
 						}
 						else {
 
-							done();
+							if (templateFilePaths.length) {
 
-							console.log("Done nothing to do!");
+								nextTemplate(templateFilePaths);
+							}
+							else {
+
+								done();
+
+								console.log("Done nothing to do!");
+							}
 						}
-					}
 
-				})(templateFilePaths.concat());
+					})(templateFilePaths.concat());
+				}
+				else {
 
+				}
 				
 
 			}

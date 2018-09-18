@@ -17,7 +17,6 @@ let checkers = {};
 // Add all the check function to the check object
 checkers.html = HTMLParser.check;
 checkers.logic = LOGICParser.check;
-//checkers.text = TEXTParser.check;
 
 let _priv = {};
 

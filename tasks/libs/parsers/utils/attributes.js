@@ -1,6 +1,6 @@
 
 const ATTR_EQUAL_SPLITER = /\=(?:\")/g;
-const ATTR_LOGIC_CHECK = /[{]{2}(?:[\#\.\@\>]?[^\}]+)[}]{2}/g;
+const ATTR_LOGIC_CHECK = /[{]{2}(?:[\@|\.]?[^\}]+)[}]{2}/g;
 
 const ATTRIBUTE_VALUE_CLEANUP = (sAttrValue) => {
 
@@ -71,8 +71,15 @@ var ATTRparser = function _attr_parser() {
 
 		if (aAttributes) {
 
+			console.log(aAttributes);
+
 			// Loop through all the attributes
 			for (let sAttribute of aAttributes) {
+
+				// Test for inline logic characters
+				if (ATTR_LOGIC_CHECK.test(sAttribute)) {
+					console.log("Logic attribute!");
+				}
 
 				// Check to see if a single '=' was found
 				if (sAttribute.match(ATTR_EQUAL_SPLITER).length) {

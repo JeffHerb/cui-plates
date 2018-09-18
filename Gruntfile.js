@@ -71,6 +71,9 @@ module.exports = function(grunt) {
         format: "amd",
         templates: {
           src: ['/tests/src/templates/*.plt']
+        },
+        helpers: {
+          src: ['/tests/src/helpers/*.js']
         }
       },
       ast: {
