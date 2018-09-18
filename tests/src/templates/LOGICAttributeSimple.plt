@@ -4,5 +4,5 @@ description: This is a description of the template being used for inline attribu
 ---
 <div class="field">
 	<label>For Field</label>
-	<input type="hidden" {{@ this.input.attributes }} />
+	<input type="hidden" />
 </div>

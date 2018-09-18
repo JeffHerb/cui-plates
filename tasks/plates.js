@@ -6,6 +6,7 @@ const Path = require('path');
 
 // Custom Grunt Task to prase our plt templates
 const ParseTemplate = require('./libs/parseTemplate');
+const ParseYAML = require('./libs/parseYAML');
 
 // Thrid level Modules
 // Rollup Specific
@@ -236,6 +237,7 @@ module.exports = function(grunt) {
 								path: templatePath,
 								name: templatePath.slice(templatePath.lastIndexOf('/') + 1).replace('.plt', ''),
 								raw: false,
+								config: false,
 								ast: false
 							};
 
@@ -247,6 +249,18 @@ module.exports = function(grunt) {
 
 										templateObj.raw = rawTemplateFile;
 
+										// Check to see if the template has YAML
+										let bYAMLCheck = ParseYAML.check(templateObj.raw);
+
+										if (bYAMLCheck) {
+											let oTempTemplateObj = ParseYAML.parse(templateObj.raw);
+
+											templateObj.config = oTempTemplateObj.oConfig;
+
+											// Update raw to version not including the YAML config
+											templateObj.raw = oTempTemplateObj.sTemplateContents
+										}
+
 										// Now we need to process the file
 										ParseTemplate.parse(templateObj)
 											.then((templateAST) => {
@@ -255,7 +269,10 @@ module.exports = function(grunt) {
 
 												// WE have finished the AST for this template, add it to the list
 												if (!templateASTs[templateObj.name]) {
-													templateASTs[templateObj.name] = templateObj.ast
+													templateASTs[templateObj.name] = {
+														oAST: templateObj.ast,
+														oConfig: templateObj.config 
+													} 
 												}
 												else {
 

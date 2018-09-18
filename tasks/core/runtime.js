@@ -36,7 +36,7 @@ const ASTsToDOM = (oContext, aPassedAST, fCallback) => {
 
 		if (ASTs[oContext.template]) {
 
-			aRootASTs = ASTs[oContext.template].slice();
+			aRootASTs = ASTs[oContext.template].oAST.slice();
 
 		}
 		else {
@@ -202,7 +202,6 @@ const ASTsToDOM = (oContext, aPassedAST, fCallback) => {
 
 		})(aRootASTs);
 	}
-
 };
 
 // Generator will loop through a context array and parse them one at a time.
@@ -243,7 +242,7 @@ const Generator = (aContext, fCallback) => {
 		});
 
 	})(aContext);
-}
+};
 
 class Runtime {
 

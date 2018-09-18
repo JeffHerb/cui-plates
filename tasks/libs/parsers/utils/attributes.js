@@ -1,6 +1,7 @@
 
 const ATTR_EQUAL_SPLITER = /\=(?:\")/g;
 const ATTR_LOGIC_CHECK = /[{]{2}(?:[\@|\.]?[^\}]+)[}]{2}/g;
+const ATTR_LOGIC_CONTEXT_VALUE_CHECK = /(?:[a-zA-Z\-]*?)\=['|"]\s*\{{2}(?:[a-zA-Z0-9\.]*)\}{2}['|"]/;
 
 const ATTRIBUTE_VALUE_CLEANUP = (sAttrValue) => {
 
@@ -11,12 +12,9 @@ const ATTRIBUTE_VALUE_CLEANUP = (sAttrValue) => {
 const SIMPLE_ATTRIBUTE = (reAttribute) => {
 
 	let oSimpleAttr = {
-		oName: {
-			sNode: false,
-			sName: false
-		},
-		oValue: {
-			sNode: false,
+		name: false,
+		value: {
+			type: false,
 			contents: false
 		}
 	};
@@ -28,34 +26,38 @@ const SIMPLE_ATTRIBUTE = (reAttribute) => {
 	let sAttributeName = aAttribute[0];
 	let sAttributeValue = aAttribute[1];
 
-	// check to see if the name has logic tags
-	let reNameCheck = ATTR_LOGIC_CHECK.exec(sAttributeName);
+	oSimpleAttr.name = sAttributeName;
 
-	if (reNameCheck) {
-		console.log("Name logic found");
-	}
-	else {
+	oSimpleAttr.value.type = "static";
 
-		oSimpleAttr.oName.sNode = "static",
-		oSimpleAttr.oName.sName = sAttributeName;
-	}
+	// Clean up the attribute value
+	let sAttributeCleaned = ATTRIBUTE_VALUE_CLEANUP(sAttributeValue);
 
-	let reValueCheck = ATTR_LOGIC_CHECK.exec(sAttributeValue);
+	oSimpleAttr.value.contents = sAttributeCleaned;
 
-	if (reValueCheck) {
+	return oSimpleAttr;
+};
 
-		console.log("value logic found");
-	}
-	else {
+// This function will break apart the simple complex 
+const SIMPLE_LOGIC_ATTRIBUTE = (sAttribute) => {
 
-		oSimpleAttr.oValue.sNode = "static";
+	let oSimpleAttr = {
+		name: false,
+		value: {
+			type: false,
+			contents: false
+		}
+	};
 
-		let sAttributeCleaned = ATTRIBUTE_VALUE_CLEANUP(sAttributeValue);
+	// Start by cutting up the string
+	let aAttribute = sAttribute.split('=');
 
-		oSimpleAttr.oValue.contents = sAttributeCleaned;
-	}
+	let sAttributeName = aAttribute[0];
+	let sAttributeValue = aAttribute[1];
 
-	// Check to see if the value has logic tags
+	oSimpleAttr.name = sAttributeName;
+
+	oSimpleAttr.value.type = "reference";
 
 	return oSimpleAttr;
 };
@@ -71,18 +73,30 @@ var ATTRparser = function _attr_parser() {
 
 		if (aAttributes) {
 
-			console.log(aAttributes);
-
 			// Loop through all the attributes
 			for (let sAttribute of aAttributes) {
 
 				// Test for inline logic characters
 				if (ATTR_LOGIC_CHECK.test(sAttribute)) {
-					console.log("Logic attribute!");
-				}
+					
+					// We know we have a logic tag, now we need to know what kind of logic
+						// Simple Inline Context class="{{value}}"
+						// Complex Inline function/helpers {{@ this.input}}
 
-				// Check to see if a single '=' was found
-				if (sAttribute.match(ATTR_EQUAL_SPLITER).length) {
+					// Start by checking for the simple logic value context as its the easiers to identify
+					let bSimpleLogicValue = ATTR_LOGIC_CONTEXT_VALUE_CHECK.test(sAttribute);
+
+					if (bSimpleLogicValue) {
+
+						let oSimpleContextAttr = SIMPLE_LOGIC_ATTRIBUTE(sAttribute);
+
+						oAttrAST.simple.push(oSimpleContextAttr);
+					}
+
+
+
+				}
+				else if (sAttribute.match(ATTR_EQUAL_SPLITER).length) {
 
 					let oSimpleAttr = SIMPLE_ATTRIBUTE(ATTR_EQUAL_SPLITER.exec(sAttribute));
 
