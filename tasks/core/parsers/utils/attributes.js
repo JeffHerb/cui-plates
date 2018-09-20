@@ -1,3 +1,6 @@
+// Load global utility libs
+import Context from '../../utils/context';
+
 class Attributes {
 
 	constuctor() {
@@ -15,28 +18,50 @@ class Attributes {
 
 			for (let oAttr of oASTNode.simple) {
 
-				// Check the name type
-				if (oAttr.oName.sNode === "static") {
+				let bCreateAttr = false;
+				let sKey = false;
+				let sValue = false;
 
-					// check to see if the attributes exist
-					if (!oFinishedAttributes[oAttr.oName.sName]) {
-						oFinishedAttributes[oAttr.oName.sName] = "";
+				switch (oAttr.value.type) {
+
+					case "static":
+
+						if (oAttr.value.value) {
+							sKey = oAttr.name;
+							sValue = oAttr.value.value;
+
+							// Enable the create logic
+							bCreateAttr = true;
+						}
+
+
+						break;
+
+					case "logic":
+
+						let contextValue = Context.find(oAttr.value.value, oContext, true);
+
+						// Check to see if something was returned, if it was then we will 
+						if (contextValue !== null) {
+
+							sKey = oAttr.name;
+							sValue = contextValue;
+
+							bCreateAttr = true;
+						}
+
+						break;
+
+				}
+
+				if (bCreateAttr) {
+
+					if (!oFinishedAttributes[sKey]) {
+						oFinishedAttributes[sKey] = "";
 					}
 
-				}
-				else {
+					oFinishedAttributes[sKey] = (" " + sValue).trim();
 
-					console.log("We need to figure out the attribute name");
-
-				}
-
-				// Check the value type
-				if (oAttr.oValue.sNode === "static") {
-					oFinishedAttributes[oAttr.oName.sName] += ` ${oAttr.oValue.contents}`;
-				}
-				else {
-
-					// This is the other stuff
 				}
 
 			}

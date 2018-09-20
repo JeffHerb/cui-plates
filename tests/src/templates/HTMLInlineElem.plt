@@ -1,1 +1,1 @@
-<input type="test" value="{{this.inputValue}}" />
+<input type="text" id="static-text" value="{{this.inputValue}}" />

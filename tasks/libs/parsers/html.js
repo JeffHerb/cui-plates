@@ -6,7 +6,7 @@ const ATTRIBUTES_UTIL = require('./utils/attributes');
 // Look for html tag structure "<" followed by name and attributes and ends with ">"
 const HTML_TAGREGEX = /<(?:"[^"]*"['"]*|'[^']*'['"]*|[^'">])+>/;
 
-const HTML_ATTRIBUTES_SEPERATOR = /(?:[a-zA-Z0-9\-]*)=(?:["']+(?:[a-zA-Z0-9\-\_\{\}\.\#\@\(\)\=\ ])*(?:["']+))|(?:[{]{2}(?:[\.\#\@](?:[a-zA-Z0-9\s\=\"\'\.\#\!\(\)\-\_]+[}]{2})))|(?:[a-zA-Z0-9]+)/g;
+const HTML_ATTRIBUTES_SEPERATOR = /(?:[a-zA-Z0-9\-]*)=(?:["']+(?:[a-zA-Z0-9\-\_\{\}\.\#\@\(\)\=\ ])*(?:["']+))|(?:\{{2}(?:[\.\#\@a-zA-Z](?:[a-zA-Z0-9\s\=\"\'\.\#\!\(\)\-\_]+\}{2})))|(?:[a-zA-Z0-9]+)/g;
 
 // Identify all of the inline elements for quick reference.
 const INLINE_ELEMS = ['img', 'br', 'hr', 'input'];

@@ -1,6 +1,6 @@
 class Context {
 
-	find(sContextPath, oContext) {
+	find(sContextPath, oContext, nullFailure) {
 
 		// Catch for native non string types
 		if (typeof sContextPath !== "string") {
@@ -26,6 +26,11 @@ class Context {
 
 			}
 			else {
+
+				if (nullFailure) {
+
+					return null;
+				}
 
 				return false;
 			}

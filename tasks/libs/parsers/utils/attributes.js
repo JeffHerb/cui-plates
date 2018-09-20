@@ -5,7 +5,12 @@ const ATTR_LOGIC_CONTEXT_VALUE_CHECK = /(?:[a-zA-Z\-]*?)\=['|"]\s*\{{2}(?:[a-zA-
 
 const ATTRIBUTE_VALUE_CLEANUP = (sAttrValue) => {
 
-	return sAttrValue.replace(/['|"]/g, '');
+	return sAttrValue.replace(/^"(.*)"$/g, '$1').trim();
+};
+
+const LOGICAL_CONTEXT_CLEANUP = (sAttrValue) => {
+
+	return sAttrValue.replace(/^\{{2}(.*)\}{2}$/g, '$1').trim();
 };
 
 // This function is used when we have a simple attribute using static values or logic context values
@@ -15,7 +20,7 @@ const SIMPLE_ATTRIBUTE = (reAttribute) => {
 		name: false,
 		value: {
 			type: false,
-			contents: false
+			value: false
 		}
 	};
 
@@ -33,7 +38,7 @@ const SIMPLE_ATTRIBUTE = (reAttribute) => {
 	// Clean up the attribute value
 	let sAttributeCleaned = ATTRIBUTE_VALUE_CLEANUP(sAttributeValue);
 
-	oSimpleAttr.value.contents = sAttributeCleaned;
+	oSimpleAttr.value.value = sAttributeCleaned;
 
 	return oSimpleAttr;
 };
@@ -45,7 +50,7 @@ const SIMPLE_LOGIC_ATTRIBUTE = (sAttribute) => {
 		name: false,
 		value: {
 			type: false,
-			contents: false
+			value: false
 		}
 	};
 
@@ -55,9 +60,17 @@ const SIMPLE_LOGIC_ATTRIBUTE = (sAttribute) => {
 	let sAttributeName = aAttribute[0];
 	let sAttributeValue = aAttribute[1];
 
+	// Clear our the wrapping qoutes and remove the wrapping {{ }}
+	sAttributeValue = ATTRIBUTE_VALUE_CLEANUP(sAttributeValue);
+	sAttributeValue = LOGICAL_CONTEXT_CLEANUP(sAttributeValue);
+
 	oSimpleAttr.name = sAttributeName;
 
-	oSimpleAttr.value.type = "reference";
+	oSimpleAttr.value.type = "logic";
+
+	oSimpleAttr.value.tag = "context";
+
+	oSimpleAttr.value.value = sAttributeValue;
 
 	return oSimpleAttr;
 };
@@ -73,11 +86,17 @@ var ATTRparser = function _attr_parser() {
 
 		if (aAttributes) {
 
+			console.log(aAttributes);
+
 			// Loop through all the attributes
 			for (let sAttribute of aAttributes) {
 
+				console.log(sAttribute);
+
 				// Test for inline logic characters
 				if (ATTR_LOGIC_CHECK.test(sAttribute)) {
+
+					console.log("LOGIC TEST!!!");
 					
 					// We know we have a logic tag, now we need to know what kind of logic
 						// Simple Inline Context class="{{value}}"
@@ -101,6 +120,11 @@ var ATTRparser = function _attr_parser() {
 					let oSimpleAttr = SIMPLE_ATTRIBUTE(ATTR_EQUAL_SPLITER.exec(sAttribute));
 
 					oAttrAST.simple.push(oSimpleAttr);
+				}
+				else {
+				
+					console.log("We still dont know what this is!")
+					console.log(sAttribute);	
 				}
 
 			}

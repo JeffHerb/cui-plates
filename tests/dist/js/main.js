@@ -8853,7 +8853,7 @@ define('plates',[],function () { 'use strict';
 	                            "name": "class",
 	                            "value": {
 	                                "type": "static",
-	                                "contents": "no-comment"
+	                                "value": "no-comment"
 	                            }
 	                        }
 	                    ]
@@ -8882,7 +8882,7 @@ define('plates',[],function () { 'use strict';
 	                            "name": "class",
 	                            "value": {
 	                                "type": "static",
-	                                "contents": "with-comment"
+	                                "value": "with-comment"
 	                            }
 	                        }
 	                    ]
@@ -8923,14 +8923,22 @@ define('plates',[],function () { 'use strict';
 	                            "name": "type",
 	                            "value": {
 	                                "type": "static",
-	                                "contents": "test"
+	                                "value": "text"
+	                            }
+	                        },
+	                        {
+	                            "name": "id",
+	                            "value": {
+	                                "type": "static",
+	                                "value": "static-text"
 	                            }
 	                        },
 	                        {
 	                            "name": "value",
 	                            "value": {
-	                                "type": "reference",
-	                                "contents": false
+	                                "type": "logic",
+	                                "value": "this.inputValue",
+	                                "tag": "context"
 	                            }
 	                        }
 	                    ]
@@ -8952,7 +8960,7 @@ define('plates',[],function () { 'use strict';
 	                            "name": "class",
 	                            "value": {
 	                                "type": "static",
-	                                "contents": "first"
+	                                "value": "first"
 	                            }
 	                        }
 	                    ]
@@ -8979,7 +8987,7 @@ define('plates',[],function () { 'use strict';
 	                                    "name": "class",
 	                                    "value": {
 	                                        "type": "static",
-	                                        "contents": "first-first"
+	                                        "value": "first-first"
 	                                    }
 	                                }
 	                            ]
@@ -9010,7 +9018,7 @@ define('plates',[],function () { 'use strict';
 	                            "name": "class",
 	                            "value": {
 	                                "type": "static",
-	                                "contents": "second"
+	                                "value": "second"
 	                            }
 	                        }
 	                    ]
@@ -9044,7 +9052,7 @@ define('plates',[],function () { 'use strict';
 	                            "name": "class",
 	                            "value": {
 	                                "type": "static",
-	                                "contents": "field"
+	                                "value": "field"
 	                            }
 	                        }
 	                    ]
@@ -9064,18 +9072,7 @@ define('plates',[],function () { 'use strict';
 	                    {
 	                        "node": "elem",
 	                        "tag": "input",
-	                        "attributes": {
-	                            "block": [],
-	                            "simple": [
-	                                {
-	                                    "name": "type",
-	                                    "value": {
-	                                        "type": "static",
-	                                        "contents": "hidden"
-	                                    }
-	                                }
-	                            ]
-	                        },
+	                        "attributes": false,
 	                        "contents": false
 	                    }
 	                ]
@@ -9556,7 +9553,7 @@ define('plates',[],function () { 'use strict';
 	                            "name": "class",
 	                            "value": {
 	                                "type": "static",
-	                                "contents": "lessThanTen"
+	                                "value": "lessThanTen"
 	                            }
 	                        }
 	                    ]
@@ -9638,7 +9635,7 @@ define('plates',[],function () { 'use strict';
 	                            "name": "class",
 	                            "value": {
 	                                "type": "static",
-	                                "contents": "greaterThanTen"
+	                                "value": "greaterThanTen"
 	                            }
 	                        }
 	                    ]
@@ -9720,7 +9717,7 @@ define('plates',[],function () { 'use strict';
 	                            "name": "class",
 	                            "value": {
 	                                "type": "static",
-	                                "contents": "isTenOrLess"
+	                                "value": "isTenOrLess"
 	                            }
 	                        }
 	                    ]
@@ -9802,7 +9799,7 @@ define('plates',[],function () { 'use strict';
 	                            "name": "class",
 	                            "value": {
 	                                "type": "static",
-	                                "contents": "isTenOrGreater"
+	                                "value": "isTenOrGreater"
 	                            }
 	                        }
 	                    ]
@@ -9884,7 +9881,7 @@ define('plates',[],function () { 'use strict';
 	                            "name": "class",
 	                            "value": {
 	                                "type": "static",
-	                                "contents": "isTenString"
+	                                "value": "isTenString"
 	                            }
 	                        }
 	                    ]
@@ -9966,7 +9963,7 @@ define('plates',[],function () { 'use strict';
 	                            "name": "class",
 	                            "value": {
 	                                "type": "static",
-	                                "contents": "isTenString"
+	                                "value": "isTenString"
 	                            }
 	                        }
 	                    ]
@@ -10048,7 +10045,7 @@ define('plates',[],function () { 'use strict';
 	                            "name": "class",
 	                            "value": {
 	                                "type": "static",
-	                                "contents": "isTen"
+	                                "value": "isTen"
 	                            }
 	                        }
 	                    ]
@@ -10130,7 +10127,7 @@ define('plates',[],function () { 'use strict';
 	                            "name": "class",
 	                            "value": {
 	                                "type": "static",
-	                                "contents": "isTen"
+	                                "value": "isTen"
 	                            }
 	                        }
 	                    ]
@@ -10305,7 +10302,7 @@ define('plates',[],function () { 'use strict';
 	                            "name": "class",
 	                            "value": {
 	                                "type": "static",
-	                                "contents": "message-block"
+	                                "value": "message-block"
 	                            }
 	                        }
 	                    ]
@@ -10338,7 +10335,7 @@ define('plates',[],function () { 'use strict';
 	                                                    "name": "class",
 	                                                    "value": {
 	                                                        "type": "static",
-	                                                        "contents": "error"
+	                                                        "value": "error"
 	                                                    }
 	                                                }
 	                                            ]
@@ -10375,7 +10372,7 @@ define('plates',[],function () { 'use strict';
 	                                                    "name": "class",
 	                                                    "value": {
 	                                                        "type": "static",
-	                                                        "contents": "warning"
+	                                                        "value": "warning"
 	                                                    }
 	                                                }
 	                                            ]
@@ -10412,7 +10409,7 @@ define('plates',[],function () { 'use strict';
 	                                                    "name": "class",
 	                                                    "value": {
 	                                                        "type": "static",
-	                                                        "contents": "success"
+	                                                        "value": "success"
 	                                                    }
 	                                                }
 	                                            ]
@@ -10440,7 +10437,7 @@ define('plates',[],function () { 'use strict';
 	                                                "name": "class",
 	                                                "value": {
 	                                                    "type": "static",
-	                                                    "contents": "error"
+	                                                    "value": "error"
 	                                                }
 	                                            }
 	                                        ]
@@ -10619,6 +10616,51 @@ define('plates',[],function () { 'use strict';
 
 	var comment = new Comment();
 
+	class Context {
+
+		find(sContextPath, oContext, nullFailure) {
+
+			// Catch for native non string types
+			if (typeof sContextPath !== "string") {
+
+				// This is not a string so we are just going to return it.
+				return sContextPath;
+			}
+
+			let aContextPath = sContextPath.indexOf('.') ? sContextPath.split('.') : [sContextPath];
+
+			let vCurrentContext = oContext;
+
+			for (let iPath = 0, iLen = aContextPath.length; iPath < iLen; iPath++) {
+
+				// Skip over this if its at the beginning
+				if (iPath === 0 && aContextPath[iPath].trim() === "this") {
+					continue;
+				}
+
+				if (vCurrentContext[aContextPath[iPath]]) {
+
+					vCurrentContext = vCurrentContext[aContextPath[iPath]];
+				} else {
+
+					if (nullFailure) {
+
+						return null;
+					}
+
+					return false;
+				}
+			}
+
+			return vCurrentContext;
+		}
+
+	}
+
+	var Context$1 = new Context();
+
+	// Load global utility libs
+
 	class Attributes {
 
 		constuctor() {}
@@ -10634,21 +10676,48 @@ define('plates',[],function () { 'use strict';
 
 				for (let oAttr of oASTNode.simple) {
 
-					// Check the name type
-					if (oAttr.oName.sNode === "static") {
+					let bCreateAttr = false;
+					let sKey = false;
+					let sValue = false;
 
-						// check to see if the attributes exist
-						if (!oFinishedAttributes[oAttr.oName.sName]) {
-							oFinishedAttributes[oAttr.oName.sName] = "";
-						}
-					} else {
+					switch (oAttr.value.type) {
 
-						console.log("We need to figure out the attribute name");
+						case "static":
+
+							if (oAttr.value.value) {
+								sKey = oAttr.name;
+								sValue = oAttr.value.value;
+
+								// Enable the create logic
+								bCreateAttr = true;
+							}
+
+							break;
+
+						case "logic":
+
+							let contextValue = Context$1.find(oAttr.value.value, oContext, true);
+
+							// Check to see if something was returned, if it was then we will 
+							if (contextValue !== null) {
+
+								sKey = oAttr.name;
+								sValue = contextValue;
+
+								bCreateAttr = true;
+							}
+
+							break;
+
 					}
 
-					// Check the value type
-					if (oAttr.oValue.sNode === "static") {
-						oFinishedAttributes[oAttr.oName.sName] += ` ${oAttr.oValue.contents}`;
+					if (bCreateAttr) {
+
+						if (!oFinishedAttributes[sKey]) {
+							oFinishedAttributes[sKey] = "";
+						}
+
+						oFinishedAttributes[sKey] = (" " + sValue).trim();
 					}
 				}
 			}
@@ -10687,44 +10756,6 @@ define('plates',[],function () { 'use strict';
 	}
 
 	var elem = new Elem();
-
-	class Context {
-
-		find(sContextPath, oContext) {
-
-			// Catch for native non string types
-			if (typeof sContextPath !== "string") {
-
-				// This is not a string so we are just going to return it.
-				return sContextPath;
-			}
-
-			let aContextPath = sContextPath.indexOf('.') ? sContextPath.split('.') : [sContextPath];
-
-			let vCurrentContext = oContext;
-
-			for (let iPath = 0, iLen = aContextPath.length; iPath < iLen; iPath++) {
-
-				// Skip over this if its at the beginning
-				if (iPath === 0 && aContextPath[iPath].trim() === "this") {
-					continue;
-				}
-
-				if (vCurrentContext[aContextPath[iPath]]) {
-
-					vCurrentContext = vCurrentContext[aContextPath[iPath]];
-				} else {
-
-					return false;
-				}
-			}
-
-			return vCurrentContext;
-		}
-
-	}
-
-	var Context$1 = new Context();
 
 	const complexIfEvaluation = function _complex_if_evaluation(oTextCondtionals, oContext) {
 
