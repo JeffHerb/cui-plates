@@ -86,17 +86,11 @@ var ATTRparser = function _attr_parser() {
 
 		if (aAttributes) {
 
-			console.log(aAttributes);
-
 			// Loop through all the attributes
 			for (let sAttribute of aAttributes) {
 
-				console.log(sAttribute);
-
 				// Test for inline logic characters
 				if (ATTR_LOGIC_CHECK.test(sAttribute)) {
-
-					console.log("LOGIC TEST!!!");
 					
 					// We know we have a logic tag, now we need to know what kind of logic
 						// Simple Inline Context class="{{value}}"

@@ -182,10 +182,14 @@ module.exports = function(grunt) {
 			if (options.templates && options.templates.src && options.templates.src.length) {
 
 				let templateFilePaths = [];
-				let helperFilePaths = [];
+				let helperFilePaths = [
+					'tasks/core/builtins/helpers/**/*.js'
+				];
 
 				// If helpers are defined loop through and generate all of those file paths as well
 				if (options.helpers && options.helpers.src && options.helpers.src.length) {
+
+					var afixedHelperPaths = [];
 
 					// Loop through and get all the template files
 					for (let helpPath of options.helpers.src) {
@@ -200,84 +204,144 @@ module.exports = function(grunt) {
 							correctPath = helpPath;
 						}
 
+						afixedHelperPaths.push(correctPath);
 					}
+
+
 				}
 
 
-				// Loop through and get all the template files
-				for (let tempPath of options.templates.src) {
+				(function nextHelperPath(aHelperPaths) {
 
-					let correctPath = "";
+					let bMoveToTemplates = false;
 
-					if (tempPath.charAt(0) === "/" || tempPath.charAt(0) === "\\") {
-						correctPath = tempPath.slice(1);
+					let sHelperPath = aHelperPaths.shift();
+
+					// Get all the files
+					let aHelperFiles = Glob.sync(sHelperPath);
+
+					console.log(aHelperFiles);
+
+					if (aHelperFiles.length) {
+
 					}
 					else {
 
-						correctPath = tempPath;
+						if (aHelperPaths.length) {
+
+							bMoveToTemplates = true;
+						}
+
 					}
-				
-					let files = Glob.sync(correctPath);
 
-					if (files.length) {
-						templateFilePaths = templateFilePaths.concat(files);
-					}
-				}
+					if (bMoveToTemplates) {
 
-				if (templateFilePaths.length) {
+						// Loop through and get all the template files
+						for (let tempPath of options.templates.src) {
 
-					// Loop through all the template files in a series
-					(function nextTemplate(templateFilePaths) {
+							let correctPath = "";
 
-						let templatePath = templateFilePaths.shift();
+							if (tempPath.charAt(0) === "/" || tempPath.charAt(0) === "\\") {
+								correctPath = tempPath.slice(1);
+							}
+							else {
 
-						if (templatePath) {
+								correctPath = tempPath;
+							}
+						
+							let files = Glob.sync(correctPath);
 
-							let templateObj = {
-								path: templatePath,
-								name: templatePath.slice(templatePath.lastIndexOf('/') + 1).replace('.plt', ''),
-								raw: false,
-								config: false,
-								ast: false
-							};
+							if (files.length) {
+								templateFilePaths = templateFilePaths.concat(files);
+							}
+						}
 
-							// Preform the read (file) template promise
-							readTemplate(templatePath)
-								.then((rawTemplateFile) => {
+						if (templateFilePaths.length) {
 
-									if (rawTemplateFile.trim().length) {
+							// Loop through all the template files in a series
+							(function nextTemplate(templateFilePaths) {
 
-										templateObj.raw = rawTemplateFile;
+								let templatePath = templateFilePaths.shift();
 
-										// Check to see if the template has YAML
-										let bYAMLCheck = ParseYAML.check(templateObj.raw);
+								if (templatePath) {
 
-										if (bYAMLCheck) {
-											let oTempTemplateObj = ParseYAML.parse(templateObj.raw);
+									let templateObj = {
+										path: templatePath,
+										name: templatePath.slice(templatePath.lastIndexOf('/') + 1).replace('.plt', ''),
+										raw: false,
+										config: false,
+										ast: false
+									};
 
-											templateObj.config = oTempTemplateObj.oConfig;
+									// Preform the read (file) template promise
+									readTemplate(templatePath)
+										.then((rawTemplateFile) => {
 
-											// Update raw to version not including the YAML config
-											templateObj.raw = oTempTemplateObj.sTemplateContents
-										}
+											if (rawTemplateFile.trim().length) {
 
-										// Now we need to process the file
-										ParseTemplate.parse(templateObj)
-											.then((templateAST) => {
+												templateObj.raw = rawTemplateFile;
 
-												templateObj.ast = templateAST;
+												// Check to see if the template has YAML
+												let bYAMLCheck = ParseYAML.check(templateObj.raw);
 
-												// WE have finished the AST for this template, add it to the list
-												if (!templateASTs[templateObj.name]) {
-													templateASTs[templateObj.name] = {
-														oAST: templateObj.ast,
-														oConfig: templateObj.config 
-													} 
+												if (bYAMLCheck) {
+													let oTempTemplateObj = ParseYAML.parse(templateObj.raw);
+
+													templateObj.config = oTempTemplateObj.oConfig;
+
+													// Update raw to version not including the YAML config
+													templateObj.raw = oTempTemplateObj.sTemplateContents
 												}
-												else {
 
-													console.log("WE HAVE A TEMPLATE NAMING CONFLICT!!!!");
-												}
+												// Now we need to process the file
+												ParseTemplate.parse(templateObj)
+													.then((templateAST) => {
+
+														templateObj.ast = templateAST;
+
+														// WE have finished the AST for this template, add it to the list
+														if (!templateASTs[templateObj.name]) {
+															templateASTs[templateObj.name] = {
+																oAST: templateObj.ast,
+																oConfig: templateObj.config 
+															} 
+														}
+														else {
+
+															console.log("WE HAVE A TEMPLATE NAMING CONFLICT!!!!");
+														}
+
+														if (templateFilePaths.length) {
+
+															nextTemplate(templateFilePaths);
+														}
+														else {
+
+															writePlates(rollupEntry, rollupOptions, templateASTs, {})
+																.then((code) => {
+
+																	grunt.file.write(finalDest, code);
+
+																	done();
+																})
+																.catch((error) => {
+
+																	console.log(error);
+																})
+														}
+
+													})
+													.catch((error) => {
+
+														console.log("Error reading template");
+
+														console.log(error);
+													});
+
+											}
+											else {
+
+												console.log(`Template: ${templatePath} is being skipped as it is empty.`);
 
 												if (templateFilePaths.length) {
 
@@ -297,69 +361,52 @@ module.exports = function(grunt) {
 															console.log(error);
 														})
 												}
+											}
 
-											})
-											.catch((error) => {
+										})
+										.catch((error) => {
 
-												console.log("Error reading template");
+											console.error(`Error when working on: ${templateObj.name}`)
 
-												console.log(error);
-											});
+											console.error(error);
+										});
 
+								}
+								else {
+
+									if (templateFilePaths.length) {
+
+										nextTemplate(templateFilePaths);
 									}
 									else {
 
-										console.log(`Template: ${templatePath} is being skipped as it is empty.`);
+										done();
 
-										if (templateFilePaths.length) {
-
-											nextTemplate(templateFilePaths);
-										}
-										else {
-
-											writePlates(rollupEntry, rollupOptions, templateASTs, {})
-												.then((code) => {
-
-													grunt.file.write(finalDest, code);
-
-													done();
-												})
-												.catch((error) => {
-
-													console.log(error);
-												})
-										}
+										console.log("Done nothing to do!");
 									}
+								}
 
-								})
-								.catch((error) => {
-
-									console.error(`Error when working on: ${templateObj.name}`)
-
-									console.error(error);
-								});
-
+							})(templateFilePaths.concat());
 						}
 						else {
 
-							if (templateFilePaths.length) {
-
-								nextTemplate(templateFilePaths);
-							}
-							else {
-
-								done();
-
-								console.log("Done nothing to do!");
-							}
 						}
 
-					})(templateFilePaths.concat());
-				}
-				else {
+					}
+					else {
 
-				}
-				
+						if (sHelperPath.length) {
+
+							nextHelperPath(aHelperPaths);
+						}
+						else {
+
+							console.log("How did we get here!");
+						}
+					}
+
+				})(afixedHelperPaths.concat())
+					
 
 			}
 			else {
